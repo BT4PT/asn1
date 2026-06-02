@@ -1,0 +1,153 @@
+/**
+*  UIC Fixed Point Data - version 1.0.0
+*
+*  The UICBarcodeHeader need not be signed (i.e. level1Signature unset), if the situation does not require it.
+*
+*  ## Optional format for combining a FixedPointData structure with a URL for inclusion in a QR code
+*  This is useful, for example, in the case of customer feedback barcodes that should link to the operator's website.
+*  for reporting faults, or for directing users to download an app to access a shared vehicle.
+*
+*  1. Encode this structure in the DOSIPAS format in the usual way, optionally signed
+*  2. Base-41 encode the resultant binary data, with the alphabet `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*-.:`; see here: [github.com/sveljko/base41](https://github.com/sveljko/base41)
+*  3. Append it to the end of a URL with the prefix `$UIC:`
+*
+*  Example: `HTTPS://RAIL.EXAMPLE/QRFB/$UIC:A2I9...`
+*  n.b. uppercase should be used in the whole URL, as this is much more efficient to encode in a QR code
+*
+*  ## Encoding in an NFC tag
+*  1. Encode this structure in the DOSIPAS format in the usual way, optionally signed
+*  2. Place the encoded DOSIPAS in an NDEF record of the format 0x02 (IANA Media Type),
+*      with the media type `application/vnd.uic.dosipas.v2` or `application/vnd.uic.dosipas.v1`, as appropriate
+*  3. Write the NDEF record to an NDEF formatted NFC tag
+*
+*  Other records may exist in the same NDEF message. Readers MUST be prepared to look beyond the
+*   first record to find a UIC DOSIPAS record.
+*/
+FixedPointData { iso(1) identified-organization(3) dod(6)
+    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) fpd(6) v1(1) 0 }
+    DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+EXPORTS FixedPointData;
+IMPORTS GenericId, CompanyCode, Station, CoachPlaces, Data, DataFormatIdentifier, SharedVehicleVariety,
+ SharedVehiclePropulsionType, SharedVehicleReturnConstraint, TransportId, LineId, UnicodeText
+ FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 }
+ LEVEL-1-DATA-ELEMENT
+ FROM BarcodeHeader { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) header(1) v3(3) 0 };
+
+FixedPoint ::= SEQUENCE {
+    /**
+    * The ID **SHOULD** be eternally unique per issuer.
+    */
+    id          GenericId,
+    /**
+    * If different from the security provider.
+    * **MUST** be set if the barcode is unsigned (i.e. no security provider).
+    */
+    issuer      CompanyCode                                             OPTIONAL,
+    specimen    BOOLEAN,
+    affixedTo   Object                                                  OPTIONAL,
+    /**
+    * Additional important information about this fixed point.
+    */
+    infoText    UnicodeText                                             OPTIONAL,
+    extension   SEQUENCE (SIZE(1..8)) OF Data{FIXED-POINT-EXTENSION}    OPTIONAL,
+    ...
+}
+
+fixedPointData LEVEL-1-DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" }
+
+FIXED-POINT-EXTENSION ::= CLASS {
+    &id DataFormatIdentifier (ALL EXCEPT ("!C" | "!P")) UNIQUE,
+    &Type
+} WITH SYNTAX {
+    &Type IDENTIFIED BY &id
+}
+
+Object ::= CHOICE {
+    /**
+    * e.g. for check-in/check-out by scanning.
+    */
+    station         StationPoint,
+    /**
+    * e.g. for at-seat ordering, customer reporting of vehicle defects, vehicle based check-in.
+    */
+    vehicle         Vehicle,
+    /**
+    * e.g. bike, e-scooter, car sharing.
+    */
+    sharedVehicle   SharedVehicle,
+    /**
+    * Values defined by the issuer.
+    */
+    proprietary     GenericId,
+    vehicleDynamic  VehicleDynamic,
+    ...
+}
+
+StationPoint ::= SEQUENCE {
+    station                 Station,
+    platform                VisibleString   OPTIONAL,
+    /**
+    * Values defined by the issuer.
+    */
+    subLocationProprietary  GenericId       OPTIONAL,
+    ...
+}
+
+Vehicle ::= SEQUENCE {
+    id                      VehicleIdentifier,
+    /**
+    * For identifying at which carriage and seat/compartment this barcode is placed, if at a seat.
+    */
+    place                   CoachPlaces             OPTIONAL,
+    /**
+    * When affixed non-seat items or sub-items within a compartment, values defined by the issuer.
+    */
+    subLocationProprietary  GenericId               OPTIONAL,
+    ...
+}
+
+/**
+* Representing a barcode/tag that is updated as the vehicle progresses along its route.
+*/
+VehicleDynamic ::= SEQUENCE {
+    vehicleId               VehicleIdentifier,
+    currentStop             Station,
+    transport               TransportId         OPTIONAL,
+    line                    LineId              OPTIONAL,
+    terminusStop            Station,
+    ...
+}
+
+VehicleIdentifier ::= CHOICE {
+    /**
+    * ERA European Vehicle Number, including the check digit.
+    */
+    evn             INTEGER (0..999999999999),
+    /**
+    * VIN per ISO 3779.
+    */
+    vin             VisibleString (SIZE(17) ^ FROM ("A".."Z"|"0".."9")),
+    /**
+    * Values defined by the issuer.
+    */
+    proprietary     GenericId,
+    ...
+}
+
+/**
+* Built upon GBFSv3.0.
+* Reference: [github.com/MobilityData/gbfs-json-schema/blob/master/v3.0/vehicle_types.json](https://github.com/MobilityData/gbfs-json-schema/blob/master/v3.0/vehicle_types.json).
+*/
+SharedVehicle ::= SEQUENCE {
+    /**
+    * Values defined by the issuer.
+    */
+    id                  GenericId,
+    variety             SharedVehicleVariety,
+    propulsion          SharedVehiclePropulsionType,
+    returnConstraint    SharedVehicleReturnConstraint,
+    ...
+}
+
+END

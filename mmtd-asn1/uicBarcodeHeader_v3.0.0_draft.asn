@@ -1,0 +1,252 @@
+/**
+* UIC barcode header - version 3.0.0
+*
+* ## Encoding conventions
+* A barcode which is only static, and for which the security is in the system (e.g. security paper), does not need a signature.
+* A barcode which is only static, and includes its own security, needs a level 1 signature and a corresponding key reference.
+* A dynamic barcode including static and dynamic signatures needs the same elements as a static barcode, plus a level 2 signature.
+*
+* The maximum size of a barcode is, per the Aztec specification ISO 24778, limited to 1914 bytes.
+*/
+BarcodeHeader { iso(1) identified-organization(3) dod(6)
+    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) header(1) v3(3) 0 }
+    DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+EXPORTS UICBarcodeHeader;
+IMPORTS CompanyCode, Timestamp, DataFormatIdentifier, Data
+ FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
+
+/**
+* The basic entry point of the barcode.
+*/
+BarcodeHeader ::= SEQUENCE {
+    /**
+    * This field SHALL be set to the byte string `U3`.
+    * This results in the version 3 header being prefixed with U3 at the start, allowing identification of this
+    *  format of barcode header.
+    */
+    format      OCTET STRING (SIZE(2)),
+    contents    StandardSignedData{Level2Data, NULL}
+}
+
+Level2Data ::= SEQUENCE {
+    level1Data  Level1Data,
+    /**
+    * Dynamic Content Data goes here.
+    */
+    data  SEQUENCE SIZE(1..8) OF Data{LEVEL-2-DATA-ELEMENT} OPTIONAL
+}
+
+/**
+* Provider of the level 1 signature.
+*/
+CompanyKeyReference ::= SEQUENCE {
+    securityProvider    CompanyCode,
+    keyId               INTEGER (0..99999)
+}
+
+Level1Data ::= CHOICE {
+    /**
+    * Must use the standard variety, message recovery format to be decided upon at a later date.
+    * Standard variety signature calculated over `BarcodeTBSData`.
+    */
+    directlyIssued  SignedData{BarcodeData, CompanyKeyReference},
+    /**
+    * Must not be used, format to be decided upon at a later date.
+    */
+    subIssued       SEQUENCE {
+        /**
+        * Standard variety signature calculated over `EndEntityCertificateTBSData`.
+        */
+        endEntityCertificate    SignedData{EndEntityCertificate, CompanyKeyReference},
+        barcodeData             SignedData{BarcodeData, NULL}
+    }
+} (WITH COMPONENTS {
+    directlyIssued PRESENT
+})
+
+/**
+* Concretely parameterised form for use in calculating the signature for the `directlyIssued` variant of `Level1Data`.
+*/
+BarcodeTBSData ::= StandardTBSData{BarcodeData, CompanyKeyReference}
+/**
+* Concretely parameterised form for use in calculating the signature for the `subIssued.endEntityCertificate` variant of `Level1Data`.
+*/
+EndEntityCertificateTBSData ::= StandardTBSData{EndEntityCertificate, CompanyKeyReference}
+
+SignedData{DataType, KeyReference} ::= CHOICE {
+    standard        StandardSignedData{DataType, KeyReference},
+    messageRecovery MessageRecoverySignature
+} (WITH COMPONENTS {
+    standard PRESENT
+})
+
+/**
+* Standardised container for conveying a message with an optional signature providing authenticity and integrity guarantees.
+* @DataType The type defining the message to be conveyed.
+* @KeyReference The type allowing differentiation of which key pair was used to sign the message.
+*/
+StandardSignedData{DataType, KeyReference} ::= SEQUENCE {
+    tbs         DataType,
+    /**
+    * The signature is calculated over the canonical unaligned PER (CUPER) encoding of `StandardTBSData{DataType, KeyReference}`.
+    * Note: when `KeyReference` is NULL this is equivalent to the CUPER encoding of `DataType`.
+    *
+    * Being unset only permitted when no security is required.
+    */
+    signature   SEQUENCE {
+        keyReference    KeyReference,
+        data            Signature
+    } OPTIONAL
+}
+
+StandardTBSData{DataType, KeyReference} ::= SEQUENCE {
+    keyReference    KeyReference,
+    tbs             DataType
+}
+
+/**
+* Values taken from the IANA [JSON Web Signature and Encryption Algorithm registry](https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms).
+*/
+Signature ::= CHOICE {
+    /**
+    * ECDSA using the P-256 curve and SHA-256.
+    */
+    es256       DSSSignature{32},
+    /**
+    * ECDSA using the secp256k1 curve and SHA-256.
+    */
+    es256k      DSSSignature{32},
+    /**
+    * ECDSA using the NIST P-384 curve and SHA-384.
+    */
+    es384       DSSSignature{48},
+    /**
+    * ECDSA using the NIST P-521 curve and SHA-512.
+    */
+    es512       DSSSignature{66},
+    ed25519     OCTET STRING (SIZE (64)),
+    ed448       OCTET STRING (SIZE (114)),
+    /**
+    * HMAC using SHA-256, not permitted except by bilateral agreement.
+    */
+    hs256       OCTET STRING (SIZE (32)),
+    /**
+    * HMAC using SHA-384, not permitted except by bilateral agreement.
+    */
+    hs384       OCTET STRING (SIZE (48)),
+    /**
+    * HMAC using SHA-512, not permitted except by bilateral agreement.
+    */
+    hs512       OCTET STRING (SIZE (64)),
+    /**
+    * DSA-1024 using SHA-1, not recommended for new deployments.
+    */
+    dsa1        DSSSignature{20},
+    /**
+    * DSA-2048 using SHA-224, not recommended for new deployments.
+    */
+    dsa224      DSSSignature{32},
+    /**
+    * DSA-2048 using SHA-256, not recommended for new deployments.
+    */
+    dsa256      DSSSignature{32},
+    /**
+    * Space for future signature modes, e.g. Post-Quantum Cryptography.
+    */
+    reserved1   NULL,
+    /**
+    * Space for future signature modes, e.g. Post-Quantum Cryptography.
+    */
+    reserved2   NULL,
+    /**
+    * Space for future signature modes, e.g. Post-Quantum Cryptography.
+    */
+    reserved3   NULL,
+    other       SEQUENCE {
+        algId       OBJECT IDENTIFIER,
+        signature   OCTET STRING
+    }
+}
+
+/**
+* A generic container for the conveyance of Digital Signature Scheme signatures, e.g. ECDSA and DSA.
+* @len The length, in bytes, of each of `r` and `s`. That is, half the total signature length.
+*/
+DSSSignature{INTEGER: len} ::= SEQUENCE {
+    r OCTET STRING (SIZE(len)),
+    s OCTET STRING (SIZE(len))
+}
+
+PublicKey ::= CHOICE {
+    nistP256    ECPublicKey{32},
+    secp256K1   ECPublicKey{32},
+    nistP384    ECPublicKey{48},
+    nistP521    ECPublicKey{66},
+    ed25519     OCTET STRING (SIZE (32)),
+    ed448       OCTET STRING (SIZE (57)),
+    /**
+    * Space for future public key formats, e.g. Post-Quantum Cryptography.
+    */
+    reserved    NULL,
+    /**
+    * DER encoded SubjectPublicKeyInfo.
+    */
+    other       OCTET STRING
+}
+
+/**
+* @len The length, in bytes, required to represent the x coördinate on a curve.
+*/
+ECPublicKey{INTEGER: len} ::= SEQUENCE {
+    x OCTET STRING (SIZE(len)),
+    yIsOdd BOOLEAN
+}
+
+/**
+* Purposefully left blank, format to be decided upon at a later date.
+*/
+MessageRecoverySignature ::= NULL
+/**
+* Purposefully left blank, format to be decided upon at a later date.
+*/
+EndEntityCertificate ::= NULL
+
+BarcodeData ::= SEQUENCE {
+    /**
+    * This field MUST contain at most one well-known UIC data type (e.g. `FCBn`).
+    */
+    data                SEQUENCE SIZE(1..16) OF Data{LEVEL-1-DATA-ELEMENT},
+
+    level2PublicKey     PublicKey                       OPTIONAL,
+
+    /**
+    * End of the validity of the barcode.
+    * After this date and time the barcode needs to be regenerated by the provider of the ticket.
+    * The provider of the bar code **MUST** ensure that the endOfValidity given here does not exceed the validity of the key pair used on level 2.
+    */
+    endOfValidity       Timestamp                       OPTIONAL,
+
+    /**
+    * Validity duration in seconds of the barcode with reference to the time stamp in the dynamic content data.
+    */
+   	validityDuration    INTEGER (1..3600)               OPTIONAL,
+
+   	...
+}
+
+LEVEL-1-DATA-ELEMENT ::= CLASS {
+    &id DataFormatIdentifier (ALL EXCEPT ("!I" | "!C" | "!P")) UNIQUE,
+    &Type
+} WITH SYNTAX {
+    &Type IDENTIFIED BY &id
+}
+
+LEVEL-2-DATA-ELEMENT ::= CLASS {
+    &id DataFormatIdentifier (ALL EXCEPT ("!I" | "!C" | "!P")) UNIQUE,
+    &Type
+} WITH SYNTAX {
+    &Type IDENTIFIED BY &id
+}
+
+END
