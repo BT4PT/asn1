@@ -20,7 +20,15 @@ IMPORTS CompanyCode, Timestamp, DataFormatIdentifier, Data, DATA-ELEMENT
  dynamicContentData
  FROM DynamicContentData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) dcd(3) v2(2) 0 }
  fixedPointData
- FROM FixedPointData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) fpd(6) v1(1) 0 };
+ FROM FixedPointData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) fpd(6) v1(1) 0 }
+ uicRailTicketData
+ FROM RailTicketDataV3 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) rtd(2) v3(3) 6 }
+ uicRailTicketData
+ FROM RailTicketDataV2 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) rtd(2) v2(2) 3 }
+ uicRailTicketData
+ FROM RailTicketDataV1 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) rtd(2) v1-3(1) 5 }
+ uicDynamicContentData
+ FROM DynamicContentDataV1 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) dcd(3) v1(1) 5 };
 
 /**
 * The basic entry point of the barcode.
@@ -247,7 +255,18 @@ BarcodeData ::= SEQUENCE {
    	...
 }
 
-Level1DataElements DATA-ELEMENT ::= { multiModalTicketData | fixedPointData, ... }
-Level2DataElements DATA-ELEMENT ::= { dynamicContentData, ... }
+Level1DataElements DATA-ELEMENT ::= {
+    multiModalTicketData |
+    fixedPointData |
+    RailTicketDataV3.uicRailTicketData |
+    RailTicketDataV2.uicRailTicketData |
+    RailTicketDataV1.uicRailTicketData,
+    ...
+}
+Level2DataElements DATA-ELEMENT ::= {
+ dynamicContentData |
+ DynamicContentDataV1.uicDynamicContentData,
+ ...
+}
 
 END
