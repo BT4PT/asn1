@@ -2,11 +2,9 @@ DynamicContentData { iso(1) identified-organization(3) dod(6)
     internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) dcd(3) v2(2) 0 }
     DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
-EXPORTS UICDynamicContentData;
-IMPORTS Timestamp, GeoCoordinate, Data, DataFormatIdentifier
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 }
- LEVEL-2-DATA-ELEMENT
- FROM BarcodeHeader { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) header(1) v3(3) 0 };
+EXPORTS DynamicContent, dynamicContentData;
+IMPORTS Timestamp, GeoCoordinate, Data, DATA-ELEMENT, cuperEncoding
+ FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
 
 DynamicContent ::= SEQUENCE {
     /**
@@ -25,18 +23,16 @@ DynamicContent ::= SEQUENCE {
     */
     dynamicContentGeoCoordinate         GeoCoordinate       OPTIONAL,
 
-    dynamicContentResponseToChallenge   SEQUENCE OF Data{RESPONSE-TO-CHALLENGE},
+    dynamicContentResponseToChallenge   SEQUENCE OF Data{ResponsesToChallenge} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!I" | "!C" | "!P"))
+    }),
 
     ...
 }
 
-dynamicContentData LEVEL-2-DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "FDC2" }
+dynamicContentData DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "FDC2" ENCODED WITH cuperEncoding }
 
-RESPONSE-TO-CHALLENGE ::= CLASS {
-    &id DataFormatIdentifier (ALL EXCEPT ("!I" | "!C" | "!P")) UNIQUE,
-    &Type
-} WITH SYNTAX {
-    &Type IDENTIFIED BY &id
-}
+ResponsesToChallenge DATA-ELEMENT ::= { ... }
 
 END

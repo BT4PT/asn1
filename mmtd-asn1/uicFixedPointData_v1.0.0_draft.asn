@@ -27,12 +27,10 @@ FixedPointData { iso(1) identified-organization(3) dod(6)
     internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) fpd(6) v1(1) 0 }
     DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
-EXPORTS FixedPointData;
-IMPORTS GenericId, CompanyCode, Station, CoachPlaces, Data, DataFormatIdentifier, SharedVehicleVariety,
+EXPORTS FixedPoint, fixedPointData;
+IMPORTS GenericId, CompanyCode, Station, CoachPlaces, DATA-ELEMENT, Data, cuperEncoding, SharedVehicleVariety,
  SharedVehiclePropulsionType, SharedVehicleReturnConstraint, TransportId, LineId, UnicodeText
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 }
- LEVEL-1-DATA-ELEMENT
- FROM BarcodeHeader { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) header(1) v3(3) 0 };
+ FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
 
 FixedPoint ::= SEQUENCE {
     /**
@@ -50,18 +48,16 @@ FixedPoint ::= SEQUENCE {
     * Additional important information about this fixed point.
     */
     infoText    UnicodeText                                             OPTIONAL,
-    extension   SEQUENCE (SIZE(1..8)) OF Data{FIXED-POINT-EXTENSION}    OPTIONAL,
+    extension   SEQUENCE (SIZE(1..8)) OF Data{FixedPointExtensions} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!C" | "!P"))
+    }) OPTIONAL,
     ...
 }
 
-fixedPointData LEVEL-1-DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" }
+FixedPointExtensions DATA-ELEMENT ::= { ... }
 
-FIXED-POINT-EXTENSION ::= CLASS {
-    &id DataFormatIdentifier (ALL EXCEPT ("!C" | "!P")) UNIQUE,
-    &Type
-} WITH SYNTAX {
-    &Type IDENTIFIED BY &id
-}
+fixedPointData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" ENCODED WITH cuperEncoding }
 
 Object ::= CHOICE {
     /**

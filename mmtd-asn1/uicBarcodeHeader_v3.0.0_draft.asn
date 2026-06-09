@@ -12,16 +12,22 @@ BarcodeHeader { iso(1) identified-organization(3) dod(6)
     internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) header(1) v3(3) 0 }
     DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
-EXPORTS UICBarcodeHeader;
-IMPORTS CompanyCode, Timestamp, DataFormatIdentifier, Data
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
+EXPORTS BarcodeHeader;
+IMPORTS CompanyCode, Timestamp, DataFormatIdentifier, Data, DATA-ELEMENT
+ FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 }
+ multiModalTicketData
+ FROM MultiModalTicketData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) mmtd(4) v1(1) 0 }
+ dynamicContentData
+ FROM DynamicContentData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) dcd(3) v2(2) 0 }
+ fixedPointData
+ FROM FixedPointData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) fpd(6) v1(1) 0 };
 
 /**
 * The basic entry point of the barcode.
 */
 BarcodeHeader ::= SEQUENCE {
     /**
-    * This field SHALL be set to the byte string `U3`.
+    * This field **SHALL** be set to the byte string `U3`.
     * This results in the version 3 header being prefixed with U3 at the start, allowing identification of this
     *  format of barcode header.
     */
@@ -34,7 +40,10 @@ Level2Data ::= SEQUENCE {
     /**
     * Dynamic Content Data goes here.
     */
-    data  SEQUENCE SIZE(1..8) OF Data{LEVEL-2-DATA-ELEMENT} OPTIONAL
+    data  SEQUENCE (SIZE(1..8)) OF Data{Level2DataElements} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!I" | "!C" | "!P"))
+    }) OPTIONAL
 }
 
 /**
@@ -61,8 +70,8 @@ Level1Data ::= CHOICE {
         endEntityCertificate    SignedData{EndEntityCertificate, CompanyKeyReference},
         barcodeData             SignedData{BarcodeData, NULL}
     }
-} (WITH COMPONENTS {
-    directlyIssued PRESENT
+} (CONSTRAINED BY {
+    -- The directlyIssued variant must be used, subIssued to be defined at a later date.
 })
 
 /**
@@ -77,8 +86,8 @@ EndEntityCertificateTBSData ::= StandardTBSData{EndEntityCertificate, CompanyKey
 SignedData{DataType, KeyReference} ::= CHOICE {
     standard        StandardSignedData{DataType, KeyReference},
     messageRecovery MessageRecoverySignature
-} (WITH COMPONENTS {
-    standard PRESENT
+} (CONSTRAINED BY {
+    -- The standard variant must be used, message recovery to be defined at a later date.
 })
 
 /**
@@ -216,7 +225,10 @@ BarcodeData ::= SEQUENCE {
     /**
     * This field MUST contain at most one well-known UIC data type (e.g. `FCBn`).
     */
-    data                SEQUENCE SIZE(1..16) OF Data{LEVEL-1-DATA-ELEMENT},
+    data                SEQUENCE SIZE(1..16) OF Data{Level1DataElements} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!I" | "!C" | "!P"))
+    }),
 
     level2PublicKey     PublicKey                       OPTIONAL,
 
@@ -235,18 +247,7 @@ BarcodeData ::= SEQUENCE {
    	...
 }
 
-LEVEL-1-DATA-ELEMENT ::= CLASS {
-    &id DataFormatIdentifier (ALL EXCEPT ("!I" | "!C" | "!P")) UNIQUE,
-    &Type
-} WITH SYNTAX {
-    &Type IDENTIFIED BY &id
-}
-
-LEVEL-2-DATA-ELEMENT ::= CLASS {
-    &id DataFormatIdentifier (ALL EXCEPT ("!I" | "!C" | "!P")) UNIQUE,
-    &Type
-} WITH SYNTAX {
-    &Type IDENTIFIED BY &id
-}
+Level1DataElements DATA-ELEMENT ::= { multiModalTicketData | fixedPointData, ... }
+Level2DataElements DATA-ELEMENT ::= { dynamicContentData, ... }
 
 END

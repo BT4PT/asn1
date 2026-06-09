@@ -71,13 +71,11 @@ MultiModalTicketData { iso(1) identified-organization(3) dod(6)
     internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) mmtd(4) v1(1) 0 }
     DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
-EXPORTS MultiModalTicket;
+EXPORTS MultiModalTicket, multiModalTicketData;
 IMPORTS GenericId, GenericCode, CompanyCode, Station, StationSet, AreaSet, NUTSArea, LineId, TransportId,
- GeoCoordinate, GeoUnit, CoachPlaces, Data, UnicodeText, Timestamp, SharedVehicleVariety, SharedVehiclePropulsionType,
- SharedVehicleReturnConstraint
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 }
- LEVEL-1-DATA-ELEMENT
- FROM BarcodeHeader { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) header(1) v3(3) 0 };
+ GeoCoordinate, GeoUnit, CoachPlaces, Data, DATA-ELEMENT, cuperEncoding, UnicodeText, Timestamp, SharedVehicleVariety,
+ SharedVehiclePropulsionType, SharedVehicleReturnConstraint
+ FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
 
 /**
 * MultiModalTicket is the basic entry point of the data structure.
@@ -127,7 +125,7 @@ MultiModalTicket ::= SEQUENCE {
     ...
 }
 
-multiModalTicketData LEVEL-1-DATA-ELEMENT ::= { MultiModalTicket IDENTIFIED BY "MMT1" }
+multiModalTicketData DATA-ELEMENT ::= { MultiModalTicket IDENTIFIED BY "MMT1" ENCODED WITH cuperEncoding }
 
 /**
 * The choice on the different transport documents that can be included in the bar code data:
@@ -626,89 +624,114 @@ TransportProductData ::= SEQUENCE {
     })
 )
 
--- ##############################################################################################
---  Information for linking a car to a reservation
--- ##############################################################################################
+/**
+* Information for linking a car to a reservation
+*/
 CarType ::= SEQUENCE {
-    -- Unless spaces form an integral part of identifying a plate, the must not be included.
-    -- E.g. a German car with the plate SB[TÜV Sticker]A 123 is to be encoded as "SB-A123".
-    -- Dutch duplicate codes are not encoded, i.e. the small number above the first dash does not
-    -- form part of the plate.
-    --
-    -- The plate should be represented in the Latin alphabet and Arabic numerals where possible,
-    -- but not that this isn't always possible, e.g. the registration district of a Chinese plate.
-    --
-    -- The country of registration must not be encoded in the plate.
+    /**
+    * Unless spaces form an integral part of identifying a plate, the must not be included.
+    * E.g. a German car with the plate SB[TÜV Sticker]A 123 is to be encoded as `SB-A123`.
+    * Dutch duplicate codes are not encoded, i.e. the small number above the first dash does not
+    * form part of the plate.
+    *
+    * The plate should be represented in the Latin alphabet and Arabic numerals where possible,
+    * but not that this isn't always possible, e.g. the registration district of a Chinese plate.
+    *
+    * The country of registration must not be encoded in the plate.
+    */
     vehiclePlate        UnicodeText,
     trailerPlate        UnicodeText         OPTIONAL,
-    -- Per TEL TSI Code List B.5.29
+    /**
+    * Per TEL TSI Code List B.5.29.
+    */
     carCategory         INTEGER (1..8),
-    -- Per TEL TSI Code List B.5.29
+    /**
+    * Per TEL TSI Code List B.5.29.
+    */
     boatCategory        INTEGER (1..8)      OPTIONAL,
     textileRoof         BOOLEAN,
     roofRack            RoofRackType        DEFAULT  norack,
 
-    -- Height of a roof rack in cm.
+    /**
+    * Height of a roof rack in cm.
+    */
     roofRackHeight      INTEGER (0..99)     OPTIONAL,
 
-    -- Number of boats on a rack.
+    /**
+    * Number of boats on a rack.
+    */
     attachedBoats       INTEGER (0..2)      OPTIONAL,
 
-    -- Number of bicycles on a rack.
+    /**
+    * Number of bicycles on a rack.
+    */
     attachedBicycles    INTEGER (0..4)      OPTIONAL,
 
-    -- Number of surf boards on a rack.
+    /**
+    * Number of surf boards on a rack.
+    */
     attachedSurfboards  INTEGER (0..5)      OPTIONAL,
 
-    -- Reference to an entry on the loading list.
+    /**
+    * Reference to an entry on the loading list.
+    */
     loadingListEntry    INTEGER (0..999)    OPTIONAL,
     loadingDeck         LoadingDeckType     OPTIONAL,
 
-    -- Loading of the car in local date and time at the loading station.
-    -- Number of the days calculated from the issuing date.
+    /**
+    * Loading of the car in local date and time at the loading station.
+    * Number of the days calculated from the issuing date.
+    */
     beginLoading        ValidFromType,
     endLoading          ValidUntilType      OPTIONAL,
 
     ...
 }
 
--- ----------------------------------------------------------------------------------------------
---  Type definitions used in TransportLinkType and ReservationSegmentType
--- ----------------------------------------------------------------------------------------------
+/**
+* Type definitions used in `TransportLinkType` and `ReservationSegmentType`.
+*/
 DepartureDateTime ::= SEQUENCE {
-    -- Departure date and time in local time at the departure station.
-    -- Number of days counted from the issuing date.
+    /**
+    * Departure date and time in local time at the departure station.
+    * Number of days counted from the issuing date.
+    */
     departureDate      INTEGER (-1..500)                DEFAULT 0,
     departureTime      INTEGER (0..1439),
 
-    -- Offset in units of 15 minutes from local time to UTC
-    -- (UTC = local + offset * 15 minutes).
-    -- The UTC offset can be used to calculate the duration of the travel.
-    -- Times to be shown on a ticket should always be the local times.
+    /**
+    * Offset in units of 15 minutes from local time to UTC
+    * (UTC = local + offset * 15 minutes).
+    * The UTC offset can be used to calculate the duration of the travel.
+    * Times to be shown on a ticket should always be the local times.
+    */
     departureUTCOffset INTEGER (-60..60)                OPTIONAL
 }
 
 ArrivalDateTime ::= SEQUENCE {
-    -- Arrival date and time in local time at the arrival station.
-    -- Number of days counted from the departure date.
+    /**
+    * Arrival date and time in local time at the arrival station.
+    * Number of days counted from the departure date.
+    */
     arrivalDate        INTEGER (-1..30)                 DEFAULT 0,
     arrivalTime        INTEGER (0..1439)                OPTIONAL,
 
-    -- Offset in units of 15 minutes from local time to UTC
-    -- (UTC = local + offset * 15 minutes).
-    -- Should be omitted in case it is the same as for departure.
-    -- The UTC offset can be used to calculate the duration of the travel.
-    -- Times to be shown on a ticket should always be the local times.
+    /**
+    * Offset in units of 15 minutes from local time to UTC
+    * (UTC = local + offset * 15 minutes).
+    * Should be omitted in case it is the same as for departure.
+    * The UTC offset can be used to calculate the duration of the travel.
+    * Times to be shown on a ticket should always be the local times.
+    */
     arrivalUTCOffset   INTEGER (-60..60)                OPTIONAL
 }
 
--- ##############################################################################################
---  Transport link data.
---  Describes a transport link associated to a route or to a part of a route.
---  Quite similar to ReservationSegmentType but without assigned place(s).
--- ##############################################################################################
+/**
+* Transport link data.
+* Describes a transport link associated to a route or to a part of a route.
+* Quite similar to ReservationSegmentType but without assigned place(s).
+*/
 TransportLinkType ::= SEQUENCE {
-
     -- Station where the transport link begins.
     -- Omitted if it is the same station as the origin station of the associated segment.
     originStation           Station                                                 OPTIONAL,
