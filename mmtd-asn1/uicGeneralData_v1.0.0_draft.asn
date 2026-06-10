@@ -379,6 +379,7 @@ CompanyCodeFormats COMPANY-CODE-FORMAT ::= {
 * Any other value only after registration in the appropriate registry.
 * Unregistered values (outside of the national, company, and private use ranges) **MUST NOT** be used.
 * If an organisation has a RICS or an ERA Organisation Code the private use format **MUST NOT** be used.
+* If the `!C` form would be ambiguous (e.g. multiple carriers possible) it **MUST NOT** be used.
 * All values **SHOULD** be registered via the UIC Github repository.
 */
 DATA-ELEMENT ::= CLASS {
