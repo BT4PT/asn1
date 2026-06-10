@@ -106,7 +106,7 @@
 *    Bilateral extensions can be included in the data element "ExtensionData".
 */
 RailTicketData { iso(1) identified-organization(3) dod(6)
-    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) rtd(2) v3(3) 6 }
+    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) rtd(2) v3(3) 7 }
     DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
 EXPORTS UicRailTicketData, uicRailTicketData;
@@ -257,7 +257,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    DelayConfirmation ::= SEQUENCE {
 	   
 	    /**
-	    * reference of the delay confirmation
+	    * reference of the delay confirmation, reference is optional, in case it is given it must be given in num or IA5
 	    */
 	    referenceIA5   		IA5String 	 		    OPTIONAL,
 	    referenceNum   		INTEGER 			    OPTIONAL,   	   
@@ -408,7 +408,10 @@ IMPORTS DATA-ELEMENT, cuperEncoding
         currencyFract  		INTEGER (1..3) 				DEFAULT 2,                  
         
         /**
-        * PNR used by the issuer to identify the document
+        * PNR used by the issuer to identify the document.
+        * ID to uniquely identify this barcode within the context of the issuer and an appropriate time range.
+        * This can be used to query the ticket in the eTCD.
+        * issuerPNR must be provided except for rare special cases like a pure token.
         */
         issuerPNR			IA5String 					OPTIONAL,   
         
@@ -558,7 +561,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
     departureDate  		 INTEGER 	(-1..500)           DEFAULT 0, 
      		        															
     /**
-    * reservation reference according ton 918.1 in case ade via Hermes
+    * reference is optional, it is given it must be given in num or IA5.
     */
     referenceIA5   		IA5String 	 			OPTIONAL,
     referenceNum   		INTEGER 				OPTIONAL,    
@@ -778,7 +781,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
                                                                     
     						
     /**
-    * reservation reference according on 918.1 in case made via Hermes
+    * reference is optional, in case it is given it must be given in num or IA5.
     */
     referenceIA5   		IA5String 	 				OPTIONAL,
     referenceNum   		INTEGER 					OPTIONAL,  
@@ -885,7 +888,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    OpenTicketData 	::= SEQUENCE 	{
 	   
       /**
-      * reference must be given either in numeric or alphanumeric format
+      * reference to this openticketdata document. reference must be given either in numeric or alphanumeric format
       */
       referenceNum   	INTEGER 			OPTIONAL,    
       referenceIA5   	IA5String 			OPTIONAL,   
@@ -1065,7 +1068,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    PassData 		::= SEQUENCE    {
 	   
 	   /**
-	   * reference must be given in numeric or alphanumeric format
+	   * reference to this passdata. reference is optional, in case it is given it must be given in numeric or alphanumeric format
 	   */
 	   referenceNum   			INTEGER 				OPTIONAL,   
 	   referenceIA5   			IA5String 				OPTIONAL,	   
@@ -1315,7 +1318,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    VoucherData 		::= SEQUENCE 	{
 	   
 	    /**
-	    * reference must be given in numeric or alphanumeric format
+	    * reference to this voucher data, reference is optional, in case it is given it must be given in numeric or alphanumeric format
 	    */
      	referenceIA5   		IA5String 				OPTIONAL,      
      	referenceNum   		INTEGER 				OPTIONAL,     
@@ -1367,7 +1370,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    FIPTicketData 	::= SEQUENCE 	{
      
 	   /**
-	   * reference must be given in numeric or alphanumeric format
+	   * reference to this fip ticket, reference is optional, in case it is given it must be given in numeric or alphanumeric format
 	   */
 	   referenceIA5   	IA5String 				 	OPTIONAL,      
        referenceNum   	INTEGER 					OPTIONAL,         
@@ -1428,7 +1431,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    StationPassageData 	::= SEQUENCE 	{
 	   
 	   /**
-	   * reference must be given in numeric or alphanumeric format
+	   * reference to this station data, reference is optional, in case it is given it must be given in numeric or alphanumeric format
 	   */
 	   referenceIA5   		IA5String 	                OPTIONAL,     
 	   referenceNum   		INTEGER 					OPTIONAL,      
@@ -1596,7 +1599,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    ParkingGroundData ::= SEQUENCE 	{	
 	   
 	   /**
-	   * booking reference
+	   * booking reference to this parking booking, reference is optional, in case it is given it must be given in num or IA5
 	   */
 	   referenceIA5   	IA5String 	 		OPTIONAL,
 	   referenceNum   	INTEGER 			OPTIONAL,   	   
@@ -1659,7 +1662,10 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    *        - printed layout (leaflet 918.8)
    */
    CountermarkData ::= SEQUENCE 	{
-    
+
+        /**
+        * reference to this countermark, reference is optional, in case it is given it must be given in num or IA5.
+        */
 	   referenceIA5   		IA5String 	 				OPTIONAL,
 	   referenceNum   		INTEGER 					OPTIONAL,        			      	
 
@@ -2430,7 +2436,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
 	   	
 	   issuerName			UTF8String 					OPTIONAL,
 	    /**
-	    * in case the ticket can also be identified via the issuer PNR
+	    * in case the ticket can also be identified via the issuer PNR (= Ticket Reference Number).
 	    */
 	   issuerPNR			IA5String 					OPTIONAL,
      	

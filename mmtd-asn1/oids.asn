@@ -74,6 +74,9 @@ uicRailTicketDataV3-0-5 OBJECT IDENTIFIER ::= { uicFcbAsn1Modules rtd(2) v3(3) 5
 -- UIC Rail Ticket Data - version 3.0.6
 uicRailTicketDataV3-0-6 OBJECT IDENTIFIER ::= { uicFcbAsn1Modules rtd(2) v3(3) 6 }
 
+-- UIC Rail Ticket Data - version 3.0.7
+uicRailTicketDataV3-0-7 OBJECT IDENTIFIER ::= { uicFcbAsn1Modules rtd(2) v3(3) 7 }
+
 -- FCB Dynamic Content Data - version 1.0.0
 uicDynamicContentDataV1-0-0 OBJECT IDENTIFIER ::= { uicFcbAsn1Modules dcd(3) v1(1) 0 }
 
