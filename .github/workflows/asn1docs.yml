@@ -1,5 +1,8 @@
 name: "ASN.1 Documentation"
-on: [ push ]
+on:
+  push:
+    branches:
+      - root
 jobs:
   build:
     runs-on: ubuntu-latest
