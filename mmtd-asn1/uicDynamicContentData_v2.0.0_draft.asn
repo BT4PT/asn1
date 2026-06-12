@@ -3,16 +3,10 @@ DynamicContentData { iso(1) identified-organization(3) dod(6)
     DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
 EXPORTS DynamicContent, dynamicContentData;
-IMPORTS Timestamp, GeoCoordinate, Data, DATA-ELEMENT, cuperEncoding
+IMPORTS GenericId, Timestamp, GeoCoordinate, Data, DATA-ELEMENT, cuperEncoding
  FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
 
 DynamicContent ::= SEQUENCE {
-    /**
-    * Identification of the mobile application that generated the barcode and filled in the dynamic part.
-    * Values as defined by the security provider.
-    */
-    dynamicContentMobileAppId           VisibleString       OPTIONAL,
-
     /**
     * Generation time of the dynamic content.
     */
@@ -27,6 +21,20 @@ DynamicContent ::= SEQUENCE {
         ...,
         format (ALL EXCEPT ("!I" | "!C" | "!P"))
     }),
+
+    /**
+    * A unique ID for this instance of a dynamic barcode (i.e. updated each time the dynamic segment is regenerated).
+    * This field **SHALL NOT** be used in assessing the validity of a ticket, it exists for debugging purposes.
+    * This field has no relation to any ticket ID in any ticket control database.
+    */
+    dynamicContentId                    GenericId           OPTIONAL,
+
+    /**
+    * Traceability information linked to the about the application that generated the barcode and filled in the dynamic part.
+    * Values as defined by the security provider.
+    * This field **SHALL NOT** be used in assessing the validity of a ticket, it exists for debugging purposes.
+    */
+    dynamicContentTraceability          VisibleString       OPTIONAL,
 
     ...
 }
