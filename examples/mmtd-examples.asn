@@ -314,37 +314,6 @@ dbIceTicket MultiModalTicket ::= {
             },
             directionIsMandatory TRUE,
             classCode second,
-            includedServiceBrand {{
-                /**
-                * The UIC assigned number for an ICE.
-                */
-                serviceBrand 51
-            }, {
-                /**
-                * The UIC assigned number for an EC.
-                */
-                serviceBrand 50
-            }, {
-                /**
-                * The UIC assigned number for an IC.
-                */
-                serviceBrand 63
-            }, {
-                /**
-                * The UIC assigned number for an interregional service.
-                */
-                serviceBrand 69
-            }, {
-                /**
-                * The UIC assigned number for a suburban service.
-                */
-                serviceBrand 62
-            }, {
-                /**
-                * The UIC assigned number for a generic bus.
-                */
-                serviceBrand 269
-            }},
             tariff {{
                 numberOfPassengers 1,
                 age ageRange : {
@@ -370,7 +339,13 @@ dbIceTicket MultiModalTicket ::= {
             }}
         },
         specificConditions {{
-            includedCarrier {orgCode : "1080"},
+            /**
+            * A DB ICE ticket is valid on all DB trains, and those operating under the Deutschlandtarif.
+            */
+            includedCarrier {
+                orgCode : "1080",
+                orgCode : "3642"
+            },
             directionIsMandatory TRUE,
             transportService transportLink : {{
                 transportNumber {publicIdentifier : "ICE563"},
@@ -394,7 +369,13 @@ dbIceTicket MultiModalTicket ::= {
                 }
             }}
         }, {
-            includedCarrier {orgCode : "1080"},
+            /**
+            * A DB ICE ticket is valid on all DB trains, and those operating under the Deutschlandtarif.
+            */
+            includedCarrier {
+                orgCode : "1080",
+                orgCode : "3642"
+            },
             directionIsMandatory TRUE,
             transportService transportLink : {{
                 transportNumber {publicIdentifier : "ICE379"},
