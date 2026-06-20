@@ -346,27 +346,27 @@ IssuingData ::= SEQUENCE {
     /**
     * Issuer of the binary content of the transport document, if different from the security provider as encoded in the barcode header.
     */
-    issuer                         CompanyCode                 OPTIONAL,
+    issuer              CompanyCode                 OPTIONAL,
 
-    issuedAt                        Timestamp,
+    issuedAt            Timestamp,
 
     /**
     * Specimen indicates a test specimen not valid for traveling.
     */
-    specimen                       BOOLEAN,
+    specimen            BOOLEAN,
 
-    securePaperTicket              SecurePaperTicket,
+    securePaperTicket   SecurePaperTicket,
 
     /**
     * Currency of the price - ISO 4217 numeric currency code.
     * Default 978 = Euro.
     */
-    currency                       INTEGER (0..999)              DEFAULT 978,
+    currency            INTEGER (0..999)              DEFAULT 978,
 
     /**
     * Fraction of the prices included.
     */
-    currencyFract                  INTEGER (0..3)                DEFAULT 2,
+    currencyFract       INTEGER (0..3)                DEFAULT 2,
 
     /**
     * ID to uniquely identify this barcode within the context of the issuer and an appropriate time range.
@@ -391,7 +391,7 @@ IssuingData ::= SEQUENCE {
     /**
     * Information about how the document was sold.
     */
-    productRetail                  ProductRetailData             OPTIONAL,
+    productRetail       ProductRetailData             OPTIONAL,
 
     /**
     * ISO 639-1 coding (lower case) of the language preferred for the traveler / ticket holder.
@@ -2110,7 +2110,7 @@ ComplexRouteType ::= SEQUENCE {
     * Information about the change of the service at this route item:
     *  - TRUE: change is mandatory
     *  - FALSE: change is forbidden
-    ** - omitted if change is allowed but not mandatory
+    *  - omitted if change is allowed but not mandatory
     */
     changeOfService                  BOOLEAN                        OPTIONAL,
 
@@ -2141,7 +2141,7 @@ RouteItemType ::= CHOICE {
     /**
     * The route item is a list of stations along the route.
     */
-    route                                SEQUENCE OF ComplexRouteType,
+    route                                ComplexRouteType,
 
     /**
     * The route item is a list of alternative routes, one of these has to be taken.
@@ -2393,7 +2393,7 @@ ServiceType ::= ENUMERATED {
 }
 
 PassengerType ::= ENUMERATED {
-    adult             (0),
+    person            (0),
     senior            (1),
     child             (2),
     youth             (3),

@@ -23,6 +23,7 @@ jobs:
           files: |
             mmtd-asn1/*.asn
             old-asn1/*.asn
+            examples/*.asn
       - name: Build ASN.1 Docs
         run: python3 -m asn1docs -o docs_out/ ${{ steps.glob.outputs.paths }}
       - name: Upload docs as artifact
