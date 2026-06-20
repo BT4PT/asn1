@@ -100,7 +100,7 @@ dbIceTicket MultiModalTicket ::= {
         geoValidity {{
             validitySegment complexRoute : {
                 /**
-                * This route is a conversion of the 180.1 via string "<1080>NK*HOM*NW*(WO/HD)*F*(GI/FD)*(H/HI)".
+                * This route is a conversion of the 180.1 via string `<1080>NK*HOM*NW*(WO/HD)*F*(GI/FD)*(H/HI)`.
                 * Unicode names have been given for the start and end stations, in case a reader does not have the
                 * ERA primary location code reference to hand. They have been omitted in the valid routing, for space
                 * reasons.
@@ -200,7 +200,7 @@ dbIceTicket MultiModalTicket ::= {
         returnGeoValidity {{
             validitySegment complexRoute : {
                 /**
-                * This route is a conversion of the 180.1 via string "<1080>(HI/H)*GOE*(FD*F*MA/KS*GI)".
+                * This route is a conversion of the 180.1 via string `<1080>(HI/H)*GOE*(FD*F*MA/KS*GI)`.
                 */
                 routeItem {station : {
                     /**
@@ -319,6 +319,31 @@ dbIceTicket MultiModalTicket ::= {
                 * The UIC assigned number for an ICE.
                 */
                 serviceBrand 51
+            }, {
+                /**
+                * The UIC assigned number for an EC.
+                */
+                serviceBrand 50
+            }, {
+                /**
+                * The UIC assigned number for an IC.
+                */
+                serviceBrand 63
+            }, {
+                /**
+                * The UIC assigned number for an interregional service.
+                */
+                serviceBrand 69
+            }, {
+                /**
+                * The UIC assigned number for a suburban service.
+                */
+                serviceBrand 62
+            }, {
+                /**
+                * The UIC assigned number for a generic bus.
+                */
+                serviceBrand 269
             }},
             tariff {{
                 numberOfPassengers 1,
