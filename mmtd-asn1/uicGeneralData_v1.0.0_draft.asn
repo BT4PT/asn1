@@ -23,8 +23,8 @@ GenericId ::= CHOICE {
     idOct   OCTET STRING    -- for binary IDs such as UUIDs
 }
 
-GenericCode{IdType} ::= SEQUENCE {
-    codeTable CHOICE {
+CodeTable ::= SEQUENCE {
+    owner CHOICE {
         /**
         * ID values defined by the document issuer.
         */
@@ -50,7 +50,18 @@ GenericCode{IdType} ::= SEQUENCE {
         */
         company         CompanyCode
     },
-    codeTableVersion INTEGER (0..255) OPTIONAL,
+    version INTEGER (0..255) DEFAULT 0
+}
+
+CODE-TABLE-IDENTIFIER ::= CLASS {
+    &table CodeTable UNIQUE,
+    &name UTF8String
+} WITH SYNTAX {
+    &table MEANING &name
+}
+
+GenericCode{IdType, CODE-TABLE-IDENTIFIER: TableSet} ::= SEQUENCE {
+    codeTable CODE-TABLE-IDENTIFIER.&table({TableSet}),
     id IdType
 }
 
@@ -65,9 +76,29 @@ Station ::= SEQUENCE {
         * - A 9 digit code (2-digit scope code + country code + 5 digit local code) defines a non-rail station code.
         */
         era         INTEGER (1..999999999),
-        generic     GenericCode{GenericId}
+        generic     GenericCode{GenericId, StationCodeTables}
     },
     stationNameUTF8     UnicodeText OPTIONAL
+}
+
+StationCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner company : orgCode : "1170",
+        version 0
+    } MEANING "UK National Location Code"} | -- SHALL NOT be used except when an NLC contains letters, and thus can't be turned into an ERA PLC.
+    {{
+        owner national : 826,
+        version 0
+    } MEANING "UK NaPTAN Code"} |
+    {{
+        owner national : 276,
+        version 0
+    } MEANING "ZHV Deutschlandweite Haltestellen-ID"} | -- DHIDs are encoded without the `de:` prefix
+    {{
+        owner national : 756,
+        version 0
+    } MEANING "Swiss LOcation IDentification"}, -- Encoded without the `ch:1:sloid:` prefix,
+    ...
 }
 
 StationSet ::= SEQUENCE {
@@ -92,7 +123,19 @@ LineId ::= CHOICE {
     * e.g. "RE1".
     */
     publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
-    generic             GenericCode{GenericId}
+    generic             GenericCode{GenericId, LineIdCodeTables}
+}
+
+LineIdCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 276,
+        version 0
+    } MEANING "VDV 431-2 Line ID"} | -- Line IDs are encoded without the `de:` prefix
+    {{
+        owner national : 756,
+        version 0
+    } MEANING "Swiss LiNe IDentification"}, -- Encoded without the `ch:1:slnid:` prefix,
+    ...
 }
 
 /**
@@ -103,7 +146,23 @@ TransportId ::= CHOICE {
     * e.g. "ICE107".
     */
     publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
-    generic             GenericCode{GenericId}
+    generic             GenericCode{GenericId, TransportIdCodeTables}
+}
+
+TransportIdCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 276,
+        version 0
+    } MEANING "VDV 431-2 Journey ID"} | -- Journey IDs are encoded without the `de:` prefix
+    {{
+        owner company : orgCode : "1170",
+        version 0
+    } MEANING "RDG Unique Train Identifier"} |
+    {{
+        owner national : 756,
+        version 0
+    } MEANING "Swiss JourneY IDentification"}, -- Encoded without the `ch:1:sjyid:` prefix,
+    ...
 }
 
 /**
@@ -152,8 +211,10 @@ AreaSet ::= CHOICE {
         * e.g. bitmap of allowed areas/zones such as `'10101110010'B` for areas/zones 2, 5, 6, 7, 9 and 11.
         */
         idBit    BIT STRING
-    }}
+    }, AreaCodeTables}
 }
+
+AreaCodeTables CODE-TABLE-IDENTIFIER ::= { ... }
 
 /**
 * Place data according to TEL TSI B.5.
@@ -360,7 +421,9 @@ COMPANY-CODE-FORMAT ::= CLASS {
 }
 
 CompanyCodeFormats COMPANY-CODE-FORMAT ::= {
-    { "VDV" MEANING "Verband Deutscher Verkehrsunternehmen Organisation ID" },
+    { "+DEVDV" MEANING "Verband Deutscher Verkehrsunternehmen Organisation ID" } |
+    { "+GBNOC" MEANING "Traveline National Operator Code" } |
+    { "+CHSBOID" MEANING "Swiss Business Organisation Identification" }, -- Encoded without the `ch:1:sboid:` prefix.
     ...
 }
 

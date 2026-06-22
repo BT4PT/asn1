@@ -404,7 +404,7 @@ dbIceTicket MultiModalTicket ::= {
                 * DB Vertrieb GmbH, in the VDV's ecosystem.
                 */
                 productOwner otherCode : {
-                    format "VDV",
+                    format "+DEVDV",
                     code "6262"
                 },
                 /**
@@ -417,7 +417,7 @@ dbIceTicket MultiModalTicket ::= {
             */
             reference idNum : 1235233072,
             referenceCompany otherCode : {
-                format "VDV",
+                format "+DEVDV",
                 code "6262"
             },
             /**
@@ -524,38 +524,16 @@ ukTicket MultiModalTicket ::= {
         geoValidity {{
             validitySegment originDestination : {
                 originStation {
-                    station generic : {
-                        /**
-                        * Code table company is used here, rather than code table national, as national codes in
-                        * in the UK would be a NaPTAN code.
-                        */
-                        codeTable company : otherCode : {
-                            format "_1170XX",
-                            /**
-                            * Whatever the ID of the company that assigns NLCs is.
-                            */
-                            code "XX"
-                        },
-                        /**
-                        * NLC of Stansted Airport
-                        */
-                        id idNum : 6834
-                    }
+                    /**
+                    * NLC of Stansted Airport is 6834. UK UIC codes are formed as `70[NLC]0`.
+                    */
+                    station era : 7068340
                 },
                 destinationStation {
-                    station generic : {
-                        codeTable company : otherCode : {
-                            format "_1170XX",
-                            /**
-                            * Whatever the ID of the company that assigns NLCs is.
-                            */
-                            code "XX"
-                        },
-                        /**
-                        * NLC of London Terminals
-                        */
-                        id idNum : 1072
-                    }
+                    /**
+                    * NLC of London Terminals is 1072.
+                    */
+                    station era : 7010720
                 }
             }
         }},
@@ -628,7 +606,14 @@ ukTicket MultiModalTicket ::= {
                 * `activatedReturnDays` is not set, as the return is valid for the whole duration of the ticket.
                 */
                 activatedDay {0, 1, 3, 4}
-            }
+            },
+            includedCarrier {otherCode : {
+                format "+GBNOC",
+                /**
+                * Traveline NOCs can be constructed from rail operator IDs by prefixing `=`.
+                */
+                code "=LE"
+            }}
         }
     }}
 }

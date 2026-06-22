@@ -72,9 +72,9 @@ MultiModalTicketData { iso(1) identified-organization(3) dod(6)
     DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
 EXPORTS MultiModalTicket, multiModalTicketData;
-IMPORTS GenericId, GenericCode, CompanyCode, Station, StationSet, AreaSet, NUTSArea, LineId, TransportId,
- GeoCoordinate, GeoUnit, CoachPlaces, Data, DATA-ELEMENT, cuperEncoding, UnicodeText, Timestamp, SharedVehicleVariety,
- SharedVehiclePropulsionType, SharedVehicleReturnConstraint
+IMPORTS GenericId, GenericCode, CODE-TABLE-IDENTIFIER, CompanyCode, Station, StationSet, AreaSet, NUTSArea, LineId,
+ TransportId, GeoCoordinate, GeoUnit, CoachPlaces, Data, DATA-ELEMENT, cuperEncoding, UnicodeText, Timestamp,
+ SharedVehicleVariety, SharedVehiclePropulsionType, SharedVehicleReturnConstraint
  FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
 
 /**
@@ -1142,7 +1142,7 @@ ConditionsType ::= SEQUENCE {
     *   - In France, the codeTable of national can be used to refer to an Afnor network/region ID, e.g. to refer to the
     *      Maconnais Beaujolais Agglomération: `{ codeTable national : 250, id idNum : 145 }`
     */
-    coveringNetwork                 SEQUENCE OF GenericCode{GenericId}                      OPTIONAL,
+    coveringNetwork                 SEQUENCE OF GenericCode{GenericId, NetworkCodeTables}                      OPTIONAL,
 
     /**
     * Identification of the product (owner, id, textual description).
@@ -1243,6 +1243,14 @@ ConditionsType ::= SEQUENCE {
 
     rareDetails                     RareDetailsType                                         OPTIONAL,
 
+    ...
+}
+
+NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 250,
+        version 0
+    } MEANING "NF P99-502 NAO (France)"},
     ...
 }
 
