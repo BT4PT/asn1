@@ -551,13 +551,7 @@ ukTicket MultiModalTicket ::= {
                 country 826
             }},
             product {
-                productOwner otherCode : {
-                    format "_1170XX",
-                    /**
-                    * Whatever the ID of the RDG itself is.
-                    */
-                    code "XX"
-                },
+                productOwner orgCode : "1170",
                 /**
                 * Anytime return.
                 */
@@ -569,13 +563,7 @@ ukTicket MultiModalTicket ::= {
                 passengerType person,
                 reductionCard {{
                     product {
-                        productOwner otherCode : {
-                            format "_1170XX",
-                            /**
-                            * Whatever the ID of the RDG itself is.
-                            */
-                            code "XX"
-                        },
+                        productOwner orgCode : "1170",
                         /**
                         * 16-26 Railcard
                         */
