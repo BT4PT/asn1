@@ -157,7 +157,7 @@ TransportIdCodeTables CODE-TABLE-IDENTIFIER ::= {
     {{
         owner company : orgCode : "1170",
         version 0
-    } MEANING "RDG Unique Train Identifier"} |
+    } MEANING "RDG UID"} |
     {{
         owner national : 756,
         version 0
