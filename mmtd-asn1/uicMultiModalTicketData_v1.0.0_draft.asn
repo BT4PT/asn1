@@ -1209,7 +1209,7 @@ ConditionsType ::= SEQUENCE {
     /**
     * Included transport modes. Code list: EN 1545-1 (transport type code).
     */
-    includedTransportType           SEQUENCE OF INTEGER (0..31)                             OPTIONAL,
+    includedTransportType           SEQUENCE (SIZE(1..31) OF INTEGER (0..31)                OPTIONAL,
 
     /**
     * Service brands valid for the route.
@@ -1299,14 +1299,14 @@ RareTimingConditionsType ::= SEQUENCE {
     * Travel days of a ticket might be subject to a separate activation to be valid for traveling.
     * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil`.
     */
-    activatedDay                            SEQUENCE OF INTEGER (0..500)                    OPTIONAL,
+    activatedDay                            SEQUENCE (SIZE(1..501) OF INTEGER (0..500)      OPTIONAL,
 
     /**
     * In case of a return ticket only: list of activated days for the return journey.
     * Same use as `activatedDay` but for the return journey
     * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil` for the return journey.
     */
-    activatedReturnDay                      SEQUENCE OF INTEGER (0..500)                    OPTIONAL,
+    activatedReturnDay                      SEQUENCE (SIZE(1..501)) OF INTEGER (0..500)     OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
@@ -1345,7 +1345,7 @@ RareDetailsType::= SEQUENCE {
     * In case this list is provided, the ticket is valid on all other transport modes,
     *  and `includedTransportType` (in `ConditionsType`) **SHALL NOT** be used.
     */
-    excludedTransportType   SEQUENCE OF INTEGER (0..31)                         OPTIONAL,
+    excludedTransportType   SEQUENCE (SIZE(1..32) OF INTEGER (0..31)            OPTIONAL,
 
     /**
     * Excluded service brands for the route.
@@ -1409,7 +1409,8 @@ StationPassageData ::= SEQUENCE {
     * List of areas in a station where the access is allowed.
     * The code table used to identify the areas depends on the station.
     */
-area                SEQUENCE OF GenericId                                   OPTIONAL,
+    area                SEQUENCE OF GenericId                               OPTIONAL,
+
     /**
     * Readable area names.
     * This field, if present, **MUST** be of equal length to the `area` field.
@@ -1648,7 +1649,7 @@ TariffType ::= SEQUENCE {
     * Link to the traveler in case the travelers have to be named (e.g. Eurail passes).
     * The number indicates the position in the traveler sequence starting from 1.
     */
-    travelerId          SEQUENCE OF INTEGER (1..254)    OPTIONAL,
+    travelerId          SEQUENCE (SIZE(1..254)) OF INTEGER (1..254) OPTIONAL,
 
     /**
     * Validity restriction based on the traveler's country of residence.
