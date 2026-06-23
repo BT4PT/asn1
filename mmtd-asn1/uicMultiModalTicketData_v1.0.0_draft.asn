@@ -1209,7 +1209,7 @@ ConditionsType ::= SEQUENCE {
     /**
     * Included transport modes. Code list: EN 1545-1 (transport type code).
     */
-    includedTransportType           SEQUENCE (SIZE(1..31) OF INTEGER (0..31)                OPTIONAL,
+    includedTransportType           SEQUENCE (SIZE(1..31)) OF INTEGER (0..31)                OPTIONAL,
 
     /**
     * Service brands valid for the route.
@@ -1299,7 +1299,7 @@ RareTimingConditionsType ::= SEQUENCE {
     * Travel days of a ticket might be subject to a separate activation to be valid for traveling.
     * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil`.
     */
-    activatedDay                            SEQUENCE (SIZE(1..501) OF INTEGER (0..500)      OPTIONAL,
+    activatedDay                            SEQUENCE (SIZE(1..501)) OF INTEGER (0..500)      OPTIONAL,
 
     /**
     * In case of a return ticket only: list of activated days for the return journey.
@@ -1345,7 +1345,7 @@ RareDetailsType::= SEQUENCE {
     * In case this list is provided, the ticket is valid on all other transport modes,
     *  and `includedTransportType` (in `ConditionsType`) **SHALL NOT** be used.
     */
-    excludedTransportType   SEQUENCE (SIZE(1..32) OF INTEGER (0..31)            OPTIONAL,
+    excludedTransportType   SEQUENCE (SIZE(1..32)) OF INTEGER (0..31)            OPTIONAL,
 
     /**
     * Excluded service brands for the route.

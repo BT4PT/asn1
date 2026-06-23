@@ -606,4 +606,51 @@ ukTicket MultiModalTicket ::= {
     }}
 }
 
+ukRailcard MultiModalTicket ::= {
+    issuingDetail {
+        issuer otherCode : {
+            format "_1170XX",
+            code "R5"
+        },
+        issuedAt {
+            year 2025,
+            day 76,
+            time 1226
+        },
+        specimen TRUE,
+        securePaperTicket notOnSecurePaper,
+        ticketControlNumber idIA5 : "GCB4L298N",
+        currency 826,
+        productRetail {
+            retailerId otherCode : {
+                format "_1170XX",
+                code "R5"
+            },
+            retailChannel mobileApplication,
+            retailPointId idNum : 1001
+        }
+    },
+    traveler {{
+        firstName '4D6178'H,
+        lastName '4D75737465726D616E6E'H,
+        language "de"
+    }},
+    transportDocument {customerCard : {
+        individualCardId idIA5 : "11ZMK1000000136",
+        classCode notApplicable,
+        product {
+            productOwner orgCode : "1170",
+            productId productIdIA5 : "FAM"
+        },
+        validFrom {
+            validFromDay 0,
+            validFromTime 0
+        },
+        validUntil {
+            validUntilDay 365,
+            validUntilTime 1440
+        }
+    }}
+}
+
 END
