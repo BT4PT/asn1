@@ -653,4 +653,46 @@ ukRailcard MultiModalTicket ::= {
     }}
 }
 
+dbBahncard MultiModalTicket ::= {
+    issuingDetail {
+        issuer orgCode : "1080",
+        issuedAt {
+            year 2025,
+            day 361,
+            time 0
+        },
+        specimen TRUE,
+        securePaperTicket notOnSecurePaper,
+        ticketControlNumber idIA5 : "1-2NHJW6CT"
+    },
+    controlDetail {
+        onlineValidationRequired optional,
+        onlineValidationType eTCD,
+        identificationRequired TRUE,
+        ageCheckRequired FALSE,
+        reductionCardCheckRequired FALSE
+    },
+    traveler {{
+        firstName '51'H,
+        lastName '4D6973656C6C'H,
+        language "de"
+    }},
+    transportDocument {customerCard : {
+        individualCardId idNum : 7081411227884182,
+        classCode second,
+        product {
+            productOwner orgCode : "1080",
+            productId productIdIA5 : "BC50"
+        },
+        validFrom {
+            validFromDay 159,
+            validFromTime 0
+        },
+        validUntil {
+            validUntilDay 189,
+            validUntilTime 1440
+        }
+    }}
+}
+
 END
