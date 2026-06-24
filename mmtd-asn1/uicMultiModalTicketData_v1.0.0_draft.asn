@@ -311,8 +311,9 @@ DelayConfirmation ::= SEQUENCE {
         additionalCarrier       SEQUENCE OF CompanyCode,
         /**
         * Additional service brands the passenger is permitted to travel in.
+        * Per TEL TSI Code List B.4.7009.
         */
-        additionalServiceBrand  SEQUENCE OF ServiceBrandType
+        additionalServiceBrand  SEQUENCE OF INTEGER (1..32000)
     } OPTIONAL,
 
     /**
@@ -813,14 +814,15 @@ TransportLinkType ::= SEQUENCE {
     * Service brand.
     * Omitted if this specific service brand is already specified in the associated leg, and is the only one that is specified for this leg
     * (a leg can allow many service brands, but a transport link only specifies one).
+    * Per TEL TSI Code List B.4.7009.
     */
-    serviceBrand            ServiceBrandType                                        OPTIONAL,
+    serviceBrand            INTEGER (1..32000)                                       OPTIONAL,
 
     /**
     * Per TEL TSI Code List B.5.308.
-    * Omitted if the same service level is already specified in the description of the associated leg.
+    * Omitted if the same fare code is already specified in the description of the associated leg.
     */
-    serviceLevel            VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
+    fareCode                VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
 
     ...
 }
@@ -872,16 +874,17 @@ ReservationSegmentType ::= SEQUENCE {
     classCode               TravelClassType                                         DEFAULT second,
 
     /**
-    * Omitted if this specific service brand is already specified in the associated leg, and is the only one that is specified for this leg.
+    * Omitted if this specific service brand is already specified in the associated leg, and is the only one that is specified for this leg
     * (a leg can allow many service brands, but a reservation only specifies one).
+    * Per TEL TSI Code List B.4.7009.
     */
-    serviceBrand            ServiceBrandType                                        OPTIONAL,
+    serviceBrand            INTEGER (1..32000)                                       OPTIONAL,
 
     /**
     * Per TEL TSI Code List B.5.308.
-    * Omitted if the same service level is already specified in the description of the associated leg.
+    * Omitted if the same fare code is already specified in the description of the associated leg.
     */
-    serviceLevel            VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
+    fareCode                VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
 
     /**
     * Per TEL TSI B.5.
@@ -1212,10 +1215,10 @@ ConditionsType ::= SEQUENCE {
     includedTransportType           SEQUENCE (SIZE(1..31)) OF INTEGER (0..31)                OPTIONAL,
 
     /**
-    * Service brands valid for the route.
+    * Service brands valid for the route. Per TEL TSI Code List B.4.7009.
     * In case this list is provided the ticket is invalid on all other service brands.
     */
-    includedServiceBrand            SEQUENCE OF ServiceBrandType                            OPTIONAL,
+    includedServiceBrand            SEQUENCE OF INTEGER (1..32000)                           OPTIONAL,
 
     /**
     * Travel class.
@@ -1226,7 +1229,7 @@ ConditionsType ::= SEQUENCE {
     /**
     * Per TEL TSI Code List B.5.308.
     */
-    serviceLevel                    VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
+    fareCode                        VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
 
     /**
     * Tariff data (allowed passengers characteristics, discount cards used...)
@@ -1348,11 +1351,11 @@ RareDetailsType::= SEQUENCE {
     excludedTransportType   SEQUENCE (SIZE(1..32)) OF INTEGER (0..31)            OPTIONAL,
 
     /**
-    * Excluded service brands for the route.
+    * Excluded service brands for the route. Per TEL TSI Code List B.4.7009.
     * In case this list is provided, the ticket is valid on all other service brands,
     *  and `includedServiceBrand` (in `ConditionsType`) **SHALL NOT** be used.
     */
-    excludedServiceBrand    SEQUENCE OF ServiceBrandType                        OPTIONAL,
+    excludedServiceBrand    SEQUENCE OF INTEGER (1..32000)                       OPTIONAL,
 
     /**
     * Price of the transport product (if in `generalConditions`) or of the segment (if in `specificConditions`),
@@ -2350,15 +2353,6 @@ TicketDetailsType ::= SEQUENCE {
     */
     additionalReservationRequired BOOLEAN            DEFAULT FALSE,
     ...
-}
-
-/**
-* Identifies a train service uniquely in combination with train number and departure date.
-* Code list: [uic.org/service-brand-code-list](https://uic.org/service-brand-code-list).
-*/
-ServiceBrandType ::= SEQUENCE {
-    serviceBrand        INTEGER (1..32000)  OPTIONAL,
-    serviceBrandAbrUTF8 UnicodeText         OPTIONAL
 }
 
 TicketCategoryType ::= ENUMERATED {
