@@ -667,7 +667,7 @@ dbBahncard MultiModalTicket ::= {
     },
     controlDetail {
         onlineValidationRequired optional,
-        onlineValidationType eTCD,
+        onlineValidationType eTCD : NULL,
         identificationRequired TRUE,
         ageCheckRequired FALSE,
         reductionCardCheckRequired FALSE
