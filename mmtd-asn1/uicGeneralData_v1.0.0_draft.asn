@@ -409,7 +409,7 @@ CompanyCode ::= CHOICE {
         * All values **SHOULD** be registered via the UIC Github repository.
 		*/
 		format      COMPANY-CODE-FORMAT.&id({CompanyCodeFormats}),
-		code        VisibleString
+		code        VisibleString (SIZE(1..8,...))
 	}
 }
 
