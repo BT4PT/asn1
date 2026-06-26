@@ -40,7 +40,15 @@ BarcodeHeader ::= SEQUENCE {
     *  format of barcode header.
     */
     format      OCTET STRING (SIZE(2)),
-    contents    StandardSignedData{Level2Data, NULL}
+    contents    SEQUENCE {
+        level2Data      Level2Data,
+        /**
+        * If the the `BarcodeData.level2PublicKey` field is unset, and this field is set, the barcode is invalid.
+        * If the the `BarcodeData.level2PublicKey` field is set, and this field is unset, the barcode is invalid.
+        * The signature is calculated over the CUPER encoding of `Level2Data`.
+        */
+        level2Signature Signature OPTIONAL
+    }
 }
 
 Level2Data ::= SEQUENCE {
@@ -54,6 +62,41 @@ Level2Data ::= SEQUENCE {
     }) OPTIONAL
 }
 
+Level1Data ::= CHOICE {
+    /**
+    * Only permitted where no security is required.
+    * In this case, `BarcodeData.level2PublicKey` **MUST** be unset.
+    */
+    unsigned                BarcodeData,
+    standardSigned          SEQUENCE {
+        keyReference    CompanyKeyReference,
+        data            BarcodeData,
+        /**
+        * Signature calculated over the CUPER encoding of `BarcodeTBSData`.
+        */
+        signature       Signature
+    },
+    messageRecoverySigned   SEQUENCE {
+        keyReference    CompanyKeyReference,
+        /**
+        * Signed content is `BarcodeData`.
+        */
+        data            MessageRecoverySignature
+    },
+    subIssued               SEQUENCE {
+        certificate     EndEntityCertificate,
+        /**
+        * Signed content is `BarcodeData`.
+        */
+        data            MessageRecoverySignature
+    }
+}
+
+BarcodeTBSData ::= SEQUENCE {
+    keyReference    CompanyKeyReference,
+    data            BarcodeData
+}
+
 /**
 * Provider of the level 1 signature.
 */
@@ -62,72 +105,12 @@ CompanyKeyReference ::= SEQUENCE {
     keyId               INTEGER (0..99999)
 }
 
-Level1Data ::= CHOICE {
-    /**
-    * Must use the standard variety, message recovery format to be decided upon at a later date.
-    * Standard variety signature calculated over `BarcodeTBSData`.
-    */
-    directlyIssued  SignedData{BarcodeData, CompanyKeyReference},
-    /**
-    * Must not be used, format to be decided upon at a later date.
-    */
-    subIssued       SEQUENCE {
-        /**
-        * Standard variety signature calculated over `EndEntityCertificateTBSData`.
-        */
-        endEntityCertificate    SignedData{EndEntityCertificate, CompanyKeyReference},
-        barcodeData             SignedData{BarcodeData, NULL}
-    }
-} (CONSTRAINED BY {
-    -- The directlyIssued variant must be used, subIssued to be defined at a later date.
-})
-
-/**
-* Concretely parameterised form for use in calculating the signature for the `directlyIssued` variant of `Level1Data`.
-*/
-BarcodeTBSData ::= StandardTBSData{BarcodeData, CompanyKeyReference}
-/**
-* Concretely parameterised form for use in calculating the signature for the `subIssued.endEntityCertificate` variant of `Level1Data`.
-*/
-EndEntityCertificateTBSData ::= StandardTBSData{EndEntityCertificate, CompanyKeyReference}
-
-SignedData{DataType, KeyReference} ::= CHOICE {
-    standard        StandardSignedData{DataType, KeyReference},
-    messageRecovery MessageRecoverySignature
-} (CONSTRAINED BY {
-    -- The standard variant must be used, message recovery to be defined at a later date.
-})
-
-/**
-* Standardised container for conveying a message with an optional signature providing authenticity and integrity guarantees.
-* @DataType The type defining the message to be conveyed.
-* @KeyReference The type allowing differentiation of which key pair was used to sign the message.
-*/
-StandardSignedData{DataType, KeyReference} ::= SEQUENCE {
-    tbs         DataType,
-    /**
-    * The signature is calculated over the canonical unaligned PER (CUPER) encoding of `StandardTBSData{DataType, KeyReference}`.
-    * Note: when `KeyReference` is NULL this is equivalent to the CUPER encoding of `DataType`.
-    *
-    * Being unset only permitted when no security is required.
-    */
-    signature   SEQUENCE {
-        keyReference    KeyReference,
-        data            Signature
-    } OPTIONAL
-}
-
-StandardTBSData{DataType, KeyReference} ::= SEQUENCE {
-    keyReference    KeyReference,
-    tbs             DataType
-}
-
 /**
 * Values taken from the IANA [JSON Web Signature and Encryption Algorithm registry](https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms).
 */
 Signature ::= CHOICE {
     /**
-    * ECDSA using the P-256 curve and SHA-256.
+    * ECDSA using the NIST P-256 curve and SHA-256.
     */
     es256       DSSSignature{32},
     /**
@@ -195,6 +178,35 @@ DSSSignature{INTEGER: len} ::= SEQUENCE {
     s OCTET STRING (SIZE(len))
 }
 
+MessageRecoverySignature ::= CHOICE {
+    /**
+    * NIST P-256 curve and SHA-256.
+    */
+    es256   ECKNRSignature{32},
+    /**
+    * secp256k1 curve and SHA-256.
+    */
+    es256k  ECKNRSignature{32},
+    /**
+    * NIST P-384 curve and SHA-384.
+    */
+    es384   ECKNRSignature{48},
+    /**
+    * NIST P-521 curve and SHA-512.
+    */
+    es512   ECKNRSignature{66}
+}
+
+/**
+* Message recovery signature as per ISO/IEC 9796-3:2006 Sec. 13 (ECKNR).
+* @len The length, in bytes, of each of `r` and `s`. That is, half the total signature length.
+*/
+ECKNRSignature{INTEGER: len} ::= SEQUENCE {
+    r OCTET STRING (SIZE(len)),
+    s OCTET STRING (SIZE(len)),
+    remainder OCTET STRING
+}
+
 PublicKey ::= CHOICE {
     nistP256    ECPublicKey{32},
     secp256K1   ECPublicKey{32},
@@ -220,14 +232,34 @@ ECPublicKey{INTEGER: len} ::= SEQUENCE {
     yIsOdd BOOLEAN
 }
 
-/**
-* Purposefully left blank, format to be decided upon at a later date.
-*/
-MessageRecoverySignature ::= NULL
-/**
-* Purposefully left blank, format to be decided upon at a later date.
-*/
-EndEntityCertificate ::= NULL
+EndEntityCertificate ::= SEQUENCE {
+    serial INTEGER (1..16777216),
+    issuer CompanyKeyReference,
+    validUntilYear INTEGER (2026..2279),
+    validUntilDay INTEGER (1..366),
+    /**
+    * The public key **MUST** be of the same EC curve as the issuing certificate's public key.
+    * If it is not the certificate **MUST** be treated as invalid.
+    */
+    subjectPublicKey CHOICE {
+        nistP256    ECPublicKey{32},
+        secp256K1   ECPublicKey{32},
+        nistP384    ECPublicKey{48},
+        nistP521    ECPublicKey{66}
+    },
+    extensions SEQUENCE OF CertificateExtension (SIZE(0..15))
+}
+
+CertificateExtension ::= SEQUENCE {
+    extension   Data{CertificateExtensions},
+    /**
+    * If the extension format is not recognised, or can't be processed, and it is marked critical, the certificate **MUST** be treated as invalid;
+    * otherwise, it is permitted to ignore extensions not understood.
+    */
+    critical    BOOLEAN
+}
+
+CertificateExtensions DATA-ELEMENT ::= { ... }
 
 BarcodeData ::= SEQUENCE {
     /**
@@ -237,21 +269,17 @@ BarcodeData ::= SEQUENCE {
         ...,
         format (ALL EXCEPT ("!I" | "!C" | "!P"))
     }),
-
     level2PublicKey     PublicKey                       OPTIONAL,
-
     /**
     * End of the validity of the barcode.
     * After this date and time the barcode needs to be regenerated by the provider of the ticket.
     * The provider of the bar code **MUST** ensure that the endOfValidity given here does not exceed the validity of the key pair used on level 2.
     */
     endOfValidity       Timestamp                       OPTIONAL,
-
     /**
     * Validity duration in seconds of the barcode with reference to the time stamp in the dynamic content data.
     */
    	validityDuration    INTEGER (1..3600)               OPTIONAL,
-
    	...
 }
 
