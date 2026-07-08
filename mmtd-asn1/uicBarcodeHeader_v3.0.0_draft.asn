@@ -252,7 +252,10 @@ EndEntityCertificate ::= SEQUENCE {
 }
 
 CertificateExtension ::= SEQUENCE {
-    extension   Data{CertificateExtensions},
+    extension   Data{CertificateExtensions} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!I" | "!C" | "!P"))
+    }),
     /**
     * If the extension format is not recognised, or can't be processed, and it is marked critical, the certificate **MUST** be treated as invalid;
     * otherwise, it is permitted to ignore extensions not understood.
