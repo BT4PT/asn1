@@ -240,6 +240,7 @@ EndEntityCertificate ::= SEQUENCE {
     /**
     * The public key **MUST** be of the same EC curve as the issuing certificate's public key.
     * If it is not the certificate **MUST** be treated as invalid.
+    * This public key is calculated as per [SEC 4](https://www.secg.org/sec4-1.0.pdf).
     */
     subjectPublicKey CHOICE {
         nistP256    ECPublicKey{32},
