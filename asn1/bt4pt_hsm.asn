@@ -1,0 +1,31 @@
+/**
+* A record to include in the BT4PT barcode header IssuerSignedData to allow for tracing which HSM generated a signature.
+*/
+BT4PT-HSMTraceV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) hsm(6) v1(1) 0
+} DEFINITIONS ::= BEGIN
+
+EXPORTS HSMTrace, hsmTraceData;
+IMPORTS DATA-ELEMENT, cuperEncoding
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
+
+HSMTrace ::= SEQUENCE {
+    /**
+    * An opaque random ID assigned to the HSM at personalisation.
+    */
+    hsmId               OCTET STRING (SIZE(8)),
+    /**
+    * ID of the key slot of the HSM that was used to generate the signature.
+    */
+    keySlot             INTEGER (0..255),
+    /**
+    * Monotonically increasing global counter of signatures performed by the HSM.
+    * Wrap-around is not permitted; once the counter reaches its limit, the HSM is considered spent.
+    * The sequence need not be contiguous; gaps are permitted between values, as long as the counter does not go backwards.
+    */
+    signatureCounter    OCTET STRING (SIZE(4))
+}
+
+hsmTraceData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "HSM1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+
+END

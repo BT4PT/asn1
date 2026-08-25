@@ -21,7 +21,7 @@ jobs:
         id: glob
         with:
           files: |
-            mmtd-asn1/*.asn
+            asn1/*.asn
             old-asn1/*.asn
             examples/*.asn
       - name: Build ASN.1 Docs
