@@ -1,7 +1,7 @@
 MMTD-Examples DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
-IMPORTS MultiModalTicket FROM MultiModalTicket { iso(1) identified-organization(3) dod(6)
-    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) mmtd(4) v1(1) 0 };
+IMPORTS MultiModalTicket
+ FROM BT4PT-MultiModalTicketDataV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) mmtd(3) v1(1) 0 };
 
 /**
 * Based on the ticket available [here](https://raw.githubusercontent.com/BT4PT/asn1/refs/heads/root/examples/db-ice-ticket.pdf).
@@ -348,7 +348,10 @@ dbIceTicket MultiModalTicket ::= {
             },
             directionIsMandatory TRUE,
             transportService transportLink : {{
-                transportNumber {publicIdentifier : "ICE563"},
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE563"
+                }},
                 /**
                 * 17th of March, 08:49 UTC+01:00 (CET)
                 */
@@ -358,7 +361,10 @@ dbIceTicket MultiModalTicket ::= {
                     departureUTCOffset -4
                 }
             }, {
-                transportNumber {publicIdentifier : "ICE374"},
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE374"
+                }},
                 /**
                 * 17th of March, 10:30 UTC+01:00 (CET)
                 */
@@ -378,7 +384,10 @@ dbIceTicket MultiModalTicket ::= {
             },
             directionIsMandatory TRUE,
             transportService transportLink : {{
-                transportNumber {publicIdentifier : "ICE379"},
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE379"
+                }},
                 /**
                 * 19th of March, 17:57 UTC+01:00 (CET)
                 */
@@ -388,7 +397,10 @@ dbIceTicket MultiModalTicket ::= {
                     departureUTCOffset -4
                 }
             }, {
-                transportNumber {publicIdentifier : "ICE935"},
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE935"
+                }},
                 /**
                 * 19th of March, 21:57 UTC+01:00 (CET)
                 */
