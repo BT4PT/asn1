@@ -74,7 +74,8 @@ EECertificateExtensions CERTIFICATE-EXTENSION ::= {
 CertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
     issuerDataAuthorizationExt |
-    certificateIdExt,
+    certificateIdExt |
+    eeCertCRLExt,
     ...
 }
 
@@ -98,10 +99,8 @@ CertificateId ::= SEQUENCE {
     caId                        INTEGER (1..65536)
 }
 
-id-certificateIdExt OBJECT IDENTIFIER ::= {bt4ptPkiExt certificateId(2)}
-certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID id-certificateIdExt ENCODED WITH cuperEncoding }
+certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID {bt4ptPkiExt certificateId(2)} ENCODED WITH cuperEncoding }
 
-id-eeCertCRLExt OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRL(3)}
-eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-eeCertCRLExt ENCODED WITH cuperEncoding }
+eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID {bt4ptPkiExt eeCertCRL(3)} ENCODED WITH cuperEncoding }
 
 END

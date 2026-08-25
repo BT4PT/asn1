@@ -19,7 +19,7 @@ HSMTrace ::= SEQUENCE {
     */
     keySlot             INTEGER (0..255),
     /**
-    * Monotonically increasing global counter of signatures performed by the HSM.
+    * Monotonically increasing global counter of signatures performed by the HSM, encoded as a big-endian integer.
     * Wrap-around is not permitted; once the counter reaches its limit, the HSM is considered spent.
     * The sequence need not be contiguous; gaps are permitted between values, as long as the counter does not go backwards.
     */
