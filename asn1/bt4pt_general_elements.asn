@@ -395,11 +395,6 @@ caperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(
 cuperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(3) canonical(1) unaligned(1)}
 
 /**
-* The OID assigned to identify the Canonical Unaligned Packed Encoding Rules, per ITU-T X.691.
-*/
-nullEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(3) canonical(1) unaligned(1)}
-
-/**
 * The contents of the data element is a raw bytes value. Only permitted when the `&Type` is `OCTET STRING`.
 */
 rawEncoding OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
@@ -499,7 +494,14 @@ Data{DATA-ELEMENT: ElementSet} ::= [APPLICATION 3] SEQUENCE {
     */
     critical    BOOLEAN,
     format      DATA-ELEMENT.&id({ElementSet}),
-    value       OCTET STRING --(CONTAINING DATA-ELEMENT.&Type({ElementSet}{@format}))
+    value       OCTET STRING (CONTAINING DATA-ELEMENT.&Type({ElementSet}{@format}))
+}
+
+DataAuthorization{DATA-ELEMENT: ElementSet} ::= SEQUENCE (SIZE(1..64)) OF DataAuthorizationEntry{{ElementSet}}
+
+DataAuthorizationEntry{DATA-ELEMENT: ElementSet} ::= SEQUENCE {
+    format      DATA-ELEMENT.&id({ElementSet}),
+    constraint  OCTET STRING (CONTAINING DATA-ELEMENT.&CertificateConstraint({ElementSet}{@format}))
 }
 
 /**
@@ -613,6 +615,23 @@ SharedVehicleReturnConstraint ::= ENUMERATED {
     anyStation (2),
     hybrid (3),
     ...
+}
+
+/**
+* A generic container for the conveyance of Digital Signature Scheme signatures, i.e. ECDSA.
+* @len The length, in bytes, of each of `r` and `s`. That is, half the total signature length.
+*/
+DSSSignature{INTEGER: len} ::= SEQUENCE {
+    r OCTET STRING (SIZE(len)),
+    s OCTET STRING (SIZE(len))
+}
+
+/**
+* @len The length, in bytes, required to represent the x coördinate on a curve.
+*/
+ECPublicKey{INTEGER: len} ::= SEQUENCE {
+    yIsOdd BOOLEAN,
+    x OCTET STRING (SIZE(len))
 }
 
 END

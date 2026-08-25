@@ -133,7 +133,7 @@ Input: `document` of type `DocumentData`, `constraints` of type `DocumentConstra
    * `transportProduct`: `constraints.transportProduct`
    * `voucher`: `constraints.voucher`
    * `customerCard`: `constraints.customerCard`
-   * `parkingGround`: `constraints.parkingGround`
+   * `parkingGround`: `constraints.parking`
    * `stationPassage`: `constraints.stationPassage`
    * `delayConfirmation`: `constraints.delayConfirmation`
    * `token`: `constraints.token`

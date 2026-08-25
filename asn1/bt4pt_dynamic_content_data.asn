@@ -2,7 +2,7 @@ BT4PT-DynamicContentDataV1-0 {
     iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) dcd(4) v1(1) 0
 } DEFINITIONS ::= BEGIN
 
-EXPORTS DynamicContent, dynamicContentData;
+EXPORTS DynamicContent, dynamicContentData, dynamicContentDataAligned;
 IMPORTS Timestamp, GeoCoordinate, Data, DATA-ELEMENT, cuperEncoding, caperEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 

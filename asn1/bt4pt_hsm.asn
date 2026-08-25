@@ -26,6 +26,6 @@ HSMTrace ::= SEQUENCE {
     signatureCounter    OCTET STRING (SIZE(4))
 }
 
-hsmTraceData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "HSM1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+hsmTraceData DATA-ELEMENT ::= { HSMTrace IDENTIFIED BY "HSM1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
 
 END

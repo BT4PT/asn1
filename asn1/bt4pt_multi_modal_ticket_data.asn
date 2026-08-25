@@ -74,7 +74,7 @@ BT4PT-MultiModalTicketDataV1-0 {
 EXPORTS MultiModalTicket, multiModalTicketData;
 IMPORTS GenericId, GenericCode, CODE-TABLE-IDENTIFIER, CompanyCode, Station, StationSet, AreaSet, NUTSArea, LineId,
  TransportId, GeoCoordinate, GeoUnit, CoachPlaces, Data, DATA-ELEMENT, cuperEncoding, rawEncoding, UnicodeText, Timestamp,
- SharedVehicleVariety, SharedVehiclePropulsionType, SharedVehicleReturnConstraint
+ SharedVehicleVariety, SharedVehiclePropulsionType, SharedVehicleReturnConstraint, CompanyConstraint, DataAuthorization
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 /**
@@ -98,25 +98,25 @@ MultiModalTicket ::= SEQUENCE {
     * If TransportProduct is used, the control data **SHOULD** be defined in its conditions
     * and this global controlDetail element **SHOULD** be omitted.
     */
-    controlDetail         ControlData                             OPTIONAL,
+    controlDetail         ControlData                           OPTIONAL,
 
     /**
     * Traveler data. **MUST NOT** be present unless personal data about the travelers is needed and legally permitted.
     * The index of the sequence elements can be used to identify the traveler within other contexts (e.g. in assigned tariffs).
     */
-    traveler              SEQUENCE OF TravelerType                OPTIONAL,
+    traveler              SEQUENCE OF Traveler                  OPTIONAL,
 
     /**
     * Group details. Present if the traveler is a member of a group, otherwise omitted.
     */
-    groupDetails          GroupDetailsType                        OPTIONAL,
+    groupDetails          GroupDetails                          OPTIONAL,
 
     /**
     * Data of the transport documents.
     * Only one element **SHOULD** be a transportProduct, the others being associated documents.
     * (e.g. associated commercial card, associated tokens, associated carCarriage, vouchers...)
     */
-    transportDocument     SEQUENCE SIZE (1..16) OF DocumentData   OPTIONAL,
+    transportDocument     SEQUENCE SIZE (1..16) OF DocumentData OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
@@ -277,7 +277,7 @@ ProductRetailData ::= SEQUENCE {
     /**
     * Channel through which the traveler requested the contract / the barcode.
     */
-    retailChannel         RetailChannelType OPTIONAL,
+    retailChannel         RetailChannel     OPTIONAL,
 
     /**
     * Type of equipment that distributed the contract / the barcode (code table of the product retailer).
@@ -333,7 +333,7 @@ ControlData ::= SEQUENCE {
     /**
     * Tickets, that are not encoded in this ticket, which need to be controlled together with this ticket to form a valid ticket.
     */
-    linkedTickets               SEQUENCE OF TicketLinkType  OPTIONAL,
+    linkedTickets               SEQUENCE OF TicketLink      OPTIONAL,
 
     /**
     * Free text instructions for specific control instructions to be presented to the ticket controller where these
@@ -486,7 +486,7 @@ DocumentConstraints ::= SEQUENCE {
     transportProduct    TransportProductConstraints                     OPTIONAL,
     voucher             VoucherConstraints                              OPTIONAL,
     customerCard        CustomerCardConstraints                         OPTIONAL,
-    parkingGround       ParkingGroundConstraints                        OPTIONAL,
+    parking             ParkingConstraints                              OPTIONAL,
     stationPassage      StationPassageConstraints                       OPTIONAL,
     delayConfirmation   DelayConfirmationConstraints                    OPTIONAL,
     token               TokenConstraints                                OPTIONAL,
@@ -500,27 +500,27 @@ DocumentConstraints ::= SEQUENCE {
 * - A 'commercial card' granting benefits when purchasing a ticket.
 * - A 'proprietary' product which is very specific, in case none of the above choices apply.
 *
-* The type of the product is indicated by `generalConditions.productType`.
+* The type of the product is indicated by `generalConditions.product`.
 */
-TransportProductData ::= SEQUENCE {
+TransportProduct ::= SEQUENCE {
     /**
     * Geographical validity of the transport product.
     * This validity is described through successive segments that make up the route.
     * Omitted if the transport product is a 'reservation' (the concerned segment or transport being described by `generalConditions.transportService.reservation`)
     */
-    geoValidity                 SEQUENCE (SIZE (1..16)) OF GeoValiditySegment  OPTIONAL,
+    geoValidity                 SEQUENCE (SIZE (1..16)) OF GeoValiditySegment               OPTIONAL,
 
     /**
     * To be provided in case the return route differs.
     * Omitted if the transport product is a 'reservation'.
     */
-    returnGeoValidity           SEQUENCE (SIZE (1..16)) OF GeoValiditySegment  OPTIONAL,
+    returnGeoValidity           SEQUENCE (SIZE (1..16)) OF GeoValiditySegment               OPTIONAL,
 
     /**
     * General conditions that apply to all segments of the route.
     * Mandatory if the transport product is a 'reservation' (this reservation being described through this 'generalConditions' element).
     */
-    generalConditions           ConditionsType                                   OPTIONAL,
+    generalConditions           Conditions                                                  OPTIONAL,
 
     /**
     * Specific conditions that can be applied to segments of the route.
@@ -529,12 +529,12 @@ TransportProductData ::= SEQUENCE {
     *  the one in specific conditions overrules the one in the general conditions.
     * Omitted if the transport product is a 'reservation'.
     */
-    specificConditions          SEQUENCE (SIZE (1..32)) OF ConditionsType          OPTIONAL,
+    specificConditions          SEQUENCE (SIZE (1..32)) OF Conditions                       OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{TransportProductExtensions} OPTIONAL
+    extension                   SEQUENCE (SIZE(1..8)) OF Data{TransportProductExtensions}   OPTIONAL
 } (
     (WITH COMPONENTS {
         ...,
@@ -577,7 +577,7 @@ TransportProductConstraints ::= SEQUENCE {
     */
     permittedNetwork        SEQUENCE OF GenericCode{GenericId, NetworkCodeTables}   OPTIONAL,
     extension               DataAuthorization{{TransportProductExtensions}}         OPTIONAL,
-    conditionsExtension     DataAuthorization{{ConditionsExtensions}}               OPTIONAL,
+    conditionsExtension     DataAuthorization{{ConditionsExtensions}}               OPTIONAL
 }
 
 /**
@@ -761,7 +761,7 @@ Area ::= SEQUENCE {
 *     although the definition in 108.2 is not very precise on this option
 */
 ComplexRoute ::= SEQUENCE {
-    routeItem                        SEQUENCE OF RouteItemType,
+    routeItem                        SEQUENCE OF RouteItem,
 
     /**
     * Information about the change of the service at this route item:
@@ -796,12 +796,12 @@ RouteItem ::= CHOICE {
     /**
     * The route item is a list of stations along the route.
     */
-    route                                ComplexRouteType,
+    route                                ComplexRoute,
 
     /**
     * The route item is a list of alternative routes, one of these has to be taken.
     */
-    alternativeRoutes                    SEQUENCE OF ComplexRouteType
+    alternativeRoutes                    SEQUENCE OF ComplexRoute
 }
 
 /**
@@ -926,7 +926,7 @@ Conditions ::= SEQUENCE {
     /**
     * Identification of the product (owner, id, textual description).
     */
-    product                         ProductType                                             OPTIONAL,
+    product                         Product                                                 OPTIONAL,
 
     /*
     * Internal reference to the document (e.g. serial number of the document).
@@ -942,9 +942,9 @@ Conditions ::= SEQUENCE {
     * Having no `validFrom` is allowed (e.g. ticket not yet activated, which will be reissued with an explict `validFrom` upon activation).
     * Having no validUntil is allowed (e.g. ticket with unlimited validity - which should nevertheless have a security expiry date in the header requiring regular reissue).
     */
-    validFrom                       ValidFromType                                           OPTIONAL,
-    validUntil                      ValidUntilType                                          OPTIONAL,
-    rareTimingConditions            RareTimingConditionsType                                OPTIONAL,
+    validFrom                       ValidFrom                                               OPTIONAL,
+    validUntil                      ValidUntil                                              OPTIONAL,
+    rareTimingConditions            RareTimingConditions                                    OPTIONAL,
 
     /**
     * `TRUE` if the direction of travel must be followed as described:
@@ -971,13 +971,13 @@ Conditions ::= SEQUENCE {
         * Link to a specific transport service without reservation.
         * If present, using this transport service is mandatory.
         */
-        transportLink               SEQUENCE OF TransportLinkType,
+        transportLink               SEQUENCE OF TransportLink,
 
         /**
         * Link to a specific transport service with reservation.
         * A reservation does not mandate taking the reserved service.
         */
-        reservation                 SEQUENCE OF ReservationSegmentType
+        reservation                 SEQUENCE OF ReservationSegment
     } OPTIONAL,
 
     /**
@@ -1000,7 +1000,7 @@ Conditions ::= SEQUENCE {
     * Travel class.
     * For transport modes where the concept of class does not exist, this field **MUST** be set to `notApplicable`.
     */
-    classCode                       TravelClassType                                         DEFAULT second,
+    classCode                       TravelClass                                             DEFAULT second,
 
     /**
     * Per TEL TSI Code List B.5.308.
@@ -1013,14 +1013,14 @@ Conditions ::= SEQUENCE {
     *  - for all of the travelers described in the `traveler` section if this section is present,
     *  - for one passenger (without any further information) if the `traveler` section is absent.
     */
-    tariff                          SEQUENCE OF TariffType                                  OPTIONAL,
+    tariff                          SEQUENCE OF Tariff                                      OPTIONAL,
 
     /**
     * Specific data to support the ticket inspection process.
     */
     controlDetail                   ControlData                                             OPTIONAL,
 
-    rareDetails                     RareDetailsType                                         OPTIONAL
+    rareDetails                     RareDetails                                             OPTIONAL
 }
 
 NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
@@ -1042,7 +1042,7 @@ RareTimingConditions ::= SEQUENCE {
     *  - either have a shorter security expiry date set in the header and be regularly reissued,
     *  - or integrate other countermeasures such a Security In Paper and/or the use a dedicated key.
     */
-    validUntil                              ExtendedValidUntilType                          OPTIONAL,
+    validUntil                              ExtendedValidUntil                              OPTIONAL,
 
     /**
     * Offset in units of 15 minutes from local time to UTC (UTC = local + offset * 15 Minutes).
@@ -1064,7 +1064,7 @@ RareTimingConditions ::= SEQUENCE {
     /**
     * In case included time ranges are defined, the validity is restricted to these ranges.
     */
-    includedTimeRanges                       SEQUENCE OF IncludedTimeRangesType             OPTIONAL,
+    includedTimeRanges                       SEQUENCE OF IncludedTimeRanges                 OPTIONAL,
 
     /**
     * List of activated days in case the entire ticket is not activated.
@@ -1100,7 +1100,7 @@ RareDetails ::= SEQUENCE {
     /**
     * Associated online identifier (e.g. Account Based Ticketing identifier).
     */
-    token                   TokenType                                           OPTIONAL,
+    token                   Token                                               OPTIONAL,
 
     /**
     * Family of the product, allowing to process the product according to its family.
@@ -1147,7 +1147,7 @@ RareDetails ::= SEQUENCE {
     * In case the luggage restrictions are general and do not depend
     *   on the ticket type they should not be included.
     */
-    luggage                 LuggageRestrictionType                              OPTIONAL,
+    luggage                 LuggageRestriction                                  OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
@@ -1160,7 +1160,7 @@ ConditionsExtensions DATA-ELEMENT ::= { ... }
 /**
 * Information for linking a car to a reservation
 */
-CarType ::= SEQUENCE {
+Car ::= SEQUENCE {
     /**
     * Unless spaces form an integral part of identifying a plate, the **MUST NOT** be included.
     * E.g. a German car with the plate SB[TÜV Sticker]A 123 **SHALL** be encoded as `SB-A123`.
@@ -1183,7 +1183,7 @@ CarType ::= SEQUENCE {
     */
     boatCategory        INTEGER (1..8)      OPTIONAL,
     textileRoof         BOOLEAN,
-    roofRack            RoofRackType        DEFAULT  norack,
+    roofRack            RoofRack            DEFAULT  norack,
 
     /**
     * Height of a roof rack in cm.
@@ -1209,18 +1209,18 @@ CarType ::= SEQUENCE {
     * Reference to an entry on the loading list.
     */
     loadingListEntry    INTEGER (0..999)    OPTIONAL,
-    loadingDeck         LoadingDeckType     OPTIONAL,
+    loadingDeck         LoadingDeck         OPTIONAL,
 
     /**
     * Loading of the car in local date and time at the loading station.
     * Number of the days calculated from the issuing date.
     */
-    beginLoading        ValidFromType,
-    endLoading          ValidUntilType      OPTIONAL
+    beginLoading        ValidFrom,
+    endLoading          ValidUntil          OPTIONAL
 }
 
 /**
-* Type definitions used in `TransportLinkType` and `ReservationSegmentType`.
+* Type definitions used in `TransportLink` and `ReservationSegmentType`.
 */
 DepartureDateTime ::= SEQUENCE {
     /**
@@ -1261,7 +1261,7 @@ ArrivalDateTime ::= SEQUENCE {
 * Describes a transport link associated to a route or to a part of a route.
 * Quite similar to ReservationSegmentType but without assigned place(s).
 */
-TransportLinkType ::= SEQUENCE {
+TransportLink ::= SEQUENCE {
     /**
     * Station where the transport link begins.
     * Omitted if it is the same station as the origin station of the associated segment.
@@ -1297,7 +1297,7 @@ TransportLinkType ::= SEQUENCE {
     * For transport modes where the concept of class does not exist, this field **MUST** be set to notApplicable.
     * Omitted if the class is the same as the class of the associated leg.
     */
-    classCode               TravelClassType                                         DEFAULT second,
+    classCode               TravelClass                                             DEFAULT second,
 
     /**
     * Service brand.
@@ -1318,7 +1318,7 @@ TransportLinkType ::= SEQUENCE {
 * Describes a reservation associated to a route, or to a part of a route.
 * Usable for a standalone reservation and for a reservation linked to a leg.
 */
-ReservationSegmentType ::= SEQUENCE {
+ReservationSegment ::= SEQUENCE {
     /**
     * `TRUE` if using this transport service is mandatory.
     * `FALSE` if the traveler can use another transport service.
@@ -1358,7 +1358,7 @@ ReservationSegmentType ::= SEQUENCE {
     * For transport modes where the concept of class does not exist, this field **MUST** be set to notApplicable.
     * Omitted if the class is the same as the class of the associated leg.
     */
-    classCode               TravelClassType                                         DEFAULT second,
+    classCode               TravelClass                                             DEFAULT second,
 
     /**
     * Omitted if this specific service brand is already specified in the associated leg, and is the only one that is specified for this leg
@@ -1396,13 +1396,13 @@ ReservationSegmentType ::= SEQUENCE {
 	/**
 	* When a reservation includes transportation of a car, this field is used include details of the book car or cars.
 	*/
-	cars					SEQUENCE OF CarType                                     OPTIONAL
+	cars					SEQUENCE OF Car                                         OPTIONAL
 }
 
 /**
 * Data for groups of travelers
 */
-GroupDetailsType ::= SEQUENCE {
+GroupDetails ::= SEQUENCE {
     /**
     * `TRUE` if this ticket is the participant card (= countermark) only, not valid without the real ticket of the ticket holder.
     * In case participant cards are used, all members of the group except the ticket holder (group leader) **MUST** have this field set to `TRUE`.
@@ -1472,7 +1472,7 @@ IncludedTimeRanges ::= SEQUENCE {
     * However, this authorization **MUST** take specialDays into account, if this element is also present.
     * If `allowedWeekDays` is omitted, the product validity does not depend on the day of the week.
     */
-    allowedWeekdays              WeekdaysType                 OPTIONAL,
+    allowedWeekdays              Weekdays                   OPTIONAL,
 
     /**
     * Impact of special days on product validity. This impact takes precedence over valid weekdays. For each special day:
@@ -1481,13 +1481,13 @@ IncludedTimeRanges ::= SEQUENCE {
     * - Omitted means that this special day does not affect the validity defined by allowedWeekdays.
     * If specialDays is omitted, the product validity does not depend on any special day.
     */
-    specialDays                  SpecialDaysType             OPTIONAL,
+    specialDays                  SpecialDays                OPTIONAL,
 
     /**
     * Time ranges when the product can be used, during the days described above.
     * Omitted if the product validity does not depend on any time (but is defined for the entire days).
     */
-    includedTimeRange            SEQUENCE OF TimeRangeType   OPTIONAL
+    includedTimeRange            SEQUENCE OF TimeRange      OPTIONAL
 }
 
 Weekdays ::= SEQUENCE {
@@ -1705,7 +1705,7 @@ Traveler ::= SEQUENCE {
     * The definition of which passenger is which type in this field is per the issuer,
     *  and may be overridden by product owner for a specific segment using `TariffType.passengerType`.
     */
-    passengerType   Passenger                                   OPTIONAL,
+    passengerType   PassengerType                               OPTIONAL,
 
     ageOrBirth CHOICE {
         dateOfBirth DateType,
@@ -1789,11 +1789,11 @@ CustomerStatus ::= SEQUENCE {
 /**
 * Data for vouchers. Data included are quite basic, further study is required (e.g. through a meeting with people knowing vouchers).
 */
-VoucherData ::= SEQUENCE {
+Voucher ::= SEQUENCE {
     /**
     * Identification of the product (owner, id, textual description).
     */
-    product         ProductType,
+    product         Product,
 
     /**
     * Internal reference of the voucher.
@@ -1878,14 +1878,14 @@ CustomerCard ::= SEQUENCE {
     /**
     * Begin / end of validity in local date wherever the traveler is located.
     */
-    validFrom           ValidFromType                                           OPTIONAL,
-    validUntil          ValidUntilType                                          OPTIONAL,
+    validFrom           ValidFrom                                               OPTIONAL,
+    validUntil          ValidUntil                                              OPTIONAL,
 
     /**
     * Travel class in case card usage is limited to a travel class.
     * For transport modes where the concept of class does not exist, **MUST** be set to `notApplicable`.
     */
-    classCode           TravelClassType                                         OPTIONAL,
+    classCode           TravelClass                                             OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
@@ -1919,8 +1919,8 @@ ParkingGround ::= SEQUENCE {
     * Start and end of validity of parking entitlement. Date and time in time zone of the parking.
     * When validFromTime == 0, validity is the whole day depending on opening hours of the parking facility.
     */
-    validFrom                     ValidFromType,
-    validUntil                    ValidUntilType,
+    validFrom                     ValidFrom,
+    validUntil                    ValidUntil,
 
     parkingDetails                Parking
 }
@@ -2025,8 +2025,8 @@ StationPassage ::= SEQUENCE {
     /**
     * Period of validity of the right of passage.
     */
-    validFrom           ValidFromType                                       OPTIONAL,
-    validUntil          ValidUntilType                                      OPTIONAL,
+    validFrom           ValidFrom                                           OPTIONAL,
+    validUntil          ValidUntil                                          OPTIONAL,
 
     /**
     * Number of days for station passage in case the number of days
@@ -2058,15 +2058,15 @@ Token ::= SEQUENCE {
     * Provider of the token. Omitted if the provider is the `issuer` identified in IssuingData.
     */
     provider    CompanyCode         OPTIONAL,
-    token       Data{TokenTypes}
+    token       Data{{TokenTypes}}
 }
 
-SIPSerialNumberToken DATA-ELEMENT ::= { VisibleString IDENTIFIED BY "SER" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
-ABTToken DATA-ELEMENT ::= { OCTET STRING IDENTIFIED BY "ABT" ENCODED WITH rawEncoding CONSTRAINED BY NULL }
+sipSerialNumberToken DATA-ELEMENT ::= { VisibleString IDENTIFIED BY "SER" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+abtToken DATA-ELEMENT ::= { OCTET STRING IDENTIFIED BY "ABT" ENCODED WITH rawEncoding CONSTRAINED BY NULL }
 
 TokenTypes DATA-ELEMENT ::= {
-    SIPSerialNumberToken |
-    ABTToken |
+    sipSerialNumberToken |
+    abtToken,
     ...
 }
 
@@ -2158,12 +2158,12 @@ DelayConfirmation ::= SEQUENCE {
     /**
     * Type of confirmation provided.
     */
-    confirmationType    ConfirmationType            DEFAULT travelerDelayConfirmation,
+    confirmationType    DelayConfirmationType       DEFAULT travelerDelayConfirmation,
 
     /**
     * Affected original ticket(s).
     */
-    affectedTickets     SEQUENCE OF TicketLinkType  OPTIONAL,
+    affectedTickets     SEQUENCE OF TicketLink      OPTIONAL,
 
     /**
     * The validity of the original ticket is extended in some way.
@@ -2178,7 +2178,7 @@ DelayConfirmation ::= SEQUENCE {
         /**
         * Additional transport links have been permitted.
         */
-        additionalTransportLink SEQUENCE OF TransportLinkType,
+        additionalTransportLink SEQUENCE OF TransportLink,
         /**
         * Additional carriers the passenger is permitted to travel with.
         */
@@ -2250,14 +2250,14 @@ TicketLink ::= SEQUENCE {
     /**
     * Type of link.
     */
-    linkMode            LinkMode            DEFAULT issuedTogether
+    linkMode            TicketLinkMode      DEFAULT issuedTogether
 }
 
 /**
 * Sleeper compartment according to TEL TSI B.5.
 */
 BerthDetailData ::= SEQUENCE {
-    berthType              BerthTypeType,
+    berthType              BerthType,
     numberOfBerths         INTEGER (1..999),
     /**
     * Take particular care when using this field, in light of the CJEU decision C‑394/23.
@@ -2344,7 +2344,7 @@ ProductVariety ::= CHOICE {
     proprietary    NULL
 }
 
-TicketDetailsType ::= SEQUENCE {
+TicketDetails ::= SEQUENCE {
     /**
     * Ticket category, indicating how many time the product can be used.
     */
@@ -2419,7 +2419,7 @@ PassengerType ::= ENUMERATED {
     accompDog         (11)
 }
 
-LinkMode ::= ENUMERATED {
+TicketLinkMode ::= ENUMERATED {
     issuedTogether         (0),
     onlyValidInCombination (1)
 }

@@ -2,11 +2,11 @@
 * BT4PT Certificates - DRAFT.
 */
 BT4PT-CertificatesV1-0 {
-    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) certificate(7) v1(1) 0
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) certificates(7) v1(1) 0
 } DEFINITIONS ::= BEGIN
 
 EXPORTS EndEntityCertificate;
-IMPORTS CompanyCode, Data, DATA-ELEMENT, cuperEncoding, nullEncoding
+IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, DATA-ELEMENT, cuperEncoding, nullEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  IssuerDataElements
  FROM BT4PT-BarcodeHeaderV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) header(2) v1(1) 0 };
@@ -47,7 +47,7 @@ EndEntityCertificate ::= SEQUENCE {
 * All values **SHOULD** be registered via the UIC Github repository.
 */
 CERTIFICATE-EXTENSION ::= CLASS {
-    &id VisibleString (SIZE(1..8)) OPTIONAL UNIQUE,
+    &id VisibleString (SIZE(1..8)) UNIQUE OPTIONAL,
     &oid OBJECT IDENTIFIER UNIQUE,
     &Type,
     &encoding OBJECT IDENTIFIER
@@ -61,50 +61,47 @@ CertificateExtension ::= [APPLICATION 3] SEQUENCE {
     * otherwise, it is permitted to ignore extensions not understood.
     */
     critical    BOOLEAN,
-    format      DATA-ELEMENT.&id({EECertificateExtensions}),
-    value       OCTET STRING --(CONTAINING DATA-ELEMENT.&Type({EECertificateExtensions}{@format}))
+    format      CERTIFICATE-EXTENSION.&id({EECertificateExtensions}),
+    value       OCTET STRING (CONTAINING CERTIFICATE-EXTENSION.&Type({EECertificateExtensions}{@format}))
 }
 
-EECertificateExtensions DATA-ELEMENT ::= {
+EECertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
     issuerDataAuthorizationExt,
     ...
 }
 
-CertificateExtensions DATA-ELEMENT ::= {
+CertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
     issuerDataAuthorizationExt |
-    certificateId,
+    certificateIdExt,
     ...
 }
 
-bt4ptPkiExt = OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
+bt4ptPkiExt OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
     uic(17218) fcb(1) bt4pt(2) pkiExt(9)}
 
 /**
 * Any barcode signed by a certificate containing this poison marker **MUST** be considered a specimen barcode,
 * regardless of any other specimen flag.
 */
-specimenPoisonExt DATA-ELEMENT ::= { NULL IDENTIFIED BY "SP" WITH OID {bt4ptPkiExt specimenPoison(0)} ENCODED WITH nullEncoding }
-
-DataAuthorization{DATA-ELEMENT: ElementSet} ::= SEQUENCE (SIZE(1..64)) OF DataAuthorizationEntry{{ElementSet}}
-
-DataAuthorizationEntry{DATA-ELEMENT: ElementSet} ::= SEQUENCE {
-    format      DATA-ELEMENT.&id({ElementSet}),
-    constraint  OCTET STRING --(CONTAINING DATA-ELEMENT.&CertificateConstraint({ElementSet}{@format}))
-}
+specimenPoisonExt CERTIFICATE-EXTENSION ::= { NULL IDENTIFIED BY "SP" WITH OID {bt4ptPkiExt specimenPoison(0)} ENCODED WITH nullEncoding }
 
 /**
 * This extension specifies which issuer data elements may be included in a barcode signed by this certificate, and
 * what constraints apply to them.
 */
-issuerDataAuthorizationExt DATA-ELEMENT ::= { DataAuthorization{{IssuerDataElements}} IDENTIFIED BY "ID" WITH OID {bt4ptPkiExt issuerDataAuthorization(1)} ENCODED WITH cuperEncoding }
+issuerDataAuthorizationExt CERTIFICATE-EXTENSION ::= { DataAuthorization{{IssuerDataElements}} IDENTIFIED BY "ID" WITH OID {bt4ptPkiExt issuerDataAuthorization(1)} ENCODED WITH cuperEncoding }
 
 CertificateId ::= SEQUENCE {
     issuingSecurityProvider     CompanyCode,
-    caId                        INTEGER (1..65536),
+    caId                        INTEGER (1..65536)
 }
 
-certificateIdExt DATA-ELEMENT ::= { CertificateId WITH OID {bt4ptPkiExt certificateId(2)} ENCODED WITH cuperEncoding }
+id-certificateIdExt OBJECT IDENTIFIER ::= {bt4ptPkiExt certificateId(2)}
+certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID id-certificateIdExt ENCODED WITH cuperEncoding }
 
-eeCertCRLExt DATA-ELEMENT ::= { VisibleString WITH OID {bt4ptPkiExt eeCertCRL(3)} ENCODED WITH cuperEncoding }
+id-eeCertCRLExt OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRL(3)}
+eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-eeCertCRLExt ENCODED WITH cuperEncoding }
+
+END

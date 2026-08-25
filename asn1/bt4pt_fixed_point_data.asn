@@ -27,7 +27,8 @@ BT4PT-FixedPointDataV1-0 {
 
 EXPORTS FixedPoint, fixedPointData;
 IMPORTS GenericId, CompanyCode, Station, CoachPlaces, DATA-ELEMENT, Data, cuperEncoding, SharedVehicleVariety,
- SharedVehiclePropulsionType, SharedVehicleReturnConstraint, TransportId, LineId, UnicodeText
+ SharedVehiclePropulsionType, SharedVehicleReturnConstraint, TransportId, LineId, UnicodeText, CompanyConstraint,
+ DataAuthorization
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 FixedPoint ::= SEQUENCE {
@@ -49,13 +50,17 @@ FixedPoint ::= SEQUENCE {
     extension   SEQUENCE (SIZE(1..8)) OF Data{FixedPointExtensions} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
-    }) OPTIONAL,
-    ...
+    }) OPTIONAL
 }
 
 FixedPointExtensions DATA-ELEMENT ::= { ... }
 
-fixedPointData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" ENCODED WITH cuperEncoding }
+FixedPointConstraints ::= SEQUENCE {
+    issuer      CompanyConstraint                           OPTIONAL,
+    extensions  DataAuthorization{{FixedPointExtensions}}   OPTIONAL
+}
+
+fixedPointData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" ENCODED WITH cuperEncoding CONSTRAINED BY FixedPointConstraints }
 
 Object ::= CHOICE {
     /**
@@ -74,8 +79,7 @@ Object ::= CHOICE {
     * Values defined by the issuer.
     */
     proprietary     GenericId,
-    vehicleDynamic  VehicleDynamic,
-    ...
+    vehicleDynamic  VehicleDynamic
 }
 
 StationPoint ::= SEQUENCE {
@@ -84,8 +88,7 @@ StationPoint ::= SEQUENCE {
     /**
     * Values defined by the issuer.
     */
-    subLocationProprietary  GenericId       OPTIONAL,
-    ...
+    subLocationProprietary  GenericId       OPTIONAL
 }
 
 Vehicle ::= SEQUENCE {
@@ -97,8 +100,7 @@ Vehicle ::= SEQUENCE {
     /**
     * When affixed non-seat items or sub-items within a compartment, values defined by the issuer.
     */
-    subLocationProprietary  GenericId               OPTIONAL,
-    ...
+    subLocationProprietary  GenericId               OPTIONAL
 }
 
 /**
@@ -109,8 +111,7 @@ VehicleDynamic ::= SEQUENCE {
     currentStop             Station,
     transport               TransportId         OPTIONAL,
     line                    LineId              OPTIONAL,
-    terminusStop            Station,
-    ...
+    terminusStop            Station
 }
 
 VehicleIdentifier ::= CHOICE {
@@ -125,8 +126,7 @@ VehicleIdentifier ::= CHOICE {
     /**
     * Values defined by the issuer.
     */
-    proprietary     GenericId,
-    ...
+    proprietary     GenericId
 }
 
 /**
@@ -140,8 +140,7 @@ SharedVehicle ::= SEQUENCE {
     id                  GenericId,
     variety             SharedVehicleVariety,
     propulsion          SharedVehiclePropulsionType,
-    returnConstraint    SharedVehicleReturnConstraint,
-    ...
+    returnConstraint    SharedVehicleReturnConstraint
 }
 
 END
