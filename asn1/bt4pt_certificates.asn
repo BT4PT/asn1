@@ -6,7 +6,7 @@ BT4PT-CertificatesV1-0 {
 } DEFINITIONS ::= BEGIN
 
 EXPORTS EndEntityCertificate;
-IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, DATA-ELEMENT, cuperEncoding, nullEncoding
+IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, DATA-ELEMENT, cuperEncoding, nullEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  IssuerDataElements
  FROM BT4PT-BarcodeHeaderV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) header(2) v1(1) 0 };
@@ -101,6 +101,23 @@ CertificateId ::= SEQUENCE {
 
 certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID {bt4ptPkiExt certificateId(2)} ENCODED WITH cuperEncoding }
 
+/**
+* This extension contains the HTTP(S) URL at which the X.509 Certificate Revocation List for end-entity certificates
+* directly issued by this CA may be retrieved.
+*/
 eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID {bt4ptPkiExt eeCertCRL(3)} ENCODED WITH cuperEncoding }
+
+/**
+* This extension defines a notice to be displayed to inspection staff upon encountering a revoked certificate.
+* It is to be included as an extension to a Certificate Revocation List Entry.
+* Each entry in the `localisedNotices` **SHOULD** convey the same information in a different language.
+* The device performing the ticket validation can select which language, of those provided, is most appropriate to be
+* displayed.
+*/
+RevocationNotice ::= SEQUENCE {
+    localisedNotices    SEQUENCE OF UnicodeText
+}
+
+revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID {bt4ptPkiExt revocationNotice(4)} ENCODED WITH cuperEncoding }
 
 END
