@@ -606,13 +606,10 @@ GeoValiditySegment ::= SEQUENCE {
 */
 GeoValidity ::= CHOICE {
     /**
-    * Simple journey from an Origin to a Destination, with optional description of intermediate stations.
+    * A journey described by a series of routing points.
+    * Can be as simple as origin/destination, or as complex as allowing multiple origins, multiple destinations, alternative routes, etc.
     */
-    originDestination   OriginDestination,
-    /**
-    * Complex journey allowing multiple origins, multiple destinations, alternative routes, etc.
-    */
-    complexRoute        ComplexRoute,
+    pointBased          PointBasedRoute,
     /**
     * Validity defined with areas/zones.
     */
@@ -646,46 +643,50 @@ GeoValidity ::= CHOICE {
 GeoValidityExtensions DATA-ELEMENT ::= { ... }
 
 /**
-* Geographical validity from an origin station to a destination station
+* Includes a description of the route by via stations.
+* Via stations follow the description in leaflet 108.1:
+* - Via stations can be mandatory to pass, but there does not need to be a
+*     stop at these stations: visible route description: "*station*"
+* - There can be a list of alternative routes:
+*     visible route description: "*(station1/station2)*"
+* - There can also be alternative routes: "*(station1*station2/station3*station4)*"
+*     although the definition in 108.2 is not very precise on this option
 */
-OriginDestination ::= SEQUENCE {
-    /**
-    * Origin station of the OD journey.
-    * Omitted if this origin station is the destination station of the previous section of the journey.
-    */
-    originStation       Station             OPTIONAL,
+PointBasedRoute ::= SEQUENCE {
+    routeItem                        SEQUENCE OF RouteItem,
 
     /**
-    * Destination station of the OD journey.
+    * In case different break of service allowances, different carriers, different service brands, etc.
+    * need to be indicated on the routes or alternative routes.
     */
-    destinationStation  Station,
-
-    /**
-    * If necessary the (ordered) stations between origin and destination can be indicated.
-    */
-    intermediateStation SEQUENCE OF Station OPTIONAL
+    appliedSpecificConditionsIndex   INTEGER (1..16)        OPTIONAL
 }
 
-/**
-* Geographical validity using a set of lines
-*/
-Line ::= SEQUENCE {
+RouteItem ::= CHOICE {
     /**
-    * ID of the valid or excluded lines. Only one of both elements shall be present.
-    * Set according to the code table defined in the container object.
+    * The route item is the destination station from the previous `GeoValiditySegment` (**not** the previous `PointBasedRoute`).
     */
-    includedLineId              SEQUENCE OF LineId            OPTIONAL,
-    excludedLineId              SEQUENCE OF LineId            OPTIONAL,
+    destinationStationOfPreviousSegment  NULL,
 
     /**
-    * In case the line must be entered via a specific station.
+    * The route item is a specific station.
     */
-    entryStation                StationSet                    OPTIONAL,
+    station                              Station,
 
     /**
-    * In case the line must be left via a specific station.
+    * The route item is a set of stations that are equivalent (OSDM: FareStationSet).
     */
-    terminatingStation          StationSet                    OPTIONAL
+    stationSet                           StationSet,
+
+    /**
+    * In case conditions/change of service restrictions need to be applied only to part of a route.
+    */
+    route                                PointBasedRoute,
+
+    /**
+    * A list of alternative routes - one, and only one, of these has to be taken.
+    */
+    alternativeRoutes                    SEQUENCE OF PointBasedRoute
 }
 
 /**
@@ -701,8 +702,9 @@ Area ::= SEQUENCE {
     * Omitted if there are no restrictions on where the journey must begin.
     */
     restrictedEntry CHOICE {
-       station  StationSet,
-       area     AreaSet
+       station      Station,
+       stationSet   StationSet,
+       area         AreaSet
     } OPTIONAL,
 
     /**
@@ -711,7 +713,7 @@ Area ::= SEQUENCE {
     * If `restrictedEntry` is absent, the journey can begin anywhere in the allowed areas/zones.
     * If `restrictedExit` is absent, the journey can end anywhere in the allowed areas/zones.
     * If `restrictedEntry` and `restrictedExit` and area are present, the allowed areas/zones are only transit areas/zones:
-    *  the traveler is allowed to cross them, but he may neither begin nor end his journey in them.
+    *  the traveler is allowed to cross them, but may neither begin nor end their journey in them.
     * If `restrictedEntry` and `restrictedExit` are present, and area is absent, there are no specific restrictions on how to travel
     *  from `restrictedEntry` to `restrictedExit` (the only restrictions that apply are those described by the applicable `ConditionsType`).
     */
@@ -736,8 +738,9 @@ Area ::= SEQUENCE {
     * Omitted if there are no restrictions on where the journey must end.
     */
     restrictedExit CHOICE {
-       station  StationSet,
-       area     AreaSet
+       station      Station,
+       stationSet   StationSet,
+       area         AreaSet
     } OPTIONAL,
 
     /**
@@ -747,57 +750,25 @@ Area ::= SEQUENCE {
 }
 
 /**
-* Includes a description of the route by via stations.
-* Via stations follow the description in leaflet 108.1:
-* - Via stations can be mandatory to pass, but there does not need to be a
-*     stop at these stations: visible route description: "*station*"
-* - There can be a list of alternative routes:
-*     visible route description: "*(station1/station2)*"
-* - There can also be alternative routes: "*(station1*station2/station3*station4)*"
-*     although the definition in 108.2 is not very precise on this option
+* Geographical validity using a set of lines
 */
-ComplexRoute ::= SEQUENCE {
-    routeItem                        SEQUENCE OF RouteItem,
+Line ::= SEQUENCE {
+    /**
+    * ID of the valid or excluded lines. Only one of both elements shall be present.
+    * Set according to the code table defined in the container object.
+    */
+    includedLineId              SEQUENCE OF LineId            OPTIONAL,
+    excludedLineId              SEQUENCE OF LineId            OPTIONAL,
 
     /**
-    * Information about the change of the service at this route item:
-    *  - TRUE: change is mandatory
-    *  - FALSE: change is forbidden
-    *  - omitted if change is allowed but not mandatory
+    * In case the line must be entered via a specific station.
     */
-    changeOfService                  BOOLEAN                        OPTIONAL,
+    entryStation                StationSet                    OPTIONAL,
 
     /**
-    * In case different carriers and/or different service brands need to be indicated on the routes or alternative routes.
+    * In case the line must be left via a specific station.
     */
-    appliedSpecificConditionsIndex   INTEGER (1..16)                OPTIONAL
-}
-
-RouteItem ::= CHOICE {
-    /**
-    * The route item is the destination station from the previous validity segment.
-    */
-    destinationStationOfPreviousSegment  NULL,
-
-    /**
-    * The route item is a specific station.
-    */
-    station                              Station,
-
-    /**
-    * The route item is a set of stations that are equivalent (OSDM: FareStationSet).
-    */
-    stationSet                           StationSet,
-
-    /**
-    * The route item is a list of stations along the route.
-    */
-    route                                ComplexRoute,
-
-    /**
-    * The route item is a list of alternative routes, one of these has to be taken.
-    */
-    alternativeRoutes                    SEQUENCE OF ComplexRoute
+    terminatingStation          StationSet                    OPTIONAL
 }
 
 /**
@@ -999,6 +970,11 @@ Conditions ::= SEQUENCE {
     *  - for one passenger (without any further information) if the `traveler` section is absent.
     */
     tariff                          SEQUENCE OF Tariff                                      OPTIONAL,
+
+    /**
+    * Is a change of service/break of journey permitted along this route segment?
+    */
+    changeOfService                  BOOLEAN                                                DEFAULT TRUE,
 
     /**
     * Specific data to support the ticket inspection process.
