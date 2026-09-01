@@ -981,20 +981,9 @@ Conditions ::= SEQUENCE {
     } OPTIONAL,
 
     /**
-    * Included carriers responsible for the transport.
+    * Carriers/modes of transport included in this ticket.
     */
-    includedCarrier                 SEQUENCE OF CompanyCode                                 OPTIONAL,
-
-    /**
-    * Included transport modes. Code list: EN 1545-1 (transport type code).
-    */
-    includedTransportType           SEQUENCE (SIZE(1..31)) OF INTEGER (0..31)                OPTIONAL,
-
-    /**
-    * Service brands valid for the route. Per TEL TSI Code List B.4.7009.
-    * In case this list is provided the ticket is invalid on all other service brands.
-    */
-    includedServiceBrand            SEQUENCE OF INTEGER (1..32000)                           OPTIONAL,
+    includedServiceVarieties        SEQUENCE OF TransportVariety                            OPTIONAL,
 
     /**
     * Travel class.
@@ -1029,6 +1018,24 @@ NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
         version 0
     } MEANING "NF P99-502 NAO (France)"},
     ...
+}
+
+/**
+* An identifier for the variety of transport included in/excluded from ticket conditions.
+* The fields in this SEQUENCE are to be ANDed together as part of matching.
+* That is, if ticket includes a transport variety with both `carrier eraCode : "1080"` and `transportType 10` set,
+* then it only valid on high-speed trains operated by the Deutsche Bahn.
+*/
+TransportVariety ::= SEQUENCE {
+    carrier         CompanyCode         OPTIONAL,
+    /**
+    * Per EN 1545-1 (transport type code).
+    */
+    transportType   INTEGER (1..31)     OPTIONAL,
+    /**
+    * Per TEL TSI Code List B.4.7009.
+    */
+    serviceBrand    INTEGER (1..32000)  OPTIONAL
 }
 
 /**
@@ -1100,40 +1107,28 @@ RareDetails ::= SEQUENCE {
     /**
     * Associated online identifier (e.g. Account Based Ticketing identifier).
     */
-    token                   Token                                               OPTIONAL,
+    token                       Token                                               OPTIONAL,
 
     /**
     * Family of the product, allowing to process the product according to its family.
     * Value according to the product owner.
     */
-    productFamily           VisibleString                                       OPTIONAL,
+    productFamily               VisibleString                                       OPTIONAL,
 
     /**
-    * Excluded carriers responsible for the transport starting at this station.
-    * In case this list is provided, the ticket is valid on all other carriers,
-    *  and `includedCarrier` (in `ConditionsType`) **SHALL NOT** be used.
+    * Carriers/modes of transport excluded from this ticket.
+    * In case `includedServiceVarieties` is not provided, the ticket is valid on all services in its
+    * `coveredArea` and `coveredNetwork`, except those in this field.
+    * If `includedServiceVarieties` is specified, then the exclusions are processed logically after any inclusions.
+    * That is, even if the ticket conditions include a service, an exclusion overrides that.
     */
-    excludedCarrier         SEQUENCE OF CompanyCode                             OPTIONAL,
-
-    /**
-    * Excluded transport modes. Code list: EN 1545-1 (transport type code).
-    * In case this list is provided, the ticket is valid on all other transport modes,
-    *  and `includedTransportType` (in `ConditionsType`) **SHALL NOT** be used.
-    */
-    excludedTransportType   SEQUENCE (SIZE(1..32)) OF INTEGER (0..31)            OPTIONAL,
-
-    /**
-    * Excluded service brands for the route. Per TEL TSI Code List B.4.7009.
-    * In case this list is provided, the ticket is valid on all other service brands,
-    *  and `includedServiceBrand` (in `ConditionsType`) **SHALL NOT** be used.
-    */
-    excludedServiceBrand    SEQUENCE OF INTEGER (1..32000)                       OPTIONAL,
+    excludedServiceVarieties    SEQUENCE OF TransportVariety                        OPTIONAL,
 
     /**
     * Price of the transport product (if in `generalConditions`) or of the segment (if in `specificConditions`),
     *   in the currency and fraction defined in IssuingData.
     */
-    price                   INTEGER                                             OPTIONAL,
+    price                       INTEGER                                             OPTIONAL,
 
     /**
     * To be used in case of special conditions that can only be provided as a readable text, e.g. that Interrail
@@ -1141,18 +1136,18 @@ RareDetails ::= SEQUENCE {
     * For specific control instructions that should be brought to the attention of the ticket checker,
     *   use `ControlData.infoText`.
     */
-    conditionText           UnicodeText                                         OPTIONAL,
+    conditionText               UnicodeText                                         OPTIONAL,
 
     /**
     * In case the luggage restrictions are general and do not depend
     *   on the ticket type they should not be included.
     */
-    luggage                 LuggageRestriction                                  OPTIONAL,
+    luggage                     LuggageRestriction                                  OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
     */
-    extension               SEQUENCE (SIZE(1..8)) OF Data{ConditionsExtensions} OPTIONAL
+    extension                   SEQUENCE (SIZE(1..8)) OF Data{ConditionsExtensions} OPTIONAL
 }
 
 ConditionsExtensions DATA-ELEMENT ::= { ... }
