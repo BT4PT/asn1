@@ -634,11 +634,7 @@ GeoValidity ::= CHOICE {
     */
     sharedVehicle       SharedVehicle,
     /**
-    * Valid everywhere within the operating area of a carrier, including cross-border services, unless excluded by coveringArea condition.
-    */
-    carrierNetwork      SEQUENCE SIZE(1..16) OF CompanyCode,
-    /**
-    * No specific geographic validity beyond the coveringArea and other conditions.
+    * No specific geographic validity beyond the coveringArea, included carriers, and other conditions.
     */
     perConditions       NULL,
     /**
