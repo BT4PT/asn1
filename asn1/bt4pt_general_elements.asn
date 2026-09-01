@@ -318,35 +318,35 @@ UnicodeText ::= [APPLICATION 4] SEQUENCE {
 * Generic types for geo coordinates.
 */
 GeoCoordinate ::= SEQUENCE {
-    position            [1] GeoUnit,
-    coordinateSystem    [2] GeoCoordinateSystem   DEFAULT wgs84,
+    position            GeoUnit,
     /**
-    * If omitted the accuracy is unknown.
+    * If omitted, the accuracy is unknown or out of range (i.e. > 0.1 degrees)
     */
-    accuracy            [3] GeoUnitType           OPTIONAL
+    accuracy            GeoUnitType OPTIONAL
 }
 
-GeoCoordinateSystem ::= ENUMERATED {
-    /**
-    * WGS 84 standard system.
-    */
-    wgs84   (0),
-    /**
-    * (outdated) GRS 80 coordinate system.
-    */
-    grs80   (1)
-}
-
+/**
+* To convert between meters of accuracy and degrees of accuracy:
+* 1. The earth's circumference shall be considered 40,075,016.7 meters, per WGS84.
+* 2. Let the meters per degree at a latitude be the cosine of the latitude in radians, times the earth's circumference, divided by 360.
+* 3. The degrees of accuracy is the meters of accuracy divided by the meters per degree at the latitude.
+*/
 GeoUnitType ::= ENUMERATED {
     /**
-    * 1 / 10000 degree is approx. 11 meter on earth surface.
+    * Accuracy <= 0.0001 degrees
     */
-    tenthMilliDegree    (0), --
+    tenthMilliDegree    (0),
     /**
-    * Approx. 110 meter on earth surface.
+    * Accuracy <= 0.001 degrees
     */
     milliDegree         (1),
+    /**
+    * Accuracy <= 0.01 degrees
+    */
     centiDegree         (2),
+    /**
+    * Accuracy <= 0.1 degrees
+    */
     deciDegree          (3)
 }
 
