@@ -109,7 +109,7 @@ dbIceTicket MultiModalTicket ::= {
                     /**
                     * ERA primary location code `DE15264`.
                     */
-                    station era : {
+                    station eraPlc : {
                         country 276,
                         locationCode 15264
                     },
@@ -125,7 +125,7 @@ dbIceTicket MultiModalTicket ::= {
                         /**
                         * ERA primary location code `DE17584`, for Neunkirchen (Saar) Hbf.
                         */
-                        station era : {
+                        station eraPlc : {
                             country 276,
                             locationCode 17584
                         }
@@ -133,7 +133,7 @@ dbIceTicket MultiModalTicket ::= {
                         /**
                         * ERA primary location code `DE15072`, for Homburg (Saar) Hbf.
                         */
-                        station era : {
+                        station eraPlc : {
                             country 276,
                             locationCode 15072
                         }
@@ -141,7 +141,7 @@ dbIceTicket MultiModalTicket ::= {
                         /**
                         * ERA primary location code `DE17641`, for Neustadt (Weinstr.) Hbf.
                         */
-                        station era : {
+                        station eraPlc : {
                             country 276,
                             locationCode 17641
                         }
@@ -150,7 +150,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE21306`, for Worms Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 21306
                             }
@@ -160,7 +160,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE14673`, for Heidelberg Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 14673
                             }
@@ -169,7 +169,7 @@ dbIceTicket MultiModalTicket ::= {
                         /**
                         * ERA primary location code `DE13276`, for Frankfurt (Main) Hbf.
                         */
-                        station era : {
+                        station eraPlc : {
                             country 276,
                             locationCode 13276
                         }
@@ -178,7 +178,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE13740`, for Gießen.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 13740
                             }
@@ -188,7 +188,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE13529`, for Fulda.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 13529
                             }
@@ -198,7 +198,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE14549`, for Hannover Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 14549
                             }
@@ -208,7 +208,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE14893`, for Hildesheim Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 14893
                             }
@@ -218,7 +218,7 @@ dbIceTicket MultiModalTicket ::= {
                     /**
                     * ERA primary location code `DE11577`.
                     */
-                    station era : {
+                    station eraPlc : {
                         country 276,
                         locationCode 11577
                     },
@@ -242,7 +242,7 @@ dbIceTicket MultiModalTicket ::= {
                     /**
                     * ERA primary location code `DE11577`.
                     */
-                    station era : {
+                    station eraPlc : {
                         country 276,
                         locationCode 11577
                     },
@@ -259,7 +259,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE14549`, for Hannover Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 14549
                             }
@@ -269,7 +269,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE14893`, for Hildesheim Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 14893
                             }
@@ -278,7 +278,7 @@ dbIceTicket MultiModalTicket ::= {
                         /**
                         * ERA primary location code `DE13874`, for Göttingen.
                         */
-                        station era : {
+                        station eraPlc : {
                             country 276,
                             locationCode 13874
                         }
@@ -287,7 +287,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE13529`, for Fulda.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 13529
                             }
@@ -295,7 +295,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE13276`, for Frankfurt (Main) Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 13276
                             }
@@ -303,7 +303,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE16741`, for Mannheim Hbf.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 16741
                             }
@@ -313,7 +313,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE15439`, for Kassel-Wilhelmshöhe.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 15439
                             }
@@ -321,7 +321,7 @@ dbIceTicket MultiModalTicket ::= {
                             /**
                             * ERA primary location code `DE13740`, for Gießen.
                             */
-                            station era : {
+                            station eraPlc : {
                                 country 276,
                                 locationCode 13740
                             }
@@ -331,7 +331,7 @@ dbIceTicket MultiModalTicket ::= {
                     /**
                     * ERA primary location code `DE19153`.
                     */
-                    station era : {
+                    station eraPlc : {
                         country 276,
                         locationCode 19153
                     },
@@ -607,7 +607,7 @@ ukTicket MultiModalTicket ::= {
                     /**
                     * NLC of Stansted Airport is 6834.
                     */
-                    station era : {
+                    station eraPlc : {
                         country 826,
                         locationCode 68340
                     }
@@ -615,7 +615,7 @@ ukTicket MultiModalTicket ::= {
                     /**
                     * NLC of London Terminals is 1072.
                     */
-                    station era : {
+                    station eraPlc : {
                         country 276,
                         locationCode 10720
                     }
@@ -760,7 +760,7 @@ dsbTicket MultiModalTicket ::= {
                     /**
                     * ERA code for Aarhus Hovedbanegård.
                     */
-                    station era : {
+                    station eraPlc : {
                         country 208,
                         locationCode 131
                     }
@@ -776,7 +776,7 @@ dsbTicket MultiModalTicket ::= {
                     /**
                     * ERA code for Hørning
                     */
-                    station era : {
+                    station eraPlc : {
                         country 208,
                         locationCode 129
                     }
