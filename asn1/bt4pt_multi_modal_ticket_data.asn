@@ -755,7 +755,7 @@ Area ::= SEQUENCE {
 Line ::= SEQUENCE {
     lineIds             CHOICE {
         included    SEQUENCE OF LineId,
-        excluded    SEQUENCE OF LineId,
+        excluded    SEQUENCE OF LineId
     },
 
     /**
