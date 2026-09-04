@@ -753,22 +753,20 @@ Area ::= SEQUENCE {
 * Geographical validity using a set of lines
 */
 Line ::= SEQUENCE {
-    /**
-    * ID of the valid or excluded lines. Only one of both elements shall be present.
-    * Set according to the code table defined in the container object.
-    */
-    includedLineId              SEQUENCE OF LineId            OPTIONAL,
-    excludedLineId              SEQUENCE OF LineId            OPTIONAL,
+    lineIds             CHOICE {
+        included    SEQUENCE OF LineId,
+        excluded    SEQUENCE OF LineId,
+    },
 
     /**
     * In case the line must be entered via a specific station.
     */
-    entryStation                StationSet                    OPTIONAL,
+    entryStation        StationSet  OPTIONAL,
 
     /**
     * In case the line must be left via a specific station.
     */
-    terminatingStation          StationSet                    OPTIONAL
+    terminatingStation  StationSet  OPTIONAL
 }
 
 /**

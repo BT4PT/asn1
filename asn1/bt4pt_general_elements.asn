@@ -66,16 +66,25 @@ GenericCode{IdType, CODE-TABLE-IDENTIFIER: TableSet} ::= [APPLICATION 5] SEQUENC
 }
 
 /**
+* ERA TEL TSI Primary Location Code, as per [teleref.era.europa.eu](https://teleref.era.europa.eu).
+*/
+ERAPrimaryLocationCode ::= SEQUENCE {
+    /**
+    * ISO 3166-1 numeric code.
+    */
+    country         INTEGER (0..999),
+    locationCode    INTEGER (1..99999)
+}
+
+/**
 * A STOP PLACE in Transmodel (EN 12896-2:2016 § 5.4.3).
 */
 Station ::= [APPLICATION 6] SEQUENCE {
     station             CHOICE {
+        eraPlc      ERAPrimaryLocationCode,
         /**
-        * ERA TEL TSI Primary Location Code, as per [teleref.era.europa.eu](https://teleref.era.europa.eu).
-        * - A 7 digit code (country code + 5 digit local code) defines a rail station code.
-        * - A 9 digit code (2-digit scope code + country code + 5 digit local code) defines a non-rail station code.
+        * **SHALL NOT** be used when a location has as assigned ERA Primary Location Code.
         */
-        era         INTEGER (1..999999999),
         generic     GenericCode{GenericId, {StationCodeTables}}
     },
     stationNameUTF8     UnicodeText OPTIONAL
@@ -220,7 +229,13 @@ AreaSet ::= [APPLICATION 10] CHOICE {
     }, {AreaCodeTables}}
 }
 
-AreaCodeTables CODE-TABLE-IDENTIFIER ::= { ... }
+AreaCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 208,
+        version 0
+    } MEANING "Danish Rejsekort zone"}, -- Rejsekort zones are numeric.
+    ...
+}
 
 /**
 * Place data according to TEL TSI B.5.
