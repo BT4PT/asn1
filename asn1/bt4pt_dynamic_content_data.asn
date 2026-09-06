@@ -21,7 +21,23 @@ DynamicContent ::= SEQUENCE {
     dynamicContentResponseToChallenge   SEQUENCE OF Data{ResponsesToChallenge} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!I" | "!C" | "!P"))
-    })
+    }),
+
+    /**
+    * A unique ID for this instance of a dynamic barcode (i.e. updated each time the dynamic segment is regenerated).
+    * This field **SHALL NOT** be used in assessing the validity of a ticket, it exists for debugging purposes.
+    * This field has no relation to any ticket ID in any ticket control database.
+    */
+    dynamicContentId                    GenericId           OPTIONAL,
+
+    /**
+    * Traceability information linked to the about the application that generated the barcode and filled in the dynamic part.
+    * Values as defined by the security provider.
+    * This field **SHALL NOT** be used in assessing the validity of a ticket, it exists for debugging purposes.
+    */
+    dynamicContentTraceability          VisibleString       OPTIONAL,
+
+    ...
 }
 
 dynamicContentData DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "DCD1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
