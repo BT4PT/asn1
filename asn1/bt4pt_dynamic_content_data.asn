@@ -1,16 +1,17 @@
-DynamicContentData { iso(1) identified-organization(3) dod(6)
-    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) dcd(3) v2(2) 0 }
-    DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+BT4PT-DynamicContentDataV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) dcd(4) v1(1) 0
+} DEFINITIONS ::= BEGIN
 
-EXPORTS DynamicContent, dynamicContentData;
-IMPORTS GenericId, Timestamp, GeoCoordinate, Data, DATA-ELEMENT, cuperEncoding
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
+EXPORTS DynamicContent, dynamicContentData, dynamicContentDataAligned;
+IMPORTS Timestamp, GeoCoordinate, Data, DATA-ELEMENT, cuperEncoding, caperEncoding
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 DynamicContent ::= SEQUENCE {
     /**
-    * Generation time of the dynamic content.
+    * Identification of the mobile application that generated the barcode and filled in the dynamic part.
+    * Values as defined by the security provider.
     */
-    dynamicContentTimeStamp             Timestamp           OPTIONAL,
+    dynamicContentMobileAppId           VisibleString       OPTIONAL,
 
     /**
     * Coordinates of the location where the dynamic content was been generated.
@@ -39,7 +40,8 @@ DynamicContent ::= SEQUENCE {
     ...
 }
 
-dynamicContentData DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "FDC2" ENCODED WITH cuperEncoding }
+dynamicContentData DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "DCD1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+dynamicContentDataAligned DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "DCD1A" ENCODED WITH caperEncoding CONSTRAINED BY NULL }
 
 ResponsesToChallenge DATA-ELEMENT ::= { ... }
 

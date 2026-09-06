@@ -1,14 +1,14 @@
 /**
-* Generic definitions for common elements shared across many UIC ASN.1 modules. Version 1.0.0.
+* Generic definitions for common elements shared across many BT4PT modules - DRAFT.
 *
 * ISO Country codes are used to code countries.
 * As Kosovo does not have an official ISO Country Code the following codes are used:
 * - `926` for Kosovo as numeric ISO Country Code
 * - `XK` for Kosovo as alphanumeric 2-character ISO Country Code.
 */
-GeneralData { iso(1) identified-organization(3) dod(6)
-    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 }
-    DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+BT4PT-GeneralElementsV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0
+} DEFINITIONS ::= BEGIN
 
 EXPORTS ALL;
 
@@ -23,24 +23,24 @@ GenericId ::= CHOICE {
     idOct   OCTET STRING    -- for binary IDs such as UUIDs
 }
 
-GenericCode{IdType} ::= SEQUENCE {
-    codeTable CHOICE {
+CodeTable ::= SEQUENCE {
+    owner CHOICE {
         /**
         * ID values defined by the document issuer.
         */
-        issuer          NULL,
+        issuer          [1] NULL,
         /**
         * ID values defined by the product owner.
         */
-        productOwner    NULL,
+        productOwner    [2] NULL,
         /**
         * ID values defined by the carrier(s).
         */
-        carrier         NULL,
+        carrier         [3] NULL,
         /**
         * ID values defined by the organisation responsible for the `concernedArea`.
         */
-        area            NULL,
+        area            [4] NULL,
         /**
         * ID values defined by the national authority the country defined by its ISO 3166-1 numeric code.
         */
@@ -50,36 +50,76 @@ GenericCode{IdType} ::= SEQUENCE {
         */
         company         CompanyCode
     },
-    codeTableVersion INTEGER (0..255) OPTIONAL,
+    version INTEGER (0..255) DEFAULT 0
+}
+
+CODE-TABLE-IDENTIFIER ::= CLASS {
+    &table CodeTable UNIQUE,
+    &name UTF8String
+} WITH SYNTAX {
+    &table MEANING &name
+}
+
+GenericCode{IdType, CODE-TABLE-IDENTIFIER: TableSet} ::= [APPLICATION 5] SEQUENCE {
+    codeTable CODE-TABLE-IDENTIFIER.&table({TableSet}),
     id IdType
+}
+
+/**
+* ERA TEL TSI Primary Location Code, as per [teleref.era.europa.eu](https://teleref.era.europa.eu).
+*/
+ERAPrimaryLocationCode ::= SEQUENCE {
+    /**
+    * ISO 3166-1 numeric code.
+    */
+    country         INTEGER (0..999),
+    locationCode    INTEGER (1..99999)
 }
 
 /**
 * A STOP PLACE in Transmodel (EN 12896-2:2016 § 5.4.3).
 */
-Station ::= SEQUENCE {
+Station ::= [APPLICATION 6] SEQUENCE {
     station             CHOICE {
+        eraPlc      ERAPrimaryLocationCode,
         /**
-        * ERA TEL TSI Primary Location Code, as per [teleref.era.europa.eu](https://teleref.era.europa.eu).
-        * - A 7 digit code (country code + 5 digit local code) defines a rail station code.
-        * - A 9 digit code (2-digit scope code + country code + 5 digit local code) defines a non-rail station code.
+        * **SHALL NOT** be used when a location has as assigned ERA Primary Location Code.
         */
-        era         INTEGER (1..999999999),
-        generic     GenericCode{GenericId}
+        generic     GenericCode{GenericId, {StationCodeTables}}
     },
     stationNameUTF8     UnicodeText OPTIONAL
 }
 
-StationSet ::= SEQUENCE {
+StationCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner company : orgCode : "1170",
+        version 0
+    } MEANING "UK National Location Code"} | -- SHALL NOT be used except when an NLC contains letters, and thus can't be turned into an ERA PLC.
+    {{
+        owner national : 826,
+        version 0
+    } MEANING "UK NaPTAN Code"} |
+    {{
+        owner national : 276,
+        version 0
+    } MEANING "ZHV Deutschlandweite Haltestellen-ID"} | -- DHIDs are encoded without the `de:` prefix
+    {{
+        owner national : 756,
+        version 0
+    } MEANING "Swiss LOcation IDentification"}, -- Encoded without the `ch:1:sloid:` prefix,
+    ...
+}
+
+StationSet ::= [APPLICATION 7] SEQUENCE {
     set CHOICE {
         /**
         * Where a station group is defined a number of stations grouped together with a primary station.
         */
-        groupPrimary    Station,
+        groupPrimary    [1] Station,
         /**
         * Explicitly listing all stations in a group.
         */
-        list            SEQUENCE OF Station
+        list            [2] SEQUENCE OF Station
     },
     setNameUTF8 UnicodeText OPTIONAL
 }
@@ -87,30 +127,64 @@ StationSet ::= SEQUENCE {
 /**
 * A LINE in Transmodel (EN 12896-2:2016 § 5.3.7.4).
 */
-LineId ::= CHOICE {
-    /**
-    * e.g. "RE1".
-    */
-    publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
-    generic             GenericCode{GenericId}
+LineId ::= [APPLICATION 8] SEQUENCE {
+    id      CHOICE {
+        /**
+        * e.g. "RE1".
+        */
+        publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
+        generic             GenericCode{GenericId, {LineIdCodeTables}}
+    },
+    carrier CompanyCode
+}
+
+LineIdCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 276,
+        version 0
+    } MEANING "VDV 431-2 Line ID"} | -- Line IDs are encoded without the `de:` prefix
+    {{
+        owner national : 756,
+        version 0
+    } MEANING "Swiss LiNe IDentification"}, -- Encoded without the `ch:1:slnid:` prefix,
+    ...
 }
 
 /**
 * A SERVICE JOURNEY in Transmodel (EN 12896-3:2016 § 5.3.2).
 */
-TransportId ::= CHOICE {
-    /**
-    * e.g. "ICE107".
-    */
-    publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
-    generic             GenericCode{GenericId}
+TransportId ::= [APPLICATION 8] SEQUENCE {
+    id      CHOICE {
+        /**
+        * e.g. "ICE107".
+        */
+        publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
+        generic             GenericCode{GenericId, {TransportIdCodeTables}}
+    },
+    carrier CompanyCode
+}
+
+TransportIdCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 276,
+        version 0
+    } MEANING "VDV 431-2 Journey ID"} | -- Journey IDs are encoded without the `de:` prefix
+    {{
+        owner company : orgCode : "1170",
+        version 0
+    } MEANING "RDG UID"} |
+    {{
+        owner national : 756,
+        version 0
+    } MEANING "Swiss JourneY IDentification"}, -- Encoded without the `ch:1:sjyid:` prefix,
+    ...
 }
 
 /**
 * A geographic area defined under the Nomenclature of Territorial Units for Statistics (Regulation EC 1059/2003).
 * Divisions all the way down to the Local Administrative Unit are permitted.
 * NUTS codes are only defined for members of the EU, the EFTA, and EU candidate countries.
-* FAUs are permitted standalone, e.g. `DE025F` (Freiburg im Breisgau) is coded with the subdivision `025F`.
+* FAUs are not permitted standalone.
 * LAUs must be appended to their NUTS3 code, e.g. `DE13308316011` for Emmendingen, Stadt is coded with the subdivision `13308316011`.
 * For those countries outside the NUTS system:
 * - the UK maintains a compatible system since Brexit called the International Territorial Level;
@@ -118,7 +192,7 @@ TransportId ::= CHOICE {
 * - if none of the above applies for a country, a choice of suitable system **MUST** be defined by UIC,
 *    users **MUST NOT** define bilateral subdivisions.
 */
-NUTSArea ::= SEQUENCE {
+NUTSArea ::= [APPLICATION 9] SEQUENCE {
     /**
     * ISO 3166-1 numeric code.
     */
@@ -129,30 +203,38 @@ NUTSArea ::= SEQUENCE {
 /**
 * One or more areas of geographic validity.
 */
-AreaSet ::= CHOICE {
+AreaSet ::= [APPLICATION 10] CHOICE {
     /**
     * European NUTS code, or compatible.
     */
-    nuts    SEQUENCE OF NUTSArea,
-    generic GenericCode{CHOICE {
+    nuts    [1] SEQUENCE OF NUTSArea,
+    generic [2] GenericCode{CHOICE {
         /**
         * e.g. sequence of allowed area/zone numbers such as `{1,5,23}`.
         */
-        idNum    SEQUENCE OF INTEGER,
+        idNum    [1] SEQUENCE OF INTEGER,
         /**
         * e.g. areas/zones described with text such as `{"M","1-3"}`.
         */
-        idIA5    SEQUENCE OF VisibleString,
+        idIA5    [2] SEQUENCE OF VisibleString,
         /**
         * e.g. sequence of Calypso NetworkIds such as `{'250901'H,'250072'H}`.
         */
-        idOct    SEQUENCE OF OCTET STRING,
+        idOct    [3] SEQUENCE OF OCTET STRING,
         /**
         * Recommended encoding: bit n (considering that bit 0 = right-most bit) encodes area/zone n+1, bit value 1 = area/zone is allowed, bit value 0 = area/zone is forbidden.
         * e.g. bitmap of allowed areas/zones such as `'10101110010'B` for areas/zones 2, 5, 6, 7, 9 and 11.
         */
-        idBit    BIT STRING
-    }}
+        idBit    [4] BIT STRING
+    }, {AreaCodeTables}}
+}
+
+AreaCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 208,
+        version 0
+    } MEANING "Danish Rejsekort zone"}, -- Rejsekort zones are numeric.
+    ...
 }
 
 /**
@@ -160,24 +242,24 @@ AreaSet ::= CHOICE {
 * `placeString`: place number ranges in case of groups.
 */
 CoachPlaces ::= SEQUENCE {
-    coach               VisibleString               OPTIONAL,
+    coach               [1] VisibleString           OPTIONAL,
 
     /**
     * Printable place string  (e.g. "15-18, 21, 22").
     */
-    placeString         VisibleString               OPTIONAL,
+    placeString         [2] VisibleString           OPTIONAL,
 
     /**
     * Printable place description.
     */
-    placeDescription    UnicodeText                 OPTIONAL,
+    placeDescription    [3] UnicodeText             OPTIONAL,
 
     /**
     * Individual places.
     */
-    placeNumber         SEQUENCE OF PlaceNumber     OPTIONAL,
+    placeNumber         [4] SEQUENCE OF PlaceNumber OPTIONAL,
 
-    details             PlaceDetails            OPTIONAL
+    details             [5] PlaceDetails            OPTIONAL
 }
 
 /**
@@ -236,7 +318,7 @@ PlaceDetails ::= SEQUENCE {
 *
 * The `language` field **MAY** also be used to influence other transliterations, e.g. the different handling of diaereses by language.
 */
-UnicodeText ::= SEQUENCE {
+UnicodeText ::= [APPLICATION 4] SEQUENCE {
     /**
     * SCSU encoding of the textual data.
     */
@@ -252,51 +334,51 @@ UnicodeText ::= SEQUENCE {
 */
 GeoCoordinate ::= SEQUENCE {
     position            GeoUnit,
-    coordinateSystem    GeoCoordinateSystem   DEFAULT wgs84,
     /**
-    * If omitted the accuracy is unknown.
+    * If omitted, the accuracy is unknown or out of range (i.e. > 0.1 degrees)
     */
-    accuracy            GeoUnitType           OPTIONAL
+    accuracy            GeoUnitType OPTIONAL
 }
 
-GeoCoordinateSystem ::= ENUMERATED {
-    /**
-    * WGS 84 standard system.
-    */
-    wgs84   (0),
-    /**
-    * (outdated) GRS 80 coordinate system.
-    */
-    grs80   (1)
-}
-
+/**
+* To convert between meters of accuracy and degrees of accuracy:
+* 1. The earth's circumference shall be considered 40,075,016.7 meters, per WGS84.
+* 2. Let the meters per degree at a latitude be the cosine of the latitude in radians, times the earth's circumference, divided by 360.
+* 3. The degrees of accuracy is the meters of accuracy divided by the meters per degree at the latitude.
+*/
 GeoUnitType ::= ENUMERATED {
     /**
-    * 1 / 10000 degree is approx. 11 meter on earth surface.
+    * Accuracy <= 0.0001 degrees
     */
-    tenthMilliDegree    (0), --
+    tenthMilliDegree    (0),
     /**
-    * Approx. 110 meter on earth surface.
+    * Accuracy <= 0.001 degrees
     */
     milliDegree         (1),
+    /**
+    * Accuracy <= 0.01 degrees
+    */
     centiDegree         (2),
+    /**
+    * Accuracy <= 0.1 degrees
+    */
     deciDegree          (3)
 }
 
 GeoUnit ::= CHOICE {
-  tenthMilliDegree SEQUENCE {
+  tenthMilliDegree [1] SEQUENCE {
     longitude INTEGER (-1800000..1800000),
     latitude  INTEGER (-900000..900000)
   },
-  milliDegree SEQUENCE {
+  milliDegree [2] SEQUENCE {
     longitude INTEGER (-180000..180000),
     latitude  INTEGER (-90000..90000)
   },
-  centiDegree SEQUENCE {
+  centiDegree [3] SEQUENCE {
     longitude INTEGER (-18000..18000),
     latitude  INTEGER (-9000..9000)
   },
-  deciDegree SEQUENCE {
+  deciDegree [4] SEQUENCE {
     longitude INTEGER (-1800..1800),
     latitude  INTEGER (-900..900)
   }
@@ -305,8 +387,8 @@ GeoUnit ::= CHOICE {
 /**
 * Generic timestamp, expressed in UTC.
 */
-Timestamp ::= SEQUENCE {
-    year INTEGER (2016..2269),
+Timestamp ::= [APPLICATION 1] SEQUENCE {
+    year INTEGER (2026..2281),
     /**
     * The number of the day in the year (1st Jan = 1).
     */
@@ -318,14 +400,31 @@ Timestamp ::= SEQUENCE {
 }
 
 /**
+* The OID assigned to identify the Canonical Aligned Packed Encoding Rules, per ITU-T X.691.
+*/
+caperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(3) canonical(1) aligned(0)}
+
+/**
 * The OID assigned to identify the Canonical Unaligned Packed Encoding Rules, per ITU-T X.691.
 */
-cuperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t (2) asn1 (1) packed-encoding (3) canonical (1) unaligned (1)}
+cuperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(3) canonical(1) unaligned(1)}
+
+/**
+* The contents of the data element is a raw bytes value. Only permitted when the `&Type` is `OCTET STRING`.
+*/
+rawEncoding OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
+    uic(17218) fcb(1) bt4pt(2) encoding(8) raw(0)}
+
+/**
+* The data element contains no data. Only permitted when the `&Type` is `NULL`.
+*/
+nullEncoding OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
+    uic(17218) fcb(1) bt4pt(2) encoding(8) null(1)}
 
 /**
 * A TRANSPORT ORGANIZATION in Transmodel (EN 12896-1:2016 § 5.6.8).
 */
-CompanyCode ::= CHOICE {
+CompanyCode ::= [APPLICATION 2] CHOICE {
     /**
     * For companies within the EU this field **SHALL** be their ERA assigned Organisation Code.
     * For others this field **SHALL** be their UIC assed RICS Code.
@@ -348,26 +447,34 @@ CompanyCode ::= CHOICE {
         * All values **SHOULD** be registered via the UIC Github repository.
 		*/
 		format      COMPANY-CODE-FORMAT.&id({CompanyCodeFormats}),
-		code        VisibleString
+		code        VisibleString (SIZE(1..8,...))
 	}
 }
 
 COMPANY-CODE-FORMAT ::= CLASS {
-    &id VisibleString (SIZE(1..16) ^ (ALL EXCEPT ("!I" | "!C" | "!P"))) UNIQUE,
+    &id VisibleString (SIZE(1..8) ^ (ALL EXCEPT ("!I" | "!C" | "!P"))) UNIQUE,
     &name UTF8String
 } WITH SYNTAX {
     &id MEANING &name
 }
 
 CompanyCodeFormats COMPANY-CODE-FORMAT ::= {
-    { "VDV" MEANING "Verband Deutscher Verkehrsunternehmen Organisation ID" },
+    { "+DEVDV" MEANING "Verband Deutscher Verkehrsunternehmen Organisation ID" } |
+    { "+GBNOC" MEANING "Traveline National Operator Code" } |
+    { "+CHSBOID" MEANING "Swiss Business Organisation Identification" }, -- Encoded without the `ch:1:sboid:` prefix.
     ...
 }
 
+CompanyConstraint ::= CHOICE {
+    securityProvider    NULL,
+    permitted           SEQUENCE (SIZE(1..32)) OF CompanyCode
+}
 
 /**
 * A data element, identified by its `&id`, containing data as specified by its `&Type`, and encoded into an `OCTET STRING`
 * as specified by its `&encoding`.
+* An `EndEntityCertificate` may constrain the the data element, using its `&CertificateConstraint`, encoded into an
+* `OCTET STRING` as specified by its `&encoding`.
 * The identifier `&id` can be of the following forms:
 * - `+` + [2-letters uppercase ISO 3166 country code] + [addon, chosen by the national standards body of that country]
 * - `_` + [RICS or ERA Organisation Code] + [addon, chosen by this company]
@@ -383,20 +490,33 @@ CompanyCodeFormats COMPANY-CODE-FORMAT ::= {
 * All values **SHOULD** be registered via the UIC Github repository.
 */
 DATA-ELEMENT ::= CLASS {
-    &id VisibleString (SIZE(1..16)) UNIQUE,
+    &id VisibleString (SIZE(1..8)) UNIQUE,
     &Type,
-    &encoding OBJECT IDENTIFIER
+    &encoding OBJECT IDENTIFIER,
+    &CertificateConstraint
 } WITH SYNTAX {
-    &Type IDENTIFIED BY &id ENCODED WITH &encoding
+    &Type IDENTIFIED BY &id ENCODED WITH &encoding CONSTRAINED BY &CertificateConstraint
 }
 
 /**
 * Generic data container.
 * @ElementSet Set of `DATA-ELEMENT` objects that are permitted as contents. This set **SHOULD** be extensible.
 */
-Data{DATA-ELEMENT: ElementSet} ::= SEQUENCE {
-    format DATA-ELEMENT.&id({ElementSet}),
-    value OCTET STRING (CONTAINING DATA-ELEMENT.&Type({ElementSet}{@format}))
+Data{DATA-ELEMENT: ElementSet} ::= [APPLICATION 3] SEQUENCE {
+    /**
+    * If the data format is not recognised, or can't be processed, and it is marked critical, the ticket **MUST** be treated as invalid;
+    * otherwise, it is permitted to ignore extensions not understood.
+    */
+    critical    BOOLEAN,
+    format      DATA-ELEMENT.&id({ElementSet}),
+    value       OCTET STRING (CONTAINING DATA-ELEMENT.&Type({ElementSet}{@format}))
+}
+
+DataAuthorization{DATA-ELEMENT: ElementSet} ::= SEQUENCE (SIZE(1..64)) OF DataAuthorizationEntry{{ElementSet}}
+
+DataAuthorizationEntry{DATA-ELEMENT: ElementSet} ::= SEQUENCE {
+    format      DATA-ELEMENT.&id({ElementSet}),
+    constraint  OCTET STRING (CONTAINING DATA-ELEMENT.&CertificateConstraint({ElementSet}{@format}))
 }
 
 /**
@@ -510,6 +630,23 @@ SharedVehicleReturnConstraint ::= ENUMERATED {
     anyStation (2),
     hybrid (3),
     ...
+}
+
+/**
+* A generic container for the conveyance of Digital Signature Scheme signatures, i.e. ECDSA.
+* @len The length, in bytes, of each of `r` and `s`. That is, half the total signature length.
+*/
+DSSSignature{INTEGER: len} ::= SEQUENCE {
+    r OCTET STRING (SIZE(len)),
+    s OCTET STRING (SIZE(len))
+}
+
+/**
+* @len The length, in bytes, required to represent the x coördinate on a curve.
+*/
+ECPublicKey{INTEGER: len} ::= SEQUENCE {
+    yIsOdd BOOLEAN,
+    x OCTET STRING (SIZE(len))
 }
 
 END

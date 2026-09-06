@@ -1,0 +1,922 @@
+MMTD-Examples DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS MultiModalTicket
+ FROM BT4PT-MultiModalTicketDataV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) mmtd(3) v1(1) 0 };
+
+/**
+* Based on the ticket available [here](https://raw.githubusercontent.com/BT4PT/asn1/refs/heads/root/examples/db-ice-ticket.pdf).
+*/
+dbIceTicket MultiModalTicket ::= {
+    issuingDetail {
+        /**
+        * The ERA organisation code `1080` is assigned to the Deutsche Bahn AG.
+        */
+        issuer orgCode : "1080",
+        issuedAt {
+            year 2026,
+            /**
+            * The 4th of March.
+            */
+            day 63,
+            /**
+            * 11:18
+            */
+            time 678
+        },
+        /**
+        * This is a test barcode.
+        */
+        specimen TRUE,
+        /**
+        * This ticket was issued digitally, and is valid without being on secure paper.
+        */
+        securePaperTicket notOnSecurePaper,
+        /**
+        * This is the ID of the ticket in the eTCD (Electronic Ticket Control Database).
+        */
+        ticketControlNumber idIA5 : "B3W1LZAV",
+        productRetail {
+            /**
+            * This ticket was sold directly by the DB.
+            */
+            retailerId orgCode : "1080",
+            /**
+            * This ticket was sold over bahn.de.
+            */
+            retailChannel webSite
+        },
+        /**
+        * The traveller prefers to be spoken to in German.
+        */
+        preferredLanguage "de"
+    },
+    traveler {{
+        /**
+        * SCSU for "Max".
+        */
+        firstName '4D6178'H,
+        /**
+        * SCSU for "Mustermann".
+        */
+        lastName '4D75737465726D616E6E'H,
+        /**
+        * This is a German language name.
+        */
+        language "de",
+        passengerType person,
+        /**
+        * The passenger was born on the 3rd of October 1990.
+        */
+        ageOrBirth dateOfBirth : {
+            year 1990,
+            month 10,
+            day 3
+        }
+    }},
+    controlDetail {
+        /**
+        * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
+        * against the eTCD does not render the ticket inadmissible.
+        */
+        onlineValidationRequired optional,
+        /**
+        * This ticket's online validation is stored in an ERA TEL TSI compliant eTCD.
+        */
+        onlineValidationType eTCD : NULL,
+        /**
+        * It is not mandatory to inspect the traveller's documents.
+        */
+        identificationRequired FALSE,
+        /**
+        * This is a youth ticket, it is required to check the age of the traveller.
+        */
+        ageCheckRequired TRUE,
+        /**
+        * This ticket was sold with a reduction card, it is required to check it.
+        */
+        reductionCardCheckRequired TRUE
+    },
+    transportDocument {transportProduct : {
+        geoValidity {{
+            validitySegment pointBased : {
+                /**
+                * This route is a conversion of the 180.1 via string `<1080>NK*HOM*NW*(WO/HD)*F*(GI/FD)*(H/HI)`.
+                * Unicode names have been given for the start and end stations, in case a reader does not have the
+                * ERA primary location code reference to hand. They have been omitted in the valid routing, for space
+                * reasons.
+                */
+                routeItem {station : {
+                    /**
+                    * ERA primary location code `DE15264`.
+                    */
+                    station eraPlc : {
+                        country 276,
+                        locationCode 15264
+                    },
+                    stationNameUTF8 {
+                        /**
+                        * SCSU for Jägersfreude.
+                        */
+                        text '4AE467657273667265756465'H,
+                        language "de"
+                    }
+                }, route : {
+                    routeItem {station : {
+                        /**
+                        * ERA primary location code `DE17584`, for Neunkirchen (Saar) Hbf.
+                        */
+                        station eraPlc : {
+                            country 276,
+                            locationCode 17584
+                        }
+                    }, station : {
+                        /**
+                        * ERA primary location code `DE15072`, for Homburg (Saar) Hbf.
+                        */
+                        station eraPlc : {
+                            country 276,
+                            locationCode 15072
+                        }
+                    }, station : {
+                        /**
+                        * ERA primary location code `DE17641`, for Neustadt (Weinstr.) Hbf.
+                        */
+                        station eraPlc : {
+                            country 276,
+                            locationCode 17641
+                        }
+                    }, alternativeRoutes : {{
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE21306`, for Worms Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 21306
+                            }
+                        }}
+                    }, {
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE14673`, for Heidelberg Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 14673
+                            }
+                        }}
+                    }}, station : {
+                        /**
+                        * ERA primary location code `DE13276`, for Frankfurt (Main) Hbf.
+                        */
+                        station eraPlc : {
+                            country 276,
+                            locationCode 13276
+                        }
+                    }, alternativeRoutes : {{
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE13740`, for Gießen.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 13740
+                            }
+                        }}
+                    }, {
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE13529`, for Fulda.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 13529
+                            }
+                        }}
+                    }}, alternativeRoutes : {{
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE14549`, for Hannover Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 14549
+                            }
+                        }}
+                    }, {
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE14893`, for Hildesheim Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 14893
+                            }
+                        }}
+                    }}}
+                }, station : {
+                    /**
+                    * ERA primary location code `DE11577`.
+                    */
+                    station eraPlc : {
+                        country 276,
+                        locationCode 11577
+                    },
+                    stationNameUTF8 {
+                        /**
+                        * SCSU for Braunschweig Hbf.
+                        */
+                        text '427261756E7363687765696720486266'H,
+                        language "de"
+                    }
+                }}
+            },
+            appliedSpecificConditionsIndex 1
+        }},
+        returnGeoValidity {{
+            validitySegment pointBased : {
+                /**
+                * This route is a conversion of the 180.1 via string `<1080>(HI/H)*GOE*(FD*F*MA/KS*GI)`.
+                */
+                routeItem {station : {
+                    /**
+                    * ERA primary location code `DE11577`.
+                    */
+                    station eraPlc : {
+                        country 276,
+                        locationCode 11577
+                    },
+                    stationNameUTF8 {
+                        /**
+                        * SCSU for Braunschweig Hbf.
+                        */
+                        text '427261756E7363687765696720486266'H,
+                        language "de"
+                    }
+                }, route : {
+                    routeItem {alternativeRoutes : {{
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE14549`, for Hannover Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 14549
+                            }
+                        }}
+                    }, {
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE14893`, for Hildesheim Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 14893
+                            }
+                        }}
+                    }}, station : {
+                        /**
+                        * ERA primary location code `DE13874`, for Göttingen.
+                        */
+                        station eraPlc : {
+                            country 276,
+                            locationCode 13874
+                        }
+                    }, alternativeRoutes : {{
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE13529`, for Fulda.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 13529
+                            }
+                        }, station : {
+                            /**
+                            * ERA primary location code `DE13276`, for Frankfurt (Main) Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 13276
+                            }
+                        }, station : {
+                            /**
+                            * ERA primary location code `DE16741`, for Mannheim Hbf.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 16741
+                            }
+                        }}
+                    }, {
+                        routeItem {station : {
+                            /**
+                            * ERA primary location code `DE15439`, for Kassel-Wilhelmshöhe.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 15439
+                            }
+                        }, station : {
+                            /**
+                            * ERA primary location code `DE13740`, for Gießen.
+                            */
+                            station eraPlc : {
+                                country 276,
+                                locationCode 13740
+                            }
+                        }}
+                    }}}
+                }, station : {
+                    /**
+                    * ERA primary location code `DE19153`.
+                    */
+                    station eraPlc : {
+                        country 276,
+                        locationCode 19153
+                    },
+                    stationNameUTF8 {
+                        /**
+                        * SCSU for Saarbrücken Hbf.
+                        */
+                        text '536161726272FC636B656E20486266'H,
+                        language "de"
+                    }
+                }}
+            },
+            appliedSpecificConditionsIndex 2
+        }, {
+            validitySegment area : {
+                area included : generic : {
+                    codeTable productOwner : NULL,
+                    id idNum : {8000323}
+                }
+            },
+            appliedSpecificConditionsIndex 3
+        }},
+        generalConditions {
+            productVariety ticket : {
+                ticketCategory return
+            },
+            coveringArea {{
+                /**
+                * Ticket applicable to the whole of Germany.
+                */
+                country 276
+            }},
+            product {
+                productId productIdIA5 : "ICE Fahrkarte"
+            },
+            reference idIA5 : "3XWM8MPG",
+            validFrom {
+                /**
+                * The 17th of March, 13 days after issuance.
+                */
+                validFromDay 13,
+                /**
+                * Midnight.
+                */
+                validFromTime 0
+            },
+            directionIsMandatory TRUE,
+            classCode second,
+            tariff {{
+                numberOfPassengers 1,
+                age ageRange : {
+                    ageBelow 28
+                },
+                travelerId {1},
+                tariffDesc {
+                    text '53706172707265697320596F756E67'H,
+                    language "de"
+                },
+                reductionCard {{
+                    product {
+                        /**
+                        * A Deutche Bahn reduction card.
+                        */
+                        productOwner orgCode : "1080",
+                        /**
+                        * A BahnCard 50.
+                        */
+                        productId productIdIA5 : "BC50"
+                    }
+                }}
+            }}
+        },
+        specificConditions {{
+            /**
+            * A DB ICE ticket is valid on all DB trains, and those operating under the Deutschlandtarif.
+            */
+            includedServiceVarieties {{
+                carrier orgCode : "1080"
+            }, {
+                carrier orgCode : "3642"
+            }},
+            directionIsMandatory TRUE,
+            transportService transportLink : {{
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE563"
+                }},
+                /**
+                * 17th of March, 08:49 UTC+01:00 (CET)
+                */
+                departureDateTime {
+                    departureDate 13,
+                    departureTime 529,
+                    departureUTCOffset -4
+                }
+            }, {
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE374"
+                }},
+                /**
+                * 17th of March, 10:30 UTC+01:00 (CET)
+                */
+                departureDateTime {
+                    departureDate 13,
+                    departureTime 630,
+                    departureUTCOffset -4
+                }
+            }}
+        }, {
+            /**
+            * A DB ICE ticket is valid on all DB trains, and those operating under the Deutschlandtarif.
+            */
+            includedServiceVarieties {{
+                carrier orgCode : "1080"
+            }, {
+                carrier orgCode : "3642"
+            }},
+            directionIsMandatory TRUE,
+            transportService transportLink : {{
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE379"
+                }},
+                /**
+                * 19th of March, 17:57 UTC+01:00 (CET)
+                */
+                departureDateTime {
+                    departureDate 15,
+                    departureTime 1077,
+                    departureUTCOffset -4
+                }
+            }, {
+                transportNumber {{
+                    carrier orgCode : "1080",
+                    id publicIdentifier : "ICE935"
+                }},
+                /**
+                * 19th of March, 21:57 UTC+01:00 (CET)
+                */
+                departureDateTime {
+                    departureDate 15,
+                    departureTime 1317,
+                    departureUTCOffset -4
+                }
+            }}
+        }, {
+            product {
+                /**
+                * DB Vertrieb GmbH, in the VDV's ecosystem.
+                */
+                productOwner otherCode : {
+                    format "+DEVDV",
+                    code "6262"
+                },
+                /**
+                * City-Ticket
+                */
+                productId productIdNum : 2000
+            },
+            /**
+            * This is a VDV ticket ID, as City-Tickets are VDV products.
+            */
+            reference idNum : 1235233072,
+            referenceCompany otherCode : {
+                format "+DEVDV",
+                code "6262"
+            },
+            /**
+            * 19th of March, midnight.
+            */
+            validFrom {
+                validFromDay 15,
+                validFromTime 0
+            },
+            /**
+            * 20th of March, 3am.
+            */
+            validUntil {
+                validUntilDay 16,
+                validUntilTime 180
+            }
+        }}
+    }}
+}
+
+/**
+* Based on the ticket available [here](https://raw.githubusercontent.com/BT4PT/asn1/refs/heads/root/examples/uk-ticket.pdf).
+* Note: the optional reservations on the ticket could be encoded here. This is left as an exercise to the reader.
+*/
+ukTicket MultiModalTicket ::= {
+    issuingDetail {
+        /**
+        * RailEasy doesn't have an ERA code.
+        */
+        issuer otherCode : {
+            /**
+            * This is an example format ID. It has not been officially assigned.
+            * 1170 is the RICS assigned to the RDG (née ATOC Ltd).
+            */
+            format "_1170XX",
+            code "RD"
+        },
+        issuedAt {
+            year 2025,
+            /**
+            * The 30th of July.
+            */
+            day 210,
+            time 1312
+        },
+        /**
+        * This is a test barcode.
+        */
+        specimen TRUE,
+        /**
+        * This ticket was issued digitally, and is valid without being on secure paper.
+        */
+        securePaperTicket notOnSecurePaper,
+        /**
+        * This is the ID of the ticket in the TVD (the UTN).
+        */
+        ticketControlNumber idIA5 : "GRHMY3EDK",
+        /**
+        * British Pound Sterling.
+        */
+        currency 826,
+        productRetail {
+            /**
+            * This ticket was sold directly by RailEasy.
+            */
+            retailerId otherCode : {
+                format "_1170XX",
+                code "RD"
+            },
+            /**
+            * This ticket was sold on the app.
+            */
+            retailChannel mobileApplication,
+            /**
+            * The machine that sold this ticket.
+            */
+            retailPointId idNum : 5502
+        }
+    },
+    controlDetail {
+        /**
+        * The ticket **MAY** be validated against the TVD, but a fault (e.g. loss of network signal) in checking
+        * against the TVD does not render the ticket inadmissible.
+        */
+        onlineValidationRequired optional,
+        /**
+        * This ticket's online validation in stored in an RDG compliant TVD.
+        */
+        onlineValidationType external : otherCode : {
+            format "_1170XX",
+            /**
+            * Whatever the ID of the company operating the TVD is.
+            */
+            code "XX"
+        },
+        identificationRequired FALSE,
+        ageCheckRequired FALSE,
+        /**
+        * This ticket was sold with a railcard, it is required to check it.
+        */
+        reductionCardCheckRequired TRUE
+    },
+    transportDocument {transportProduct : {
+        geoValidity {{
+            validitySegment pointBased : {
+                routeItem {station : {
+                    /**
+                    * NLC of Stansted Airport is 6834.
+                    */
+                    station eraPlc : {
+                        country 826,
+                        locationCode 68340
+                    }
+                }, station : {
+                    /**
+                    * NLC of London Terminals is 1072.
+                    */
+                    station eraPlc : {
+                        country 276,
+                        locationCode 10720
+                    }
+                }}
+            }
+        }},
+        generalConditions {
+            productVariety ticket : {
+                /**
+                * Marking this a return ticket, without providing a return geo-validity, means the return validity is the inverse of the outbound.
+                */
+                ticketCategory return
+            },
+            coveringArea {{
+                /**
+                * Ticket applicable to the whole of the UK
+                */
+                country 826
+            }},
+            product {
+                productOwner orgCode : "1170",
+                /**
+                * Anytime return.
+                */
+                productId productIdIA5 : "SOR"
+            },
+            classCode second,
+            tariff {{
+                numberOfPassengers 1,
+                passengerType person,
+                reductionCard {{
+                    product {
+                        productOwner orgCode : "1170",
+                        /**
+                        * 16-26 Railcard
+                        */
+                        productId productIdIA5 : "16-25"
+                    }
+                }}
+            }},
+            rareDetails {
+                price 2530
+            },
+            /**
+            * Midnight on the 30th of July.
+            */
+            validFrom {
+                validFromDay 0,
+                validFromTime 0
+            },
+            /*
+            * A month and a day after the outbound journey, at 5am.
+            */
+            validUntil {
+                validUntilDay 31,
+                validUntilTime 300
+            },
+            rareTimingConditions {
+                /**
+                * The outbound portion is only valid for the first 5 days of validity.
+                * `activatedReturnDays` is not set, as the return is valid for the whole duration of the ticket.
+                */
+                activatedDay {0, 1, 3, 4}
+            },
+            includedServiceVarieties {{
+                carrier otherCode : {
+                    format "+GBNOC",
+                    /**
+                    * Traveline NOCs can be constructed from rail operator IDs by prefixing `=`.
+                    */
+                    code "=LE"
+                }
+            }}
+        }
+    }}
+}
+
+/**
+* Based on the ticket available [here](https://raw.githubusercontent.com/BT4PT/asn1/refs/heads/root/examples/dsb-ticket.pdf).
+*/
+dsbTicket MultiModalTicket ::= {
+    issuingDetail {
+        /**
+        * The ERA organisation code `1186` is assigned to the DSB Passenger Subsidiary.
+        */
+        issuer orgCode : "1186",
+        issuedAt {
+            year 2026,
+            /**
+            * The 1st of September.
+            */
+            day 243,
+            /**
+            * 14:38
+            */
+            time 878
+        },
+        /**
+        * This is a test barcode.
+        */
+        specimen TRUE,
+        /**
+        * This ticket was issued digitally, and is valid without being on secure paper.
+        */
+        securePaperTicket notOnSecurePaper,
+        /**
+        * This is the ID of the ticket in the DSB's Elektronisk Billetkontrol Database.
+        */
+        ticketControlNumber idIA5 : "T2044683593",
+        productRetail {
+            /**
+            * This ticket was sold directly by the DSB.
+            */
+            retailerId orgCode : "1186",
+            /**
+            * This ticket was sold over dsb.dk.
+            */
+            retailChannel webSite
+        }
+    },
+    controlDetail {
+        /**
+        * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
+        * against the eTCD does not render the ticket inadmissible.
+        */
+        onlineValidationRequired optional,
+        /**
+        * This ticket's online validation is stored in the DSB's Elektronisk Billetkontrol Database.
+        */
+        onlineValidationType issuerProprietary : NULL,
+        /**
+        * It is not mandatory to inspect the traveller's documents.
+        */
+        identificationRequired FALSE,
+        ageCheckRequired FALSE,
+        reductionCardCheckRequired FALSE
+    },
+    transportDocument {transportProduct : {
+        geoValidity {{
+            validitySegment area : {
+                restrictedEntry station : {
+                    /**
+                    * ERA code for Aarhus Hovedbanegård.
+                    */
+                    station eraPlc : {
+                        country 208,
+                        locationCode 131
+                    }
+                },
+                area included : generic : {
+                    /**
+                    * National Rejsekort zones.
+                    */
+                    codeTable national : 208,
+                    id idNum : {4301, 4303, 4307, 4342}
+                },
+                restrictedExit station : {
+                    /**
+                    * ERA code for Hørning
+                    */
+                    station eraPlc : {
+                        country 208,
+                        locationCode 129
+                    }
+                }
+            }
+        }},
+        generalConditions {
+            productVariety ticket : {
+                ticketCategory single
+            },
+            coveringArea {{
+                /**
+                * Ticket applicable to the whole of the Denmark.
+                */
+                country 208
+            }},
+            product {
+                productOwner orgCode : "1186",
+                productId productIdIA5 : "TICKET"
+            },
+            classCode second,
+            tariff {{
+                numberOfPassengers 1,
+                passengerType person
+            }},
+            /**
+            * 4am on the 3rd of September.
+            */
+            validFrom {
+                validFromDay 2,
+                validFromTime 240
+            },
+            /*
+            * 3:59am on the 4th of September.
+            */
+            validUntil {
+                validUntilDay 1,
+                validUntilTime 239
+            },
+            /**
+            * The entire journey must be non-stop.
+            */
+            changeOfService FALSE,
+            includedServiceVarieties {{
+                /**
+                * Regional trains.
+                */
+                transportType 19
+            }}
+        }
+    }}
+}
+
+ukRailcard MultiModalTicket ::= {
+    issuingDetail {
+        issuer otherCode : {
+            format "_1170XX",
+            code "R5"
+        },
+        issuedAt {
+            year 2025,
+            day 76,
+            time 1226
+        },
+        specimen TRUE,
+        securePaperTicket notOnSecurePaper,
+        ticketControlNumber idIA5 : "GCB4L298N",
+        currency 826,
+        productRetail {
+            retailerId otherCode : {
+                format "_1170XX",
+                code "R5"
+            },
+            retailChannel mobileApplication,
+            retailPointId idNum : 1001
+        }
+    },
+    traveler {{
+        firstName '4D6178'H,
+        lastName '4D75737465726D616E6E'H,
+        language "de"
+    }},
+    transportDocument {customerCard : {
+        individualCardId idIA5 : "11ZMK1000000136",
+        classCode notApplicable,
+        product {
+            productOwner orgCode : "1170",
+            productId productIdIA5 : "FAM"
+        },
+        validFrom {
+            validFromDay 0,
+            validFromTime 0
+        },
+        validUntil {
+            validUntilDay 365,
+            validUntilTime 1440
+        }
+    }}
+}
+
+dbBahncard MultiModalTicket ::= {
+    issuingDetail {
+        issuer orgCode : "1080",
+        issuedAt {
+            year 2025,
+            day 361,
+            time 0
+        },
+        specimen TRUE,
+        securePaperTicket notOnSecurePaper,
+        ticketControlNumber idIA5 : "1-2NHJW6CT"
+    },
+    controlDetail {
+        onlineValidationRequired optional,
+        onlineValidationType eTCD : NULL,
+        identificationRequired TRUE,
+        ageCheckRequired FALSE,
+        reductionCardCheckRequired FALSE
+    },
+    traveler {{
+        firstName '51'H,
+        lastName '4D6973656C6C'H,
+        language "de"
+    }},
+    transportDocument {customerCard : {
+        individualCardId idNum : 7081411227884182,
+        classCode second,
+        product {
+            productOwner orgCode : "1080",
+            productId productIdIA5 : "BC50"
+        },
+        validFrom {
+            validFromDay 159,
+            validFromTime 0
+        },
+        validUntil {
+            validUntilDay 189,
+            validUntilTime 1440
+        }
+    }}
+}
+
+END
