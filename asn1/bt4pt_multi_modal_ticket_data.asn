@@ -140,7 +140,7 @@ MultiModalTicketConstraints ::= SEQUENCE {
     controlExtensions           DataAuthorization{{ControlDataExtensions}}      OPTIONAL,
     carriers                    CompanyConstraint                               OPTIONAL,
     serviceBrands               SEQUENCE OF INTEGER (1..32000)                  OPTIONAL,
-    transportTypes              SEQUENCE (SIZE(1..31)) OF INTEGER (0..31)       OPTIONAL,
+    transportTypes              SEQUENCE (SIZE(1..31)) OF INTEGER (1..31)       OPTIONAL,
     products                    SEQUENCE (SIZE(1..32)) OF ProductRestriction    OPTIONAL,
     transportDocument           DocumentConstraints                             OPTIONAL
 }
@@ -166,10 +166,9 @@ multiModalTicketData DATA-ELEMENT ::= { MultiModalTicket IDENTIFIED BY "MMT1" EN
 
 /**
 * Details of the issuer and the issue of the ticket.
-* - Details og the issuer
+* - Details of the issuer
 * - Indication of test tickets (specimen)
-* - Payment details: method of payment, currency
-* - Proprietary ID & booking ID of the issuer to be used to identify the sale within its ecosystem
+* - Proprietary ID of the issuer to be used to identify the sale within its ecosystem
 * - Retail information
 * - Proprietary extension data
 */
@@ -396,7 +395,7 @@ OnlineValidationType ::= CHOICE {
     * - `+` + [2-letters uppercase ISO 3166 country code] + [addon, chosen by the national standards body of that country]
     * - `_` + [RICS or ERA Organisation Code] + [addon, chosen by this company]
     * - `!I` + [addon, chosen by the issuer] - equivalent to the _RICS format, without repetition of the issuer's code.
-    * - `!C` + [addon, chosen by the carrier] - equivalent to the _RICS format, without repetition of the carriers's code.
+    * - `!C` + [addon, chosen by the carrier] - equivalent to the _RICS format, without repetition of the carriers' code.
     * - `!P` + [addon, chosen by the product owner] - equivalent to the _RICS format, without repetition of the product owner's code.
     * - `*` + [addon] - private use, not guaranteed to avoid clashes.
     *
@@ -420,7 +419,6 @@ OnlineValidationMethods ONLINE-VALIDATION-METHOD ::= { ... }
 /**
 * The choice on the different transport documents that can be included in the bar code data:
 *   - universal transport product
-*   - reservation of car carriage (VET)
 *   - voucher
 *   - customer card (including bonus cards and reduction cards)
 *   - parking ground tickets
@@ -598,7 +596,7 @@ GeoValiditySegment ::= SEQUENCE {
     * The specific conditions are in the indicated conditions list. 1 corresponds to the first entry of the sequence.
     * The edge case of having no general condition and no specific conditions is a valid case. This could be a full fare ticket without any restrictions.
     */
-    appliedSpecificConditionsIndex  INTEGER (1..16) OPTIONAL
+    appliedSpecificConditionsIndex  INTEGER (1..32) OPTIONAL
 }
 
 /**
@@ -621,7 +619,7 @@ GeoValidity ::= CHOICE {
     /**
     * Area defined using geocoordinates.
     */
-    polygone            Polygone,
+    polygon            Polygon,
     /**
     * Parking right (for a car, a bike...).
     */
@@ -715,7 +713,7 @@ Area ::= SEQUENCE {
     * If `restrictedEntry` and `restrictedExit` and area are present, the allowed areas/zones are only transit areas/zones:
     *  the traveler is allowed to cross them, but may neither begin nor end their journey in them.
     * If `restrictedEntry` and `restrictedExit` are present, and area is absent, there are no specific restrictions on how to travel
-    *  from `restrictedEntry` to `restrictedExit` (the only restrictions that apply are those described by the applicable `ConditionsType`).
+    *  from `restrictedEntry` to `restrictedExit` (the only restrictions that apply are those described by the applicable `Conditions`).
     */
     area CHOICE {
        /**
@@ -724,7 +722,7 @@ Area ::= SEQUENCE {
        included AreaSet,
 
        /**
-       * The allowed areas/zones are all the areas/zones of the applicable `concernedArea` element, except those
+       * The allowed areas/zones are all the areas/zones of the applicable `coveringArea` element, except those
        *  described in this element, in `restrictedEntry` and in `restrictedExit`.
        */
        excluded AreaSet
@@ -770,9 +768,9 @@ Line ::= SEQUENCE {
 }
 
 /**
-* Geographical validity defined as a polygone.
+* Geographical validity defined as a polygon.
 */
-Polygone ::= SEQUENCE {
+Polygon ::= SEQUENCE {
     firstEdge     GeoCoordinate,
     edges         SEQUENCE OF GeoUnit
 }
@@ -809,7 +807,7 @@ SharedVehicle ::= SEQUENCE {
     /**
     * Included amount of time allowed to access a shared vehicle, if more restrictive than the validity period.
     * If present, indicates that the entitlement is valid for a given amount of time within the validity period.
-    * If present, the count of the remaining number of allowed days or hours is centrally held in a back office,
+    * If present, the count of the remaining number of allowed days or minutes is centrally held in a back office,
     *  that **MUST** be queried to verify whether the traveler still has any remaining time.
     * Whether an operator allows the traveler to pay additionally for more time once the allotted time is up is
     * per local operator policy.
@@ -859,9 +857,9 @@ Conditions ::= SEQUENCE {
 
     /**
     * NUTS codes covering the whole area of validity of the ticket.
-    * This does not mean that the ticket valid everywhere inside such areas, but that it definitely
+    * This does not mean that the ticket is valid everywhere inside such areas, but that it definitely
     *  is NOT valid outside the covering area.
-    * Each GeoValiditySegment **MUST** have a set coveringArea, either through the genericConditions or a referenced
+    * Each GeoValiditySegment **MUST** have a set `coveringArea`, either through the `generalConditions` or a referenced
     *  specificConditions. Tickets without a coveringArea on every segment **MUST** be rejected as malformed tickets.
     * Validity to specific services, transport modes, etc., may be further constrained by other conditions.
     * Examples:
@@ -904,7 +902,7 @@ Conditions ::= SEQUENCE {
     referenceCompany				CompanyCode                                             OPTIONAL,
 
     /**
-    * Having no `validFrom` is allowed (e.g. ticket not yet activated, which will be reissued with an explict `validFrom` upon activation).
+    * Having no `validFrom` is allowed (e.g. ticket not yet activated, which will be reissued with an explicit `validFrom` upon activation).
     * Having no validUntil is allowed (e.g. ticket with unlimited validity - which should nevertheless have a security expiry date in the header requiring regular reissue).
     */
     validFrom                       ValidFrom                                               OPTIONAL,
@@ -927,7 +925,7 @@ Conditions ::= SEQUENCE {
 
     /**
     * Link to a specific transport services.
-    * Note that for a return ticket where the outbound and inbound geographic validates are the same, and thus the
+    * Note that for a return ticket where the outbound and inbound geographic validities are the same, and thus the
     * returnGeoValidity is not encoded, this field encodes linked transport services for both the outbound and
     * inbound directions.
     */
@@ -994,7 +992,7 @@ NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
 * An identifier for the variety of transport included in/excluded from ticket conditions.
 * The fields in this SEQUENCE are to be ANDed together as part of matching.
 * That is, if ticket includes a transport variety with both `carrier eraCode : "1080"` and `transportType 10` set,
-* then it only valid on high-speed trains operated by the Deutsche Bahn.
+* then it is only valid on high-speed trains operated by the Deutsche Bahn.
 */
 TransportVariety ::= SEQUENCE {
     carrier         CompanyCode         OPTIONAL,
@@ -1014,10 +1012,10 @@ TransportVariety ::= SEQUENCE {
 RareTimingConditions ::= SEQUENCE {
     /**
     * Extended validity for tickets valid up to just over 5 years.
-    * If this element is used, the eponymous element in `ConditionsType` **MUST NOT** be used.
+    * If this element is used, the eponymous element in `Conditions` **MUST NOT** be used.
     * For security reasons, such a long lasting ticket should:
     *  - either have a shorter security expiry date set in the header and be regularly reissued,
-    *  - or integrate other countermeasures such a Security In Paper and/or the use a dedicated key.
+    *  - or integrate other countermeasures such as Security In Paper and/or the use of a dedicated key.
     */
     validUntil                              ExtendedValidUntil                              OPTIONAL,
 
@@ -1048,8 +1046,8 @@ RareTimingConditions ::= SEQUENCE {
     * The ticket can only be used on the days it is activated.
     * If the ticket is a return ticket, activatedDay only applies to the outward journey (use activatedReturnDay for the return journey).
     * Each day is given by the number of days from the first day of validity (validFrom) (0 = first day of validity).
-    * For day that the ticket is activated, the activation is valid from 00:00 to 23:59 in the time zone of the traveler's current location,
-    * thereby the activation might include more or less that 24 hours in case time zone borders are crossed.
+    * For each day that the ticket is activated, the activation is valid from 00:00 to 23:59 in the time zone of the traveler's current location,
+    * thereby the activation might include more or less than 24 hours in case time zone borders are crossed.
     * Travel days of a ticket might be subject to a separate activation to be valid for traveling.
     * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil`.
     */
@@ -1088,7 +1086,7 @@ RareDetails ::= SEQUENCE {
     /**
     * Carriers/modes of transport excluded from this ticket.
     * In case `includedServiceVarieties` is not provided, the ticket is valid on all services in its
-    * `coveredArea` and `coveredNetwork`, except those in this field.
+    * `coveringArea` and `coveringNetwork`, except those in this field.
     * If `includedServiceVarieties` is specified, then the exclusions are processed logically after any inclusions.
     * That is, even if the ticket conditions include a service, an exclusion overrides that.
     */
@@ -1127,7 +1125,7 @@ ConditionsExtensions DATA-ELEMENT ::= { ... }
 */
 Car ::= SEQUENCE {
     /**
-    * Unless spaces form an integral part of identifying a plate, the **MUST NOT** be included.
+    * Unless spaces form an integral part of identifying a plate, they **MUST NOT** be included.
     * E.g. a German car with the plate SB[TÜV Sticker]A 123 **SHALL** be encoded as `SB-A123`.
     * Dutch duplicate codes **MUST NOT** be encoded, i.e. the small number above the first dash does not
     * form part of the plate.
@@ -1185,7 +1183,7 @@ Car ::= SEQUENCE {
 }
 
 /**
-* Type definitions used in `TransportLink` and `ReservationSegmentType`.
+* Type definitions used in `TransportLink` and `ReservationSegment`.
 */
 DepartureDateTime ::= SEQUENCE {
     /**
@@ -1224,7 +1222,7 @@ ArrivalDateTime ::= SEQUENCE {
 
 /**
 * Describes a transport link associated to a route or to a part of a route.
-* Quite similar to ReservationSegmentType but without assigned place(s).
+* Quite similar to ReservationSegment but without assigned place(s).
 */
 TransportLink ::= SEQUENCE {
     /**
@@ -1359,7 +1357,7 @@ ReservationSegment ::= SEQUENCE {
     berth                   SEQUENCE OF BerthDetailData                             OPTIONAL,
 
 	/**
-	* When a reservation includes transportation of a car, this field is used include details of the book car or cars.
+	* When a reservation includes transportation of a car, this field is used to include details of the booked car or cars.
 	*/
 	cars					SEQUENCE OF Car                                         OPTIONAL
 }
@@ -1620,7 +1618,7 @@ CardReference ::= SEQUENCE {
 /**
 * Description of an identity document
 * If number is not provided, this sequence merely defines the acceptable type of identification
-* document, but does not specify and exact document; i.e. the traveler may be identified via
+* document, but does not specify an exact document; i.e. the traveler may be identified via
 * their passport, but no stipulation is made on which specific passport is presented.
 * If the country field is also blank, then this means any country (or no country at all) is valid.
 */
@@ -1654,7 +1652,7 @@ IdentificationDocument ::= SEQUENCE {
 */
 Traveler ::= SEQUENCE {
     /**
-    * All 3 name parts are encoded with SCSU the SCSU compression (as per `UnicodeText`).
+    * All 3 name parts are encoded with SCSU compression (as per `UnicodeText`).
     * The language tag applies to all 3 name parts.
     * That is, the name parts are to be construed as 3 UnicodeText SEQUENCEs with the same language tag set.
     */
@@ -1662,13 +1660,13 @@ Traveler ::= SEQUENCE {
     secondName      OCTET STRING                                OPTIONAL,
     lastName        OCTET STRING                                OPTIONAL,
     /**
-    * ISO 639-1 coding (lower case) of the names's language.
+    * ISO 639-1 coding (lower case) of the names' language.
     */
     language        VisibleString (SIZE(2) ^ FROM ("a".."z"))   OPTIONAL,
 
     /**
     * The definition of which passenger is which type in this field is per the issuer,
-    *  and may be overridden by product owner for a specific segment using `TariffType.passengerType`.
+    *  and may be overridden by product owner for a specific segment using `Tariff.passengerType`.
     */
     passengerType   PassengerType                               OPTIONAL,
 
@@ -1718,7 +1716,7 @@ RareTravelerDetails ::= SEQUENCE {
     /**
     * Country of residence (numeric ISO 3166 country code).
     * To be used in case there are product restrictions linked to the country of residence (e.g. Eurail passes),
-    *   such restrictions are then indicated with the `countryValidity` element in `TariffType`.
+    *   such restrictions are then indicated with the `countryValidity` element in `Tariff`.
     */
     countryOfResidence              INTEGER (1..999)                                    OPTIONAL,
 
@@ -1867,7 +1865,7 @@ CustomerCardConstraints ::= SEQUENCE {
 /**
 * Data for parking as a standalone document.
 * Included are data from:
-* - DB parking ground reservation\
+* - DB parking ground reservation
 */
 ParkingGround ::= SEQUENCE {
     /**
