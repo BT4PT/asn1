@@ -422,7 +422,7 @@ dbIceTicket MultiModalTicket ::= {
                 /**
                 * 17th of March, 08:49 UTC+01:00 (CET)
                 */
-                departureDateTime {
+                departure exact : {
                     departureDate 13,
                     departureTime 529,
                     departureUTCOffset -4
@@ -435,7 +435,7 @@ dbIceTicket MultiModalTicket ::= {
                 /**
                 * 17th of March, 10:30 UTC+01:00 (CET)
                 */
-                departureDateTime {
+                departure exact : {
                     departureDate 13,
                     departureTime 630,
                     departureUTCOffset -4
@@ -459,7 +459,7 @@ dbIceTicket MultiModalTicket ::= {
                 /**
                 * 19th of March, 17:57 UTC+01:00 (CET)
                 */
-                departureDateTime {
+                departure exact : {
                     departureDate 15,
                     departureTime 1077,
                     departureUTCOffset -4
@@ -472,7 +472,7 @@ dbIceTicket MultiModalTicket ::= {
                 /**
                 * 19th of March, 21:57 UTC+01:00 (CET)
                 */
-                departureDateTime {
+                departure exact : {
                     departureDate 15,
                     departureTime 1317,
                     departureUTCOffset -4
