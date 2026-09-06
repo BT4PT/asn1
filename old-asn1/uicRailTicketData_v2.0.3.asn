@@ -7,7 +7,7 @@ RailTicketData { iso(1) identified-organization(3) dod(6)
 
 EXPORTS UicRailTicketData, uicRailTicketData;
 IMPORTS DATA-ELEMENT, cuperEncoding
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 
 -- changes:
@@ -160,7 +160,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
         ,...
     }
 
-    uicRailTicketData DATA-ELEMENT ::= { UicRailTicketData IDENTIFIED BY "FCB2" ENCODED WITH cuperEncoding }
+    uicRailTicketData DATA-ELEMENT ::= { UicRailTicketData IDENTIFIED BY "FCB2" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
 
 
    --  ###########################################################################################
@@ -419,13 +419,13 @@ IMPORTS DATA-ELEMENT, cuperEncoding
    --  ################################################################################			       
     TravelerData  	::=  SEQUENCE	{   				             
     	-- traveler list
-        traveler            SEQUENCE OF TravelerType  OPTIONAL,    
+        traveler            SEQUENCE OF TravelerType  OPTIONAL,
         
         -- ISO 639-1 coding of the language preferred for the traveler / ticket holder
-        preferredLanguage 	IA5String (SIZE(2))       OPTIONAL, 
+        preferredLanguage 	IA5String (SIZE(2))       OPTIONAL,
         
         -- name of the group in case of a group ticket
-        groupName           UTF8String                OPTIONAL 		
+        groupName           UTF8String                OPTIONAL
         ,...
 	}     		                              		
 
@@ -1136,7 +1136,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
 	   
 	   -- customer details 
 	   --   optional, as there might be an anonymous cards
-	   customer 		TravelerType 			OPTIONAL, 	  
+	   customer 		TravelerType 			OPTIONAL,
                             
 	   -- card id might be numerical or alphanumerical
 	   cardIdIA5		IA5String 				OPTIONAL,	 

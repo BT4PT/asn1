@@ -1,13 +1,13 @@
 /**
-*  UIC Fixed Point Data - version 1.0.0
+*  BT4PT Fixed Point Data - DRAFT.
 *
-*  The UICBarcodeHeader need not be signed (i.e. level1Signature unset), if the situation does not require it.
+*  The barcode header need not be signed, if the situation does not require it.
 *
 *  ## Optional format for combining a FixedPointData structure with a URL for inclusion in a QR code
 *  This is useful, for example, in the case of customer feedback barcodes that should link to the operator's website.
 *  for reporting faults, or for directing users to download an app to access a shared vehicle.
 *
-*  1. Encode this structure in the DOSIPAS format in the usual way, optionally signed
+*  1. Encode this structure in the barcode header in the usual way, optionally signed
 *  2. Base-41 encode the resultant binary data, with the alphabet `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*-.:`; see here: [github.com/sveljko/base41](https://github.com/sveljko/base41)
 *  3. Append it to the end of a URL with the prefix `$UIC:`
 *
@@ -15,22 +15,21 @@
 *  n.b. uppercase should be used in the whole URL, as this is much more efficient to encode in a QR code
 *
 *  ## Encoding in an NFC tag
-*  1. Encode this structure in the DOSIPAS format in the usual way, optionally signed
-*  2. Place the encoded DOSIPAS in an NDEF record of the format 0x02 (IANA Media Type),
-*      with the media type `application/vnd.uic.dosipas.v2` or `application/vnd.uic.dosipas.v1`, as appropriate
+*  1. Encode this structure in the barcode header in the usual way, optionally signed
+*  2. Place the encoded barcode header in an NDEF record of the format 0x02 (IANA Media Type), with the media type `application/[TBD]`, as appropriate
 *  3. Write the NDEF record to an NDEF formatted NFC tag
 *
-*  Other records may exist in the same NDEF message. Readers MUST be prepared to look beyond the
-*   first record to find a UIC DOSIPAS record.
+*  Other records may exist in the same NDEF message. Readers MUST be prepared to look beyond the first record to find a BT4PT record.
 */
-FixedPointData { iso(1) identified-organization(3) dod(6)
-    internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) fpd(6) v1(1) 0 }
-    DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+BT4PT-FixedPointDataV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) fpd(5) v1(1) 0
+} DEFINITIONS ::= BEGIN
 
 EXPORTS FixedPoint, fixedPointData;
 IMPORTS GenericId, CompanyCode, Station, CoachPlaces, DATA-ELEMENT, Data, cuperEncoding, SharedVehicleVariety,
- SharedVehiclePropulsionType, SharedVehicleReturnConstraint, TransportId, LineId, UnicodeText
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
+ SharedVehiclePropulsionType, SharedVehicleReturnConstraint, TransportId, LineId, UnicodeText, CompanyConstraint,
+ DataAuthorization
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 FixedPoint ::= SEQUENCE {
     /**
@@ -51,13 +50,17 @@ FixedPoint ::= SEQUENCE {
     extension   SEQUENCE (SIZE(1..8)) OF Data{FixedPointExtensions} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
-    }) OPTIONAL,
-    ...
+    }) OPTIONAL
 }
 
 FixedPointExtensions DATA-ELEMENT ::= { ... }
 
-fixedPointData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" ENCODED WITH cuperEncoding }
+FixedPointConstraints ::= SEQUENCE {
+    issuer      CompanyConstraint                           OPTIONAL,
+    extensions  DataAuthorization{{FixedPointExtensions}}   OPTIONAL
+}
+
+fixedPointData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" ENCODED WITH cuperEncoding CONSTRAINED BY FixedPointConstraints }
 
 Object ::= CHOICE {
     /**
@@ -76,8 +79,7 @@ Object ::= CHOICE {
     * Values defined by the issuer.
     */
     proprietary     GenericId,
-    vehicleDynamic  VehicleDynamic,
-    ...
+    vehicleDynamic  VehicleDynamic
 }
 
 StationPoint ::= SEQUENCE {
@@ -86,8 +88,7 @@ StationPoint ::= SEQUENCE {
     /**
     * Values defined by the issuer.
     */
-    subLocationProprietary  GenericId       OPTIONAL,
-    ...
+    subLocationProprietary  GenericId       OPTIONAL
 }
 
 Vehicle ::= SEQUENCE {
@@ -99,8 +100,7 @@ Vehicle ::= SEQUENCE {
     /**
     * When affixed non-seat items or sub-items within a compartment, values defined by the issuer.
     */
-    subLocationProprietary  GenericId               OPTIONAL,
-    ...
+    subLocationProprietary  GenericId               OPTIONAL
 }
 
 /**
@@ -111,8 +111,7 @@ VehicleDynamic ::= SEQUENCE {
     currentStop             Station,
     transport               TransportId         OPTIONAL,
     line                    LineId              OPTIONAL,
-    terminusStop            Station,
-    ...
+    terminusStop            Station
 }
 
 VehicleIdentifier ::= CHOICE {
@@ -127,8 +126,7 @@ VehicleIdentifier ::= CHOICE {
     /**
     * Values defined by the issuer.
     */
-    proprietary     GenericId,
-    ...
+    proprietary     GenericId
 }
 
 /**
@@ -142,8 +140,7 @@ SharedVehicle ::= SEQUENCE {
     id                  GenericId,
     variety             SharedVehicleVariety,
     propulsion          SharedVehiclePropulsionType,
-    returnConstraint    SharedVehicleReturnConstraint,
-    ...
+    returnConstraint    SharedVehicleReturnConstraint
 }
 
 END

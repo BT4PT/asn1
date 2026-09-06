@@ -31,7 +31,7 @@ DynamicContentData { iso(1) identified-organization(3) dod(6)
 
 EXPORTS UicDynamicContentData, uicDynamicContentData;
 IMPORTS DATA-ELEMENT, cuperEncoding
- FROM GeneralData { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) general(5) v1(1) 0 };
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
    UicDynamicContentData ::= SEQUENCE {
 
@@ -85,7 +85,7 @@ IMPORTS DATA-ELEMENT, cuperEncoding
      ...
    }
 
-   uicDynamicContentData DATA-ELEMENT ::= { UicDynamicContentData IDENTIFIED BY "FDC1" ENCODED WITH cuperEncoding }
+   uicDynamicContentData DATA-ELEMENT ::= { UicDynamicContentData IDENTIFIED BY "FDC1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
 
    -- ##########################################################################################
    -- # Generic type for timestamp, with a precision to the second.

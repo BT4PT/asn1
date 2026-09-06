@@ -1,0 +1,32 @@
+BT4PT-DynamicContentDataV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) dcd(4) v1(1) 0
+} DEFINITIONS ::= BEGIN
+
+EXPORTS DynamicContent, dynamicContentData, dynamicContentDataAligned;
+IMPORTS Timestamp, GeoCoordinate, Data, DATA-ELEMENT, cuperEncoding, caperEncoding
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
+
+DynamicContent ::= SEQUENCE {
+    /**
+    * Identification of the mobile application that generated the barcode and filled in the dynamic part.
+    * Values as defined by the security provider.
+    */
+    dynamicContentMobileAppId           VisibleString       OPTIONAL,
+
+    /**
+    * Coordinates of the location where the dynamic content was been generated.
+    */
+    dynamicContentGeoCoordinate         GeoCoordinate       OPTIONAL,
+
+    dynamicContentResponseToChallenge   SEQUENCE OF Data{ResponsesToChallenge} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!I" | "!C" | "!P"))
+    })
+}
+
+dynamicContentData DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "DCD1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+dynamicContentDataAligned DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "DCD1A" ENCODED WITH caperEncoding CONSTRAINED BY NULL }
+
+ResponsesToChallenge DATA-ELEMENT ::= { ... }
+
+END
