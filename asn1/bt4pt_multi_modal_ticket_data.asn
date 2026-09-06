@@ -1202,6 +1202,21 @@ DepartureDateTime ::= SEQUENCE {
     departureUTCOffset INTEGER (-60..60)                OPTIONAL
 }
 
+DepartureWindow ::= SEQUENCE {
+    /**
+    * The date and time the departure window begins at.
+    */
+    startOfWindow       DepartureDateTime,
+    /**
+    * How many full days onwards from the start of the window does it continue.
+    */
+    windowLengthDays    INTEGER (0..30)     DEFAULT 0,
+    /**
+    * How many minutes onwards from the start of the window does it continue.
+    */
+    windowLengthMinutes INTEGER (0..1439)
+}
+
 ArrivalDateTime ::= SEQUENCE {
     /**
     * Arrival date and time in local time at the arrival station.
@@ -1218,6 +1233,21 @@ ArrivalDateTime ::= SEQUENCE {
     * Times to be shown on a ticket should always be the local times.
     */
     arrivalUTCOffset   INTEGER (-60..60)                OPTIONAL
+}
+
+ArrivalWindow ::= SEQUENCE {
+    /**
+    * The date and time the arrival window begins at.
+    */
+    startOfWindow       ArrivalDateTime,
+    /**
+    * How many full days onwards from the start of the window does it continue.
+    */
+    windowLengthDays    INTEGER (0..30)     DEFAULT 0,
+    /**
+    * How many minutes onwards from the start of the window does it continue.
+    */
+    windowLengthMinutes INTEGER (0..1439)
 }
 
 /**
@@ -1245,15 +1275,35 @@ TransportLink ::= SEQUENCE {
 
     /**
     * Departure date and time in local time at the departure station of the transport link.
-    * If omitted, departureDateTime is assumed to be equal to validFrom and validFromUTCOffset of the container object.
+    * If omitted, it is assumed to be equal to validFrom and validFromUTCOffset of the container object.
     */
-    departureDateTime       DepartureDateTime                                       OPTIONAL,
+    departure               CHOICE {
+        /**
+        * A transport service departing at exactly a date and time, i.e. a link to one service.
+        */
+        exact   DepartureDateTime,
+        /**
+        * A window of time in which the transport must depart the origin, e.g. the traveler must take a service
+        * departing within 60-minute time window.
+        */
+        window  DepartureWindow
+    } OPTIONAL,
 
     /**
     * Arrival date time in local time at the arrival station of the transport link.
     * If omitted, arrivalDateTime is assumed to be equal to validUntil and validUntilUTCOffset of the container object.
     */
-    arrivalDateTime         ArrivalDateTime                                         OPTIONAL,
+    arrival               CHOICE {
+        /**
+        * A transport service arriving at exactly a date and time, i.e. a link to one service.
+        */
+        exact   ArrivalDateTime,
+        /**
+        * A window of time in which the transport must arrive at the destination, e.g. the traveler must take a service
+        * arriving within 60-minute time window.
+        */
+        window  ArrivalWindow
+    } OPTIONAL,
 
     /**
     * Travel class.
