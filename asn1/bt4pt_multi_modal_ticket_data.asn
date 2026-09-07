@@ -670,47 +670,38 @@ RouteItem ::= CHOICE {
     /**
     * The route item is the destination station from the previous `GeoValiditySegment` (**not** the previous `PointBasedRoute`).
     */
-    destinationStationOfPreviousSegment  NULL,
+    destinationStationOfPreviousSegment NULL,
 
     /**
     * The route item is a specific station.
     */
-    station                              Station,
+    station                             Station,
 
     /**
     * The route item is a set of stations that are equivalent (OSDM: FareStationSet).
     */
-    stationSet                           StationSet,
+    stationSet                          StationSet,
+
+    /**
+    * The route item is any point that is within at least one of the specified areas.
+    */
+    area                                AreaSet,
 
     /**
     * In case conditions/change of service restrictions need to be applied only to part of a route.
     */
-    route                                PointBasedRoute,
+    route                               PointBasedRoute,
 
     /**
     * A list of alternative routes - one, and only one, of these has to be taken.
     */
-    alternativeRoutes                    SEQUENCE OF PointBasedRoute
+    alternativeRoutes                   SEQUENCE OF PointBasedRoute
 }
 
 /**
 * Geographical validity defined with areas/zones.
 */
 Area ::= SEQUENCE {
-    /**
-    * In case the allowed journey must begin in specific stations or specific areas/zones. E.g.:
-    * - local city traffic starting from the station where a train journey ends.
-    * - journey starting in a specific set of areas/zones of a city.
-    * - journey starting anywhere in a city described with its NUTS code or its Calypso NetworkId.
-    *
-    * Omitted if there are no restrictions on where the journey must begin.
-    */
-    restrictedEntry CHOICE {
-       station      Station,
-       stationSet   StationSet,
-       area         AreaSet
-    } OPTIONAL,
-
     /**
     * Description of the allowed areas/zones.
     * The areas described in `restrictedEntry:area` and/or `restrictedExit:area` (if any) must not be repeated in the included or excluded areas.
@@ -732,19 +723,6 @@ Area ::= SEQUENCE {
        *  described in this element, in `restrictedEntry` and in `restrictedExit`.
        */
        excluded AreaSet
-    } OPTIONAL,
-
-    /**
-    * In case the allowed journey must end in specific stations or specific areas/zones. E.g.:
-    *  - local city traffic ending in the station where a train journey ends.
-    *  - journey ending in a city described with a specific set of areas/zones.
-    *
-    * Omitted if there are no restrictions on where the journey must end.
-    */
-    restrictedExit CHOICE {
-       station      Station,
-       stationSet   StationSet,
-       area         AreaSet
     } OPTIONAL,
 
     /**
