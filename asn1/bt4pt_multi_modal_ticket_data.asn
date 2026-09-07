@@ -2413,33 +2413,35 @@ ServiceType ::= ENUMERATED {
 }
 
 PassengerType ::= ENUMERATED {
-    person            (0),
-    senior            (1),
-    child             (2),
-    youth             (3),
-    dog               (4),
-    bicycle           (5),
-    youngChild        (6),
+    person          (0),
+    senior          (1),
+    child           (2),
+    youth           (3),
+    student         (4),
+    youngChild      (5),
     /**
     * Child associated with a family traveling together.
     */
-    familyChild       (7),
+    familyChild     (6),
     /**
     * Accompanying person for PRM (Passenger with Restricted Mobility).
     */
-    accompPRM         (8),
+    accompPRM       (7),
     /**
     * Passenger with wheel-chair.
     */
-    wheelchair        (9),
+    wheelchair      (8),
+    military        (9),
     /**
     * A pet but not a dog.
     */
-    pet               (10),
+    pet             (10),
+    dog             (11),
     /**
     * An accompanying dog for a PRM (Passenger with Restricted Mobility).
     */
-    accompDog         (11)
+    accompDog       (12),
+    bicycle         (13)
 }
 
 TicketLinkMode ::= ENUMERATED {
