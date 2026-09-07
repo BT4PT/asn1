@@ -324,7 +324,7 @@ UnicodeText ::= [APPLICATION 4] SEQUENCE {
     */
     text        OCTET STRING,
     /**
-    * ISO 639-1 coding (lower case) of the text's language.
+    * IANA language subtag of the text (see: https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry).
     */
     language    VisibleString (SIZE(2) ^ FROM ("a".."z"))   OPTIONAL
 }
