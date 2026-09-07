@@ -1,0 +1,66 @@
+/**
+* BT4PT Metadata files - DRAFT.
+*/
+BT4PT-MetadataV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) metadata(8) v1(1) 0
+} DEFINITIONS ::= BEGIN
+
+EXPORTS SubordinateCertificateList;
+IMPORTS Timestamp
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
+
+/**
+* This data type **SHALL** be encoded using ASN.1 DER and made available on a public HTTPS URL
+* that is referenced in the CA's X.509 certificate extensions.
+*/
+SubordinateCertificateList ::= SEQUENCE {
+    data        TbsSubordinateCertificateList,
+    /**
+    * The DER encoded signature output per `data.signatureAlgorithm` using the private key corresponding to the CA
+    * certificate containing the extension which references this certificate list.
+    * The signature is calculated over the DER encoding of `TbsSubordinateCertificateList`.
+    */
+    signature   OCTET STRING
+}
+
+TbsSubordinateCertificateList ::= SEQUENCE {
+    /**
+    * A monotonically increasing number. If a client sees a certificate list with a number less than or equal to the
+    * greatest `manifestNumber` previously accepted for the same publishing CA it **MUST** ignore such a list.
+    */
+    manifestNumber      INTEGER (0..MAX),
+    /**
+    * At what point in time was this certificate list generated.
+    */
+    thisUpdate          Timestamp,
+    /**
+    * At what point in time **SHOULD** a client refetch the manifest.
+    * Note: a cached manifest that is older than its `recommendedRefresh` does not immediately invalidate all certificates
+    * listed within.
+    */
+    recommendRefresh    Timestamp,
+    /**
+    * An identifier of what algorithm is used to calculate the wrapping `signature`.
+    */
+    signatureAlgorithm  OBJECT IDENTIFIER,
+    /**
+    * A list of all subordinate X.509 certificates directly issued by the publishing CA and participating in the BT4PT PKI.
+    */
+    certificateList     SEQUENCE OF CertificateEntry
+}
+
+CertificateEntry ::= SEQUENCE {
+    /**
+    * The SHA-256 hash of the DER encoded certificate content.
+    * If a client already has a certificate with this hash that was obtained from this publishing CA's certificate list,
+    * it **MAY** skip downloading it again.
+    */
+    certificateHash OCTET STRING (SIZE(32)),
+    /**
+    * A public HTTPS URL where the X.509 certificate, encoded using ASN.1 DER, may be downloaded.
+    * A client **MUST** validate that the file it downloads calculates to the same SHA-256 hash as given above.
+    */
+    url             VisibleString
+}
+
+END

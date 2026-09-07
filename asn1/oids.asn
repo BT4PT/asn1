@@ -115,4 +115,7 @@ bt4ptHSMTraceV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules hsm(6) v1(1) 0 }
 -- BT4PT Certificates - version 1.0, currently a draft
 bt4ptCertificatesV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules certificates(7) v1(1) 0 }
 
+-- BT4PT Metadata - version 1.0, currently a draft
+bt4ptMetadataV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules metadata(8) v1(1) 0 }
+
 END

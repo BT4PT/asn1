@@ -99,11 +99,16 @@ CertificateId ::= SEQUENCE {
     caId                        INTEGER (1..65536)
 }
 
+/**
+* This extension is placed in the X.509 certificate of a CA issuing end-entity certificates.
+* It uniquely identifies a key-pair in the BT4PT PKI.
+* A CA certificate **MAY** be re-issued with updated metadata and the same certificate ID, but a change of public key
+* requires a new certificate ID.
+*/
 certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID {bt4ptPkiExt certificateId(2)} ENCODED WITH cuperEncoding }
 
 /**
-* This extension contains the HTTP(S) URL at which the X.509 Certificate Revocation List for end-entity certificates
-* directly issued by this CA may be retrieved.
+* This extension contains the HTTPS URL at which the X.509 Certificate Revocation List for end-entity certificates directly issued by this CA may be retrieved.
 */
 eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID {bt4ptPkiExt eeCertCRL(3)} ENCODED WITH cuperEncoding }
 
@@ -119,5 +124,17 @@ RevocationNotice ::= SEQUENCE {
 }
 
 revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID {bt4ptPkiExt revocationNotice(4)} ENCODED WITH cuperEncoding }
+
+/**
+* This extension is placed in the X.509 certificate of a Trust Anchor.
+* A certificate must not be accepted by a validation device as a valid point to end the validation chain on unless it is
+* both in its root trust list and it contains this extension.
+*/
+trustAnchorMarkerExt CERTIFICATE-EXTENSION ::= { NULL WITH OID {bt4ptPkiExt trustAnchorMarker(5)} ENCODED WITH nullEncoding }
+
+/**
+* This extension contains the HTTPS URL at which the `SubordinateCertificateList`, defined in the `BT4PT-MetadataV1-0` module, containing certificates directly issued by this CA may be retrieved.
+*/
+subordinateCertificateRepositoryV1-0Ext CERTIFICATE-EXTENSION ::= { VisibleString WITH OID {bt4ptPkiExt subordinateCertificateRepositoryV1-0(6)} ENCODED WITH cuperEncoding }
 
 END
