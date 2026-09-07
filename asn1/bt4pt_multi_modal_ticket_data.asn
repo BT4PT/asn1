@@ -108,6 +108,7 @@ MultiModalTicket ::= SEQUENCE {
 
     /**
     * Group details. Present if the traveler is a member of a group, otherwise omitted.
+    * If this field is set, all group members **MUST** be travelling together.
     */
     groupDetails          GroupDetails                          OPTIONAL,
 
@@ -543,8 +544,7 @@ TransportProduct ::= SEQUENCE {
         generalData (WITH COMPONENTS {
             ...,
             productVariety PRESENT,
-            coveringArea PRESENT,
-            appliedConditionsIndex PRESENT
+            coveringArea PRESENT
         }) PRESENT
     } | WITH COMPONENTS {
         ...,
