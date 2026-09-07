@@ -758,8 +758,8 @@ dsbTicket MultiModalTicket ::= {
     },
     transportDocument {transportProduct : {
         geoValidity {{
-            validitySegment area : {
-                restrictedEntry station : {
+            validitySegment pointBased : {
+                routeItem {station : {
                     /**
                     * ERA code for Aarhus Hovedbanegård.
                     */
@@ -767,15 +767,15 @@ dsbTicket MultiModalTicket ::= {
                         country 208,
                         locationCode 131
                     }
-                },
-                area included : generic : {
-                    /**
-                    * National Rejsekort zones.
-                    */
-                    codeTable national : 208,
-                    id idNum : {4301, 4303, 4307, 4342}
-                },
-                restrictedExit station : {
+                }, area : {
+                    area included : generic : {
+                        /**
+                        * National Rejsekort zones.
+                        */
+                        codeTable national : 208,
+                        id idNum : {4301, 4303, 4307, 4342}
+                    }
+                }, station : {
                     /**
                     * ERA code for Hørning
                     */
@@ -783,7 +783,7 @@ dsbTicket MultiModalTicket ::= {
                         country 208,
                         locationCode 129
                     }
-                }
+                }}
             }
         }},
         generalData {
