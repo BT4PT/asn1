@@ -515,19 +515,23 @@ TransportProduct ::= SEQUENCE {
     returnGeoValidity           SEQUENCE (SIZE (1..16)) OF GeoValiditySegment               OPTIONAL,
 
     /**
-    * General conditions that apply to all segments of the route.
-    * Mandatory if the transport product is a 'reservation' (this reservation being described through this 'generalConditions' element).
+    * General data that applies to all segments of this transport product.
+    * Mandatory if the transport product is a 'reservation' (this product being a reservation being described through this element).
     */
-    generalConditions           Conditions                                                  OPTIONAL,
+    generalData                 SegmentData                                                 OPTIONAL,
 
     /**
-    * Specific conditions that can be applied to segments of the route.
-    * When a segment refers to specific conditions, these are added to the general conditions.
-    * If a particular condition is defined in both the general and then specific conditions,
-    *  the one in specific conditions overrules the one in the general conditions.
-    * Omitted if the transport product is a 'reservation'.
+    * Data that applies to only certain segments of this transport product.
+    * If a particular condition is defined in both the general and the general data,
+    *  the one in specific data overrules the one in the general data.
     */
-    specificConditions          SEQUENCE (SIZE (1..32)) OF Conditions                       OPTIONAL,
+    segmentData                 SEQUENCE (SIZE (1..32)) OF SegmentData                      OPTIONAL,
+
+    /**
+    * Where multiple applicable elements reference conditions, all referenced conditions are cumulative
+    *  and **SHALL** all be satisfied unless explicitly specified otherwise.
+    */
+    conditions                  SEQUENCE (SIZE (1..32)) OF Conditions                       OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
@@ -536,21 +540,22 @@ TransportProduct ::= SEQUENCE {
 } (
     (WITH COMPONENTS {
         ...,
-        generalConditions (WITH COMPONENTS {
+        generalData (WITH COMPONENTS {
             ...,
             productVariety PRESENT,
-            coveringArea PRESENT
+            coveringArea PRESENT,
+            appliedConditionsIndex PRESENT
         }) PRESENT
     } | WITH COMPONENTS {
         ...,
-        specificConditions PRESENT
+        segmentData PRESENT
     }) ^ (WITH COMPONENTS {
         ...,
         geoValidity PRESENT
     } | WITH COMPONENTS {
         ...,
         geoValidity ABSENT,
-        generalConditions (WITH COMPONENTS {
+        generalData (WITH COMPONENTS {
             ...,
             transportService (WITH COMPONENTS {
                 reservation PRESENT
@@ -593,10 +598,9 @@ GeoValiditySegment ::= SEQUENCE {
     validitySegment                 GeoValidity,
 
     /**
-    * The specific conditions are in the indicated conditions list. 1 corresponds to the first entry of the sequence.
-    * The edge case of having no general condition and no specific conditions is a valid case. This could be a full fare ticket without any restrictions.
+    * The specific data are in `TransportProduct.segmentData`. This list is 1 indexed.
     */
-    appliedSpecificConditionsIndex  INTEGER (1..32) OPTIONAL
+    appliedSegmentDataIndex        INTEGER (1..32) OPTIONAL
 }
 
 /**
@@ -651,13 +655,15 @@ GeoValidityExtensions DATA-ELEMENT ::= { ... }
 *     although the definition in 108.2 is not very precise on this option
 */
 PointBasedRoute ::= SEQUENCE {
-    routeItem                        SEQUENCE OF RouteItem,
+    routeItem                       SEQUENCE OF RouteItem,
 
     /**
     * In case different break of service allowances, different carriers, different service brands, etc.
     * need to be indicated on the routes or alternative routes.
+    * Index into `TransportProduct.conditions`.
+    * The first element has index 1.
     */
-    appliedSpecificConditionsIndex   INTEGER (1..16)        OPTIONAL
+    appliedConditionsIndex          INTEGER (1..32)        OPTIONAL
 }
 
 RouteItem ::= CHOICE {
@@ -844,14 +850,15 @@ SharedVehicleType ::= SEQUENCE {
 }
 
 /**
-* Conditions that apply:
-* - if used for `generalConditions`: to the entire transport product.
-* - if used for `specificConditions`: to the associated leg.
+* Information about each segment of the transport product.
+* - if used for `generalData`: applies to the entire transport product.
+* - if used for `segmentData`: applies to the associated segment.
 */
-Conditions ::= SEQUENCE {
+SegmentData ::= SEQUENCE {
     /**
     * Detailed type of the transport product (ticket, reservation, commercial card...).
-    * **MUST** either be present in the generalConditions, or present in all specificConditions.
+    * Each GeoValiditySegment **MUST** have a set `productVariety`, either through the `generalData` or a referenced
+    *  `segmentData`.
     */
     productVariety                  ProductVariety                                          OPTIONAL,
 
@@ -859,8 +866,8 @@ Conditions ::= SEQUENCE {
     * NUTS codes covering the whole area of validity of the ticket.
     * This does not mean that the ticket is valid everywhere inside such areas, but that it definitely
     *  is NOT valid outside the covering area.
-    * Each GeoValiditySegment **MUST** have a set `coveringArea`, either through the `generalConditions` or a referenced
-    *  specificConditions. Tickets without a coveringArea on every segment **MUST** be rejected as malformed tickets.
+    * Each GeoValiditySegment **MUST** have a set `coveringArea`, either through the `generalData` or a referenced
+    *  `segmentData`. Tickets without a coveringArea on every segment **MUST** be rejected as malformed tickets.
     * Validity to specific services, transport modes, etc., may be further constrained by other conditions.
     * Examples:
     *   - An international ticket from Munich to Vienna has the covering areas of `DE` and `AT`
@@ -890,34 +897,30 @@ Conditions ::= SEQUENCE {
     * Identification of the product (owner, id, textual description).
     */
     product                         Product                                                 OPTIONAL,
+    /**
+    * Family of the product, allowing to process the product according to its family.
+    * Value according to the product owner.
+    */
+    productFamily                   VisibleString                                           OPTIONAL,
 
     /*
     * Internal reference to the document (e.g. serial number of the document).
     */
     reference                       GenericId                                               OPTIONAL,
-
     /**
     * The company that defined the above reference, if different from the document issuer.
     */
     referenceCompany				CompanyCode                                             OPTIONAL,
 
     /**
-    * Having no `validFrom` is allowed (e.g. ticket not yet activated, which will be reissued with an explicit `validFrom` upon activation).
-    * Having no validUntil is allowed (e.g. ticket with unlimited validity - which should nevertheless have a security expiry date in the header requiring regular reissue).
-    */
-    validFrom                       ValidFrom                                               OPTIONAL,
-    validUntil                      ValidUntil                                              OPTIONAL,
-    rareTimingConditions            RareTimingConditions                                    OPTIONAL,
-
-    /**
     * `TRUE` if the direction of travel must be followed as described:
-    *  - in `generalConditions`: the traveler must pass the sequence of segments in the provided order
+    *  - in `generalData`: the traveler must pass the sequence of segments in the provided order
     *     (but some segments may be skipped, e.g. if 2 segments are 2 allowed alternatives for the same journey).
-    *  - in `specificConditions`: the traveler must take the transport in the direction indicated by the segment (e.g. from O to D).
+    *  - in `segmentData`: the traveler must take the transport in the direction indicated by the segment (e.g. from O to D).
     *
     * `FALSE` if the direction of travel is not mandatory:
-    *  - in `generalConditions`: the traveler can travel through the described segments in any order.
-    *  - in `specificConditions`: the traveler can take the transport indicated by the segment in any direction (e.g. from O to D or from D to O).
+    *  - in `generalData`: the traveler can travel through the described segments in any order.
+    *  - in `segmentData`: the traveler can take the transport indicated by the segment in any direction (e.g. from O to D or from D to O).
     *
     * Omitted if the concept of direction is not relevant (e.g. for geographical validity as unordered areas).
     */
@@ -925,7 +928,7 @@ Conditions ::= SEQUENCE {
 
     /**
     * Link to a specific transport services.
-    * Note that for a return ticket where the outbound and inbound geographic validities are the same, and thus the
+    * Note that for a return ticket where the outbound and inbound geographic validates are the same, and thus the
     * returnGeoValidity is not encoded, this field encodes linked transport services for both the outbound and
     * inbound directions.
     */
@@ -944,9 +947,90 @@ Conditions ::= SEQUENCE {
     } OPTIONAL,
 
     /**
+    * Tariff data (allowed passengers characteristics, discount cards used...)
+    * If omitted, the ticket is valid:
+    *  - for all of the travelers described in the `traveler` section if this section is present,
+    *  - for one passenger (without any further information) if the `traveler` section is absent.
+    */
+    tariff                          SEQUENCE OF Tariff                                      OPTIONAL,
+
+    /**
+    * Specific data to support the ticket inspection process.
+    */
+    controlDetail                   ControlData                                             OPTIONAL,
+
+    /**
+    * Associated online identifier (e.g. Account Based Ticketing identifier).
+    */
+    token                           Token                                                   OPTIONAL,
+
+    activation                      Activation                                              OPTIONAL,
+
+    /**
+    * Index into `TransportProduct.conditions`.
+    * The first element has index 1.
+    */
+    appliedConditionsIndex          INTEGER (1..32)                                         OPTIONAL
+}
+
+NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
+    {{
+        owner national : 250,
+        version 0
+    } MEANING "NF P99-502 NAO (France)"},
+    ...
+}
+
+Activation ::= SEQUENCE {
+    /**
+    * List of activated days in case the entire ticket is not activated.
+    * The ticket can only be used on the days it is activated.
+    * If the ticket is a return ticket, activatedDay only applies to the outward journey (use activatedReturnDay for the return journey).
+    * Each day is given by the number of days from the first day of validity (validFrom) (0 = first day of validity).
+    * For each day that the ticket is activated, the activation is valid from 00:00 to 23:59 in the time zone of the traveler's current location,
+    * thereby the activation might include more or less than 24 hours in case time zone borders are crossed.
+    * Travel days of a ticket might be subject to a separate activation to be valid for traveling.
+    * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil`.
+    */
+    activatedDay                            SEQUENCE (SIZE(1..501)) OF INTEGER (0..500)      OPTIONAL,
+
+    /**
+    * In case of a return ticket only: list of activated days for the return journey.
+    * Same use as `activatedDay` but for the return journey
+    * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil` for the return journey.
+    */
+    activatedReturnDay                      SEQUENCE (SIZE(1..501)) OF INTEGER (0..500)     OPTIONAL
+}
+
+/**
+* Information about the validity conditions of a whole transport product, a segment thereof, or a specific tariff.
+*/
+Conditions ::= SEQUENCE {
+    /**
+    * Having no `validFrom` is allowed (e.g. ticket not yet activated, which will be reissued with an explicit `validFrom` upon activation).
+    * Having no `validUntil` is allowed (e.g. ticket with unlimited validity - which should nevertheless have a security expiry date in the header requiring regular reissue).
+    */
+    validFrom                       ValidFrom                                               OPTIONAL,
+    validUntil                      ValidUntil                                              OPTIONAL,
+    rareTimingConditions            RareTimingConditions                                    OPTIONAL,
+
+    /**
+    * Is a change of service/break of journey permitted along this route segment?
+    */
+    changeOfService                  BOOLEAN                                                DEFAULT TRUE,
+
+    /**
     * Carriers/modes of transport included in this ticket.
     */
     includedServiceVarieties        SEQUENCE OF TransportVariety                            OPTIONAL,
+    /**
+    * Carriers/modes of transport excluded from this ticket.
+    * In case `includedServiceVarieties` is not provided, the ticket is valid on all services in its
+    * `coveringArea` and `coveringNetwork`, except those in this field.
+    * If `includedServiceVarieties` is specified, then the exclusions are processed logically after any inclusions.
+    * That is, even if the ticket conditions include a service, an exclusion overrides that.
+    */
+    excludedServiceVarieties        SEQUENCE OF TransportVariety                            OPTIONAL,
 
     /**
     * Travel class.
@@ -960,32 +1044,13 @@ Conditions ::= SEQUENCE {
     fareCode                        VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
 
     /**
-    * Tariff data (allowed passengers characteristics, discount cards used...)
-    * If omitted, the ticket is valid:
-    *  - for all of the travelers described in the `traveler` section if this section is present,
-    *  - for one passenger (without any further information) if the `traveler` section is absent.
+    * Reduction cards applied (incl. discount cards, loyalty cards relevant for the tariff).
+    * To require verification of these cards during an inspection, use `ControlData.reductionCardCheckRequired`.
+    * Omitted if these cards have already been verified at the time of purchase and their verification is not requested during inspection.
     */
-    tariff                          SEQUENCE OF Tariff                                      OPTIONAL,
-
-    /**
-    * Is a change of service/break of journey permitted along this route segment?
-    */
-    changeOfService                  BOOLEAN                                                DEFAULT TRUE,
-
-    /**
-    * Specific data to support the ticket inspection process.
-    */
-    controlDetail                   ControlData                                             OPTIONAL,
+    reductionCard                   SEQUENCE OF CardReference                               OPTIONAL,
 
     rareDetails                     RareDetails                                             OPTIONAL
-}
-
-NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
-    {{
-        owner national : 250,
-        version 0
-    } MEANING "NF P99-502 NAO (France)"},
-    ...
 }
 
 /**
@@ -1042,25 +1107,6 @@ RareTimingConditions ::= SEQUENCE {
     includedTimeRanges                       SEQUENCE OF IncludedTimeRanges                 OPTIONAL,
 
     /**
-    * List of activated days in case the entire ticket is not activated.
-    * The ticket can only be used on the days it is activated.
-    * If the ticket is a return ticket, activatedDay only applies to the outward journey (use activatedReturnDay for the return journey).
-    * Each day is given by the number of days from the first day of validity (validFrom) (0 = first day of validity).
-    * For each day that the ticket is activated, the activation is valid from 00:00 to 23:59 in the time zone of the traveler's current location,
-    * thereby the activation might include more or less than 24 hours in case time zone borders are crossed.
-    * Travel days of a ticket might be subject to a separate activation to be valid for traveling.
-    * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil`.
-    */
-    activatedDay                            SEQUENCE (SIZE(1..501)) OF INTEGER (0..500)      OPTIONAL,
-
-    /**
-    * In case of a return ticket only: list of activated days for the return journey.
-    * Same use as `activatedDay` but for the return journey
-    * Omitted if there are no restrictions on days of use between `validFrom` and `validUntil` for the return journey.
-    */
-    activatedReturnDay                      SEQUENCE (SIZE(1..501)) OF INTEGER (0..500)     OPTIONAL,
-
-    /**
     * Proprietary data defined bilaterally.
     */
     extension                               SEQUENCE (SIZE(1..8)) OF Data{TimingExtensions} OPTIONAL
@@ -1072,26 +1118,6 @@ TimingExtensions DATA-ELEMENT ::= { ... }
 * Rare non-temporal details and conditions.
 */
 RareDetails ::= SEQUENCE {
-    /**
-    * Associated online identifier (e.g. Account Based Ticketing identifier).
-    */
-    token                       Token                                               OPTIONAL,
-
-    /**
-    * Family of the product, allowing to process the product according to its family.
-    * Value according to the product owner.
-    */
-    productFamily               VisibleString                                       OPTIONAL,
-
-    /**
-    * Carriers/modes of transport excluded from this ticket.
-    * In case `includedServiceVarieties` is not provided, the ticket is valid on all services in its
-    * `coveringArea` and `coveringNetwork`, except those in this field.
-    * If `includedServiceVarieties` is specified, then the exclusions are processed logically after any inclusions.
-    * That is, even if the ticket conditions include a service, an exclusion overrides that.
-    */
-    excludedServiceVarieties    SEQUENCE OF TransportVariety                        OPTIONAL,
-
     /**
     * Price of the transport product (if in `generalConditions`) or of the segment (if in `specificConditions`),
     *   in the currency and fraction defined in IssuingData.
@@ -1107,10 +1133,18 @@ RareDetails ::= SEQUENCE {
     conditionText               UnicodeText                                         OPTIONAL,
 
     /**
-    * In case the luggage restrictions are general and do not depend
-    *   on the ticket type they should not be included.
+    * In case the luggage restrictions are general and do not depend on the ticket type they should not be included.
     */
     luggage                     LuggageRestriction                                  OPTIONAL,
+
+    /**
+    * Validity restriction based on the traveler's country of residence.
+    * (e.g. for Eurail tickets that are not valid in the country of residence).
+    * This field does not indicate a global geographic validity, but only a possible
+    * restriction of this geographic validity related to the country of residence.
+    * Omitted if there is no restriction related to the traveler's country of residence.
+    */
+    countryValidity             CountryValidity                                     OPTIONAL,
 
     /**
     * Proprietary data defined bilaterally.
@@ -1583,7 +1617,7 @@ Tariff ::= SEQUENCE {
     /**
     * Number of passengers using the tariff.
     */
-    numberOfPassengers  INTEGER (1..200)                DEFAULT 1,
+    numberOfPassengers      INTEGER (1..200)        DEFAULT 1,
 
     /**
     * Type indication (youth, adult, senior... but also pet, bicycle).
@@ -1591,7 +1625,7 @@ Tariff ::= SEQUENCE {
     * Omitted if the ticket has no restrictions regarding the type of passenger,
     *  or if the restriction is based on the product type and not on this element.
     */
-    passengerType       PassengerType                   OPTIONAL,
+    passengerType           PassengerType           OPTIONAL,
 
     /**
     * Age restrictions of the tariff.
@@ -1615,34 +1649,30 @@ Tariff ::= SEQUENCE {
     * Link to the traveler in case the travelers have to be named (e.g. Eurail passes).
     * The number indicates the position in the traveler sequence starting from 1.
     */
-    travelerId          SEQUENCE (SIZE(1..254)) OF INTEGER (1..254) OPTIONAL,
-
-    /**
-    * Validity restriction based on the traveler's country of residence.
-    * (e.g. for Eurail tickets that are not valid in the country of residence).
-    * This field does not indicate a global geographic validity, but only a possible
-    * restriction of this geographic validity related to the country of residence.
-    * Omitted if there is no restriction related to the traveler's country of residence.
-    */
-    countryValidity     CountryValidity                 OPTIONAL,
+    travelerId              SEQUENCE (SIZE(1..254)) OF INTEGER (1..254) OPTIONAL,
 
     /**
     * Tariff code.
     */
-    tariffId            GenericId                       OPTIONAL,
+    tariffId                GenericId               OPTIONAL,
 
     /**
     * Readable tariff description.
     */
-    tariffDesc          UnicodeText                     OPTIONAL,
+    tariffDesc              UnicodeText             OPTIONAL,
 
     /**
-    * Reduction cards applied (incl. discount cards, loyalty cards relevant for the tariff).
-    * To require verification of these cards during an inspection, use `ControlData.reductionCardCheckRequired`.
-    * Omitted if these cards have already been verified at the time of purchase,
-    *  and if their verification is not requested during inspection.
+    * Additional conditions applying specifically to this tariff entitlement.
+    * These conditions restrict the circumstances in which the passengers
+    * described by this Tariff are included in the transport product.
+    *
+    * They do not restrict the validity of the transport product for passengers
+    * described by other Tariff elements.
+    *
+    * Index into `TransportProduct.conditions`.
+    * The first element has index 1.
     */
-    reductionCard       SEQUENCE OF CardReference       OPTIONAL
+    appliedConditionsIndex  INTEGER (1..32)         OPTIONAL
 }
 
 /**

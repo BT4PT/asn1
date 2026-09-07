@@ -231,7 +231,7 @@ dbIceTicket MultiModalTicket ::= {
                     }
                 }}
             },
-            appliedSpecificConditionsIndex 1
+            appliedSegmentDataIndex 1
         }},
         returnGeoValidity {{
             validitySegment pointBased : {
@@ -344,7 +344,7 @@ dbIceTicket MultiModalTicket ::= {
                     }
                 }}
             },
-            appliedSpecificConditionsIndex 2
+            appliedSegmentDataIndex 2
         }, {
             validitySegment area : {
                 area included : generic : {
@@ -352,9 +352,9 @@ dbIceTicket MultiModalTicket ::= {
                     id idNum : {8000323}
                 }
             },
-            appliedSpecificConditionsIndex 3
+            appliedSegmentDataIndex 3
         }},
-        generalConditions {
+        generalData {
             productVariety ticket : {
                 ticketCategory return
             },
@@ -368,18 +368,7 @@ dbIceTicket MultiModalTicket ::= {
                 productId productIdIA5 : "ICE Fahrkarte"
             },
             reference idIA5 : "3XWM8MPG",
-            validFrom {
-                /**
-                * The 17th of March, 13 days after issuance.
-                */
-                validFromDay 13,
-                /**
-                * Midnight.
-                */
-                validFromTime 0
-            },
             directionIsMandatory TRUE,
-            classCode second,
             tariff {{
                 numberOfPassengers 1,
                 age ageRange : {
@@ -389,30 +378,11 @@ dbIceTicket MultiModalTicket ::= {
                 tariffDesc {
                     text '53706172707265697320596F756E67'H,
                     language "de"
-                },
-                reductionCard {{
-                    product {
-                        /**
-                        * A Deutche Bahn reduction card.
-                        */
-                        productOwner orgCode : "1080",
-                        /**
-                        * A BahnCard 50.
-                        */
-                        productId productIdIA5 : "BC50"
-                    }
-                }}
-            }}
-        },
-        specificConditions {{
-            /**
-            * A DB ICE ticket is valid on all DB trains, and those operating under the Deutschlandtarif.
-            */
-            includedServiceVarieties {{
-                carrier orgCode : "1080"
-            }, {
-                carrier orgCode : "3642"
+                }
             }},
+            appliedConditionsIndex 1
+        },
+        segmentData {{
             directionIsMandatory TRUE,
             transportService transportLink : {{
                 transportNumber {{
@@ -440,16 +410,9 @@ dbIceTicket MultiModalTicket ::= {
                     departureTime 630,
                     departureUTCOffset -4
                 }
-            }}
-        }, {
-            /**
-            * A DB ICE ticket is valid on all DB trains, and those operating under the Deutschlandtarif.
-            */
-            includedServiceVarieties {{
-                carrier orgCode : "1080"
-            }, {
-                carrier orgCode : "3642"
             }},
+            appliedConditionsIndex 2
+        }, {
             directionIsMandatory TRUE,
             transportService transportLink : {{
                 transportNumber {{
@@ -477,7 +440,8 @@ dbIceTicket MultiModalTicket ::= {
                     departureTime 1317,
                     departureUTCOffset -4
                 }
-            }}
+            }},
+            appliedConditionsIndex 2
         }, {
             product {
                 /**
@@ -500,6 +464,42 @@ dbIceTicket MultiModalTicket ::= {
                 format "+DEVDV",
                 code "6262"
             },
+            appliedConditionsIndex 3
+        }},
+        conditions {{
+            validFrom {
+                /**
+                * The 17th of March, 13 days after issuance.
+                */
+                validFromDay 13,
+                /**
+                * Midnight.
+                */
+                validFromTime 0
+            },
+            classCode second,
+            reductionCard {{
+                product {
+                    /**
+                    * A Deutche Bahn reduction card.
+                    */
+                    productOwner orgCode : "1080",
+                    /**
+                    * A BahnCard 50.
+                    */
+                    productId productIdIA5 : "BC50"
+                }
+            }}
+        }, {
+            /**
+            * A DB ICE ticket is valid on all DB trains, and those operating under the Deutschlandtarif.
+            */
+            includedServiceVarieties {{
+                carrier orgCode : "1080"
+            }, {
+                carrier orgCode : "3642"
+            }}
+        }, {
             /**
             * 19th of March, midnight.
             */
@@ -622,7 +622,7 @@ ukTicket MultiModalTicket ::= {
                 }}
             }
         }},
-        generalConditions {
+        generalData {
             productVariety ticket : {
                 /**
                 * Marking this a return ticket, without providing a return geo-validity, means the return validity is the inverse of the outbound.
@@ -642,23 +642,30 @@ ukTicket MultiModalTicket ::= {
                 */
                 productId productIdIA5 : "SOR"
             },
-            classCode second,
             tariff {{
                 numberOfPassengers 1,
-                passengerType person,
-                reductionCard {{
-                    product {
-                        productOwner orgCode : "1170",
-                        /**
-                        * 16-26 Railcard
-                        */
-                        productId productIdIA5 : "16-25"
-                    }
-                }}
+                passengerType person
             }},
-            rareDetails {
-                price 2530
+            activation {
+                /**
+                * The outbound portion is only valid for the first 5 days of validity.
+                * `activatedReturnDays` is not set, as the return is valid for the whole duration of the ticket.
+                */
+                activatedDay {0, 1, 3, 4}
             },
+            appliedConditionsIndex 1
+        },
+        conditions {{
+            classCode second,
+            reductionCard {{
+                product {
+                    productOwner orgCode : "1170",
+                    /**
+                    * 16-26 Railcard
+                    */
+                    productId productIdIA5 : "16-25"
+                }
+            }},
             /**
             * Midnight on the 30th of July.
             */
@@ -673,13 +680,6 @@ ukTicket MultiModalTicket ::= {
                 validUntilDay 31,
                 validUntilTime 300
             },
-            rareTimingConditions {
-                /**
-                * The outbound portion is only valid for the first 5 days of validity.
-                * `activatedReturnDays` is not set, as the return is valid for the whole duration of the ticket.
-                */
-                activatedDay {0, 1, 3, 4}
-            },
             includedServiceVarieties {{
                 carrier otherCode : {
                     format "+GBNOC",
@@ -688,8 +688,11 @@ ukTicket MultiModalTicket ::= {
                     */
                     code "=LE"
                 }
-            }}
-        }
+            }},
+            rareDetails {
+                price 2530
+            }
+        }}
     }}
 }
 
@@ -783,7 +786,7 @@ dsbTicket MultiModalTicket ::= {
                 }
             }
         }},
-        generalConditions {
+        generalData {
             productVariety ticket : {
                 ticketCategory single
             },
@@ -797,11 +800,14 @@ dsbTicket MultiModalTicket ::= {
                 productOwner orgCode : "1186",
                 productId productIdIA5 : "TICKET"
             },
-            classCode second,
             tariff {{
                 numberOfPassengers 1,
                 passengerType person
             }},
+            appliedConditionsIndex 1
+        },
+        conditions {{
+            classCode second,
             /**
             * 4am on the 3rd of September.
             */
@@ -826,7 +832,7 @@ dsbTicket MultiModalTicket ::= {
                 */
                 transportType 19
             }}
-        }
+        }}
     }}
 }
 
