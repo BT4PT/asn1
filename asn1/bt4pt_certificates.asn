@@ -82,35 +82,39 @@ CertificateExtensions CERTIFICATE-EXTENSION ::= {
 bt4ptPkiExt OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
     uic(17218) fcb(1) bt4pt(2) pkiExt(9)}
 
+id-specimenPoison OBJECT IDENTIFIER ::= {bt4ptPkiExt specimenPoison(0)}
 /**
 * Any barcode signed by a certificate containing this poison marker **MUST** be considered a specimen barcode,
 * regardless of any other specimen flag.
 */
-specimenPoisonExt CERTIFICATE-EXTENSION ::= { NULL IDENTIFIED BY "SP" WITH OID {bt4ptPkiExt specimenPoison(0)} ENCODED WITH nullEncoding }
+specimenPoisonExt CERTIFICATE-EXTENSION ::= { NULL IDENTIFIED BY "SP" WITH OID id-specimenPoison ENCODED WITH nullEncoding }
 
+id-issuerDataAuthorization OBJECT IDENTIFIER ::= {bt4ptPkiExt issuerDataAuthorization(1)}
 /**
 * This extension specifies which issuer data elements may be included in a barcode signed by this certificate, and
 * what constraints apply to them.
 */
-issuerDataAuthorizationExt CERTIFICATE-EXTENSION ::= { DataAuthorization{{IssuerDataElements}} IDENTIFIED BY "ID" WITH OID {bt4ptPkiExt issuerDataAuthorization(1)} ENCODED WITH cuperEncoding }
+issuerDataAuthorizationExt CERTIFICATE-EXTENSION ::= { DataAuthorization{{IssuerDataElements}} IDENTIFIED BY "ID" WITH OID id-issuerDataAuthorization ENCODED WITH cuperEncoding }
 
 CertificateId ::= SEQUENCE {
     issuingSecurityProvider     CompanyCode,
     caId                        INTEGER (1..65536)
 }
 
+id-certificateId OBJECT IDENTIFIER ::= {bt4ptPkiExt certificateId(2)}
 /**
 * This extension is placed in the X.509 certificate of a CA issuing end-entity certificates.
 * It uniquely identifies a key-pair in the BT4PT PKI.
 * A CA certificate **MAY** be re-issued with updated metadata and the same certificate ID, but a change of public key
 * requires a new certificate ID.
 */
-certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID {bt4ptPkiExt certificateId(2)} ENCODED WITH cuperEncoding }
+certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID id-certificateId ENCODED WITH cuperEncoding }
 
+id-eeCertCRL OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRL(3)}
 /**
 * This extension contains the HTTPS URL at which the X.509 Certificate Revocation List for end-entity certificates directly issued by this CA may be retrieved.
 */
-eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID {bt4ptPkiExt eeCertCRL(3)} ENCODED WITH cuperEncoding }
+eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-eeCertCRL ENCODED WITH cuperEncoding }
 
 /**
 * This extension defines a notice to be displayed to inspection staff upon encountering a revoked certificate.
@@ -122,19 +126,55 @@ eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID {bt4ptPkiExt eeC
 RevocationNotice ::= SEQUENCE {
     localisedNotices    SEQUENCE OF UnicodeText
 }
+id-revocationNotice OBJECT IDENTIFIER ::= {bt4ptPkiExt revocationNotice(4)}
+revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID id-revocationNotice ENCODED WITH cuperEncoding }
 
-revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID {bt4ptPkiExt revocationNotice(4)} ENCODED WITH cuperEncoding }
-
-/**
-* This extension is placed in the X.509 certificate of a Trust Anchor.
-* A certificate must not be accepted by a validation device as a valid point to end the validation chain on unless it is
-* both in its root trust list and it contains this extension.
-*/
-trustAnchorMarkerExt CERTIFICATE-EXTENSION ::= { NULL WITH OID {bt4ptPkiExt trustAnchorMarker(5)} ENCODED WITH nullEncoding }
-
+id-subordinateCertificateRepositoryV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt subordinateCertificateRepositoryV1-0(5)}
 /**
 * This extension contains the HTTPS URL at which the `SubordinateCertificateList`, defined in the `BT4PT-MetadataV1-0` module, containing certificates directly issued by this CA may be retrieved.
 */
-subordinateCertificateRepositoryV1-0Ext CERTIFICATE-EXTENSION ::= { VisibleString WITH OID {bt4ptPkiExt subordinateCertificateRepositoryV1-0(6)} ENCODED WITH cuperEncoding }
+subordinateCertificateRepositoryV1-0Ext CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-subordinateCertificateRepositoryV1-0 ENCODED WITH cuperEncoding }
+
+LastGoodSignatureCounter ::= SEQUENCE {
+    hsmId               OCTET STRING (SIZE(8)),
+    signatureCounter    OCTET STRING (SIZE(4))
+}
+id-lastGoodSignatureCounter OBJECT IDENTIFIER ::= {bt4ptPkiExt lastGoodSignatureCounter(6)}
+lastGoodSignatureCounterExt CERTIFICATE-EXTENSION ::= { LastGoodSignatureCounter WITH OID id-lastGoodSignatureCounter ENCODED WITH cuperEncoding }
+
+id-onlineValidationRequiredMarker OBJECT IDENTIFIER ::= {bt4ptPkiExt onlineValidationRequiredMarker(7)}
+/**
+* This extension is placed in an X.509 CRL entry.
+* It marks that the private key is likely compromised, and that online (e.g. eTCD) validation **MUST** be performed to
+* assertain if a ticket is validly issued or not.
+*/
+onlineValidationRequiredMarkerExt CERTIFICATE-EXTENSION ::= { NULL WITH OID id-onlineValidationRequiredMarker ENCODED WITH nullEncoding }
+
+/**
+* This Extended Key Usage is placed in the X.509 certificate of a Trust Anchor.
+* A certificate must not be accepted by a validation device as a valid point to end the validation chain on unless it is
+* both in its root trust list and it contains this EKU.
+*/
+id-trustAnchorMarker OBJECT IDENTIFIER ::= {bt4ptPkiExt trustAnchorMarker(8)}
+
+/**
+* This Extended Key Usage is placed in the X.509 certificate directly issuing End-Entity Certificates.
+* An end-entity certificate must not be accepted by a validation device, unless it is signed by a certificate containing
+* this Extended Key Usage.
+*/
+id-endEntityCAMarker OBJECT IDENTIFIER ::= {bt4ptPkiExt endEntityCAMarker(9)}
+
+/**
+* This OID is used in the X.509 `GeneralName.otherName` to signify a DER-encoded `CompanyCode`.
+* It may be used in either the Subject Alternative Name or Issuer Alternative Name X.509 extensions.
+*/
+id-otherNameCompanyCode OBJECT IDENTIFIER ::= {bt4ptPkiExt otherNameCompanyCode(10)}
+
+/**
+* By including this OID in an X.509 certificate's Certificate Policies, the issuer is asserting conformance and
+* adherence to the common certificate baseline defined by BT4PT.
+* It **MUST** be included for all certificates issued under the BT4PT standard.
+*/
+id-certificatePolicyBaseline OBJECT IDENTIFIER ::= {bt4ptPkiExt certificatePolicyBaseline(11)}
 
 END

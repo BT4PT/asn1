@@ -28,13 +28,9 @@ dbIceTicket MultiModalTicket ::= {
         */
         specimen TRUE,
         /**
-        * This ticket was issued digitally, and is valid without being on secure paper.
+        * DB Auftragsnummer.
         */
-        securePaperTicket notOnSecurePaper,
-        /**
-        * This is the ID of the ticket in the eTCD (Electronic Ticket Control Database).
-        */
-        ticketControlNumber idIA5 : "B3W1LZAV",
+        saleId idNum : 872729465991,
         productRetail {
             /**
             * This ticket was sold directly by the DB.
@@ -48,7 +44,11 @@ dbIceTicket MultiModalTicket ::= {
         /**
         * The traveller prefers to be spoken to in German.
         */
-        preferredLanguage "de"
+        preferredLanguage "de",
+        /**
+        * This ticket was issued digitally, and is valid without being on secure paper.
+        */
+        securePaperTicket notOnSecurePaper
     },
     traveler {{
         /**
@@ -73,29 +73,6 @@ dbIceTicket MultiModalTicket ::= {
             day 3
         }
     }},
-    controlDetail {
-        /**
-        * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
-        * against the eTCD does not render the ticket inadmissible.
-        */
-        onlineValidationRequired optional,
-        /**
-        * This ticket's online validation is stored in an ERA TEL TSI compliant eTCD.
-        */
-        onlineValidationType eTCD : NULL,
-        /**
-        * It is not mandatory to inspect the traveller's documents.
-        */
-        identificationRequired FALSE,
-        /**
-        * This is a youth ticket, it is required to check the age of the traveller.
-        */
-        ageCheckRequired TRUE,
-        /**
-        * This ticket was sold with a reduction card, it is required to check it.
-        */
-        reductionCardCheckRequired TRUE
-    },
     transportDocument {transportProduct : {
         geoValidity {{
             validitySegment pointBased : {
@@ -365,9 +342,8 @@ dbIceTicket MultiModalTicket ::= {
                 country 276
             }},
             product {
-                productId productIdIA5 : "ICE Fahrkarte"
+                productId idIA5 : "ICE-Fahrkarte"
             },
-            reference idIA5 : "3XWM8MPG",
             directionIsMandatory TRUE,
             tariff {{
                 numberOfPassengers 1,
@@ -380,6 +356,29 @@ dbIceTicket MultiModalTicket ::= {
                     language "de"
                 }
             }},
+            controlData {
+                /**
+                * This is the ID of the ticket in the eTCD (Electronic Ticket Control Database).
+                */
+                ticketControlNumber idIA5 : "B3W1LZAV",
+                /**
+                * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
+                * against the eTCD does not render the ticket inadmissible.
+                */
+                onlineValidationRequired optional,
+                /**
+                * This ticket's online validation is stored in an ERA TEL TSI compliant eTCD.
+                */
+                onlineValidationType eTCD : NULL,
+                /**
+                * This is a youth ticket, it is required to check the age of the traveller.
+                */
+                ageCheckRequired TRUE,
+                /**
+                * This ticket was sold with a reduction card, it is required to check it.
+                */
+                reductionCardCheckRequired TRUE
+            },
             appliedConditionsIndex 1
         },
         segmentData {{
@@ -454,15 +453,20 @@ dbIceTicket MultiModalTicket ::= {
                 /**
                 * City-Ticket
                 */
-                productId productIdNum : 2000
+                productId idNum : 2000
             },
-            /**
-            * This is a VDV ticket ID, as City-Tickets are VDV products.
-            */
-            reference idNum : 1235233072,
-            referenceCompany otherCode : {
-                format "+DEVDV",
-                code "6262"
+            controlData {
+                /**
+                * This is a VDV ticket ID, as City-Tickets are VDV products.
+                */
+                ticketControlNumber idNum : 1235233072,
+                /**
+                * This ticket's online validation in the VDV-KOSES under the VDV Org ID for the DB.
+                */
+                onlineValidationType external : otherCode : {
+                    format "+DEVDV",
+                    code "6262"
+                }
             },
             appliedConditionsIndex 3
         }},
@@ -477,6 +481,13 @@ dbIceTicket MultiModalTicket ::= {
                 */
                 validFromTime 0
             },
+            /**
+            * 23th of March, 3am.
+            */
+            validUntil {
+                validUntilDay 19,
+                validUntilTime 180
+            },
             classCode second,
             reductionCard {{
                 product {
@@ -487,7 +498,7 @@ dbIceTicket MultiModalTicket ::= {
                     /**
                     * A BahnCard 50.
                     */
-                    productId productIdIA5 : "BC50"
+                    productId idIA5 : "BC50"
                 }
             }}
         }, {
@@ -551,10 +562,7 @@ ukTicket MultiModalTicket ::= {
         * This ticket was issued digitally, and is valid without being on secure paper.
         */
         securePaperTicket notOnSecurePaper,
-        /**
-        * This is the ID of the ticket in the TVD (the UTN).
-        */
-        ticketControlNumber idIA5 : "GRHMY3EDK",
+        saleId idIA5 : "EXAMPLE-ID",
         /**
         * British Pound Sterling.
         */
@@ -576,29 +584,6 @@ ukTicket MultiModalTicket ::= {
             */
             retailPointId idNum : 5502
         }
-    },
-    controlDetail {
-        /**
-        * The ticket **MAY** be validated against the TVD, but a fault (e.g. loss of network signal) in checking
-        * against the TVD does not render the ticket inadmissible.
-        */
-        onlineValidationRequired optional,
-        /**
-        * This ticket's online validation in stored in an RDG compliant TVD.
-        */
-        onlineValidationType external : otherCode : {
-            format "_1170XX",
-            /**
-            * Whatever the ID of the company operating the TVD is.
-            */
-            code "XX"
-        },
-        identificationRequired FALSE,
-        ageCheckRequired FALSE,
-        /**
-        * This ticket was sold with a railcard, it is required to check it.
-        */
-        reductionCardCheckRequired TRUE
     },
     transportDocument {transportProduct : {
         geoValidity {{
@@ -640,7 +625,7 @@ ukTicket MultiModalTicket ::= {
                 /**
                 * Anytime return.
                 */
-                productId productIdIA5 : "SOR"
+                productId idIA5 : "SOR"
             },
             tariff {{
                 numberOfPassengers 1,
@@ -653,6 +638,31 @@ ukTicket MultiModalTicket ::= {
                 */
                 activatedDay {0, 1, 3, 4}
             },
+            controlData {
+                /**
+                * This is the ID of the ticket in the TVD (the UTN).
+                */
+                ticketControlNumber idIA5 : "GRHMY3EDK",
+                /**
+                * The ticket **MAY** be validated against the TVD, but a fault (e.g. loss of network signal) in checking
+                * against the TVD does not render the ticket inadmissible.
+                */
+                onlineValidationRequired optional,
+                /**
+                * This ticket's online validation in stored in an RDG compliant TVD.
+                */
+                onlineValidationType external : otherCode : {
+                    format "_1170XX",
+                    /**
+                    * Whatever the ID of the company operating the TVD is.
+                    */
+                    code "XX"
+                },
+                /**
+                * This ticket was sold with a railcard, it is required to check it.
+                */
+                reductionCardCheckRequired TRUE
+            },
             appliedConditionsIndex 1
         },
         conditions {{
@@ -663,7 +673,7 @@ ukTicket MultiModalTicket ::= {
                     /**
                     * 16-26 Railcard
                     */
-                    productId productIdIA5 : "16-25"
+                    productId idIA5 : "16-25"
                 }
             }},
             /**
@@ -725,9 +735,9 @@ dsbTicket MultiModalTicket ::= {
         */
         securePaperTicket notOnSecurePaper,
         /**
-        * This is the ID of the ticket in the DSB's Elektronisk Billetkontrol Database.
+        * DSB booking code.
         */
-        ticketControlNumber idIA5 : "T2044683593",
+        saleId idIA5 : "HNG4RF",
         productRetail {
             /**
             * This ticket was sold directly by the DSB.
@@ -738,23 +748,6 @@ dsbTicket MultiModalTicket ::= {
             */
             retailChannel webSite
         }
-    },
-    controlDetail {
-        /**
-        * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
-        * against the eTCD does not render the ticket inadmissible.
-        */
-        onlineValidationRequired optional,
-        /**
-        * This ticket's online validation is stored in the DSB's Elektronisk Billetkontrol Database.
-        */
-        onlineValidationType issuerProprietary : NULL,
-        /**
-        * It is not mandatory to inspect the traveller's documents.
-        */
-        identificationRequired FALSE,
-        ageCheckRequired FALSE,
-        reductionCardCheckRequired FALSE
     },
     transportDocument {transportProduct : {
         geoValidity {{
@@ -767,14 +760,12 @@ dsbTicket MultiModalTicket ::= {
                         country 208,
                         locationCode 131
                     }
-                }, area : {
-                    area included : generic : {
-                        /**
-                        * National Rejsekort zones.
-                        */
-                        codeTable national : 208,
-                        id idNum : {4301, 4303, 4307, 4342}
-                    }
+                }, area : generic : {
+                    /**
+                    * National Rejsekort zones.
+                    */
+                    codeTable national : 208,
+                    id idNum : {4301, 4303, 4307, 4342}
                 }, station : {
                     /**
                     * ERA code for Hørning
@@ -798,12 +789,27 @@ dsbTicket MultiModalTicket ::= {
             }},
             product {
                 productOwner orgCode : "1186",
-                productId productIdIA5 : "TICKET"
+                productId idIA5 : "TICKET"
             },
             tariff {{
                 numberOfPassengers 1,
                 passengerType person
             }},
+            controlData {
+                /**
+                * This is the ID of the ticket in the DSB's Elektronisk Billetkontrol Database.
+                */
+                ticketControlNumber idIA5 : "T2044683593",
+                /**
+                * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
+                * against the eTCD does not render the ticket inadmissible.
+                */
+                onlineValidationRequired optional,
+                /**
+                * This ticket's online validation is stored in the DSB's Elektronisk Billetkontrol Database.
+                */
+                onlineValidationType issuerProprietary : NULL
+            },
             appliedConditionsIndex 1
         },
         conditions {{
@@ -825,7 +831,7 @@ dsbTicket MultiModalTicket ::= {
             /**
             * The entire journey must be non-stop.
             */
-            changeOfService FALSE,
+            breakOfJourney FALSE,
             includedServiceVarieties {{
                 /**
                 * Regional trains.
@@ -849,7 +855,7 @@ ukRailcard MultiModalTicket ::= {
         },
         specimen TRUE,
         securePaperTicket notOnSecurePaper,
-        ticketControlNumber idIA5 : "GCB4L298N",
+        saleId idIA5 : "EXAMPLE-ID",
         currency 826,
         productRetail {
             retailerId otherCode : {
@@ -866,12 +872,26 @@ ukRailcard MultiModalTicket ::= {
         language "de"
     }},
     transportDocument {customerCard : {
-        individualCardId idIA5 : "11ZMK1000000136",
-        classCode notApplicable,
+        controlData {
+            ticketControlNumber idIA5 : "GCB4L298N",
+            onlineValidationRequired optional,
+            /**
+            * This ticket's online validation in stored in an RDG compliant TVD.
+            */
+            onlineValidationType external : otherCode : {
+                format "_1170XX",
+                /**
+                * Whatever the ID of the company operating the TVD is.
+                */
+                code "XX"
+            }
+        },
         product {
             productOwner orgCode : "1170",
-            productId productIdIA5 : "FAM"
+            productId idIA5 : "FAM"
         },
+        individualCardId idIA5 : "11ZMK1000000136",
+        classCode notApplicable,
         validFrom {
             validFromDay 0,
             validFromTime 0
@@ -893,14 +913,7 @@ dbBahncard MultiModalTicket ::= {
         },
         specimen TRUE,
         securePaperTicket notOnSecurePaper,
-        ticketControlNumber idIA5 : "1-2NHJW6CT"
-    },
-    controlDetail {
-        onlineValidationRequired optional,
-        onlineValidationType eTCD : NULL,
-        identificationRequired TRUE,
-        ageCheckRequired FALSE,
-        reductionCardCheckRequired FALSE
+        saleId idIA5 : "EXAMPLE-ID"
     },
     traveler {{
         firstName '51'H,
@@ -908,12 +921,18 @@ dbBahncard MultiModalTicket ::= {
         language "de"
     }},
     transportDocument {customerCard : {
-        individualCardId idNum : 7081411227884182,
-        classCode second,
+        controlData {
+            ticketControlNumber idIA5 : "1-2NHJW6CT",
+            onlineValidationRequired optional,
+            onlineValidationType eTCD : NULL,
+            identificationRequired TRUE
+        },
         product {
             productOwner orgCode : "1080",
-            productId productIdIA5 : "BC50"
+            productId idIA5 : "BC50"
         },
+        individualCardId idNum : 7081411227884182,
+        classCode second,
         validFrom {
             validFromDay 159,
             validFromTime 0

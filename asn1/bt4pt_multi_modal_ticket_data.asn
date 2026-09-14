@@ -94,13 +94,6 @@ MultiModalTicket ::= SEQUENCE {
     issuingDetail         IssuingData,
 
     /**
-    * Data specific to support the ticket control process.
-    * If TransportProduct is used, the control data **SHOULD** be defined in its conditions
-    * and this global controlDetail element **SHOULD** be omitted.
-    */
-    controlDetail         ControlData                           OPTIONAL,
-
-    /**
     * Traveler data. **MUST NOT** be present unless personal data about the travelers is needed and legally permitted.
     * The index of the sequence elements can be used to identify the traveler within other contexts (e.g. in assigned tariffs).
     */
@@ -155,7 +148,7 @@ ProductRestriction ::= SEQUENCE {
     * Restriction on the exact product ID. If unset, any product of the owner is permitted.
     */
     id      SEQUENCE {
-        id      ProductId,
+        id      GenericId,
         /**
         * Indication whether to match on the prefix, suffix, or the full product ID.
         */
@@ -169,7 +162,6 @@ multiModalTicketData DATA-ELEMENT ::= { MultiModalTicket IDENTIFIED BY "MMT1" EN
 * Details of the issuer and the issue of the ticket.
 * - Details of the issuer
 * - Indication of test tickets (specimen)
-* - Proprietary ID of the issuer to be used to identify the sale within its ecosystem
 * - Retail information
 * - Proprietary extension data
 */
@@ -180,6 +172,11 @@ IssuingData ::= SEQUENCE {
     issuer              CompanyCode                 OPTIONAL,
 
     issuedAt            Timestamp,
+
+    /**
+    * A unique identifier for the sale transaction that caused this ticket to be issued.
+    */
+    saleId              GenericId,
 
     /**
     * Specimen indicates a test specimen not valid for traveling.
@@ -198,12 +195,6 @@ IssuingData ::= SEQUENCE {
     * Fraction of the prices included.
     */
     currencyFract       INTEGER (0..3)                DEFAULT 2,
-
-    /**
-    * ID to uniquely identify this barcode within the context of the issuer and an appropriate time range.
-    * This can be used to query the ticket in the eTCD.
-    */
-    ticketControlNumber GenericId,
 
     /**
     * Location of sale (transport number and/or line number) in case of a sale on board of a transport.
@@ -225,7 +216,8 @@ IssuingData ::= SEQUENCE {
     productRetail       ProductRetailData             OPTIONAL,
 
     /**
-    * ISO 639-1 coding (lower case) of the language preferred for the traveler / ticket holder.
+    * Language that the traveler / group of travelers prefer to be spoken to in.
+    * IANA language subtag of the language (see: https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry).
     */
     preferredLanguage   VisibleString (SIZE(2) ^ FROM ("a".."z"))  OPTIONAL,
 
@@ -296,126 +288,6 @@ ProductRetailData ::= SEQUENCE {
     */
     retailTraceability    VisibleString     OPTIONAL
 }
-
-/**
-* Data supporting the control process, whether it is an automatic check carried out by a gate, or a manual check
-* carried out by an inspector.
-*/
-ControlData ::= SEQUENCE {
-    /**
-    * Indicator of whether online validation of the ticket is required.
-    */
-    onlineValidationRequired    OnlineValidationStatus      DEFAULT notPossible,
-    /**
-    * Indicator of how online validation may be performed.
-    */
-    onlineValidationType        OnlineValidationType        OPTIONAL,
-
-    /**
-    * Indicator of whether ID must be checked to identify the traveler.
-    * Field meaning:
-    * - `FALSE`: don’t check ID documents at all, regardless of contents of the traveler's identificationDocument field.
-    * - `TRUE`, but with an empty identificationDocument field: check the traveler's identity, using whatever document is acceptable to the carrier.
-    * - `TRUE`, with an identificationDocument field: check the traveler's identity, using the identification document specified.
-    */
-    identificationRequired      BOOLEAN,
-
-    /**
-    * Indicator of whether validation of the traveler age is required (e.g. in case of reductions).
-    */
-    ageCheckRequired            BOOLEAN,
-
-    /**
-    * Indicator of whether validation of the travelers reduction card is required (e.g. in case of reductions).
-    */
-    reductionCardCheckRequired  BOOLEAN,
-
-    /**
-    * Tickets, that are not encoded in this ticket, which need to be controlled together with this ticket to form a valid ticket.
-    */
-    linkedTickets               SEQUENCE OF TicketLink      OPTIONAL,
-
-    /**
-    * Free text instructions for specific control instructions to be presented to the ticket controller where these
-    *  instructions can't be expressed in structured data, e.g. "Verify no more than two people over 18" on a family group ticket.
-    */
-    infoText                    UnicodeText                 OPTIONAL,
-
-    /**
-    * Proprietary data defined bilaterally.
-    */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{ControlDataExtensions} (WITH COMPONENTS {
-        ...,
-        format (ALL EXCEPT ("!C" | "!P"))
-    }) OPTIONAL
-}
-
-ControlDataExtensions DATA-ELEMENT ::= { ... }
-
-OnlineValidationStatus ::= ENUMERATED {
-    /**
-    * No information is available online so it is useless to check.
-    */
-    notPossible (1),
-    /**
-    * The ticket can be fully validated and checked offline, i.e. the ticket contains all the information necessary
-    * for validation and inspection and is therefore self-sufficient, but some operators, in an interoperability
-    * scenario, nevertheless choose to operate this ticket in ABT mode and validate it online.
-    */
-    optional    (2),
-    /**
-    * Online operations **MUST** be performed to validate or check this ticket, e.g.:
-    * - For a Pay-as-you-go ticket, check during inspection that it has been validated.
-    * - For a ticket valid for 3 hours from the first validation, check when this first validation took place.
-    * - For a fully ABT (Account Based Ticketing) document: check the details of the ticket in the ABT account (whose ID may be specified in 'token').
-    * - For a ticket authorizing a limited number of trips: check how many trips have already been made.
-    * - For a ticket that can be refunded until the last moment: check if the ticket has been cancelled and refunded.
-    */
-    mandatory   (3)
-}
-
-OnlineValidationType ::= CHOICE {
-    /**
-    * The ticket may be checked against the UIC's eTCD.
-    */
-    eTCD                        NULL,
-    /**
-    * The ticket may be checked against a proprietary platform of the security provider; e.g. the Deutschlandtarifverbund's security portal.
-    */
-    securityProviderProprietary NULL,
-    /**
-    * The ticket may be checked against a proprietary platform of the issuer; e.g. bwegt check-in check-out (Baden-Württemberg).
-    */
-    issuerProprietary           NULL,
-    /**
-    * The ticket may be checked against the platform operated by the specified company; e.g. Entur.
-    */
-    external                    CompanyCode,
-    /**
-    * The ticket may be checked against some other external platform, as identified by the string. It can be of the following forms:
-    * - `+` + [2-letters uppercase ISO 3166 country code] + [addon, chosen by the national standards body of that country]
-    * - `_` + [RICS or ERA Organisation Code] + [addon, chosen by this company]
-    * - `!I` + [addon, chosen by the issuer] - equivalent to the _RICS format, without repetition of the issuer's code.
-    * - `!C` + [addon, chosen by the carrier] - equivalent to the _RICS format, without repetition of the carriers' code.
-    * - `!P` + [addon, chosen by the product owner] - equivalent to the _RICS format, without repetition of the product owner's code.
-    * - `*` + [addon] - private use, not guaranteed to avoid clashes.
-    *
-    * Any other value only after registration in the appropriate registry.
-    * Unregistered values (outside of the national, company, and private use ranges) **MUST NOT** be used.
-    * If an organisation has a RICS or an ERA Organisation Code the private use format **MUST NOT** be used.
-    * All values **SHOULD** be registered via the UIC Github repository.
-    */
-    other                       ONLINE-VALIDATION-METHOD.&id({OnlineValidationMethods})
-}
-
-ONLINE-VALIDATION-METHOD ::= CLASS {
-    &id VisibleString (SIZE(1..8)) UNIQUE,
-    &name UTF8String
-} WITH SYNTAX {
-    &id MEANING &name
-}
-
-OnlineValidationMethods ONLINE-VALIDATION-METHOD ::= { ... }
 
 /**
 * The choice on the different transport documents that can be included in the bar code data:
@@ -879,16 +751,7 @@ SegmentData ::= SEQUENCE {
     * Family of the product, allowing to process the product according to its family.
     * Value according to the product owner.
     */
-    productFamily                   VisibleString                                           OPTIONAL,
-
-    /*
-    * Internal reference to the document (e.g. serial number of the document).
-    */
-    reference                       GenericId                                               OPTIONAL,
-    /**
-    * The company that defined the above reference, if different from the document issuer.
-    */
-    referenceCompany				CompanyCode                                             OPTIONAL,
+    productFamily                   GenericId                                               OPTIONAL,
 
     /**
     * `TRUE` if the direction of travel must be followed as described:
@@ -935,7 +798,7 @@ SegmentData ::= SEQUENCE {
     /**
     * Specific data to support the ticket inspection process.
     */
-    controlDetail                   ControlData                                             OPTIONAL,
+    controlData                     ControlData                                             OPTIONAL,
 
     /**
     * Associated online identifier (e.g. Account Based Ticketing identifier).
@@ -958,6 +821,131 @@ NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
     } MEANING "NF P99-502 NAO (France)"},
     ...
 }
+
+/**
+* Data supporting the control process, whether it is an automatic check carried out by a gate, or a manual check
+* carried out by an inspector.
+*/
+ControlData ::= SEQUENCE {
+    /**
+    * ID to uniquely identify this barcode within the context of the issuer and an appropriate time range.
+    * This can be used to query the ticket in the eTCD.
+    */
+    ticketControlNumber         GenericId,
+    /**
+    * Indicator of whether online validation of the ticket is required.
+    */
+    onlineValidationRequired    OnlineValidationStatus      DEFAULT notPossible,
+    /**
+    * Indicator of how online validation may be performed.
+    */
+    onlineValidationType        OnlineValidationType        OPTIONAL,
+
+    /**
+    * Indicator of whether ID must be checked to identify the traveler.
+    * Field meaning:
+    * - `FALSE`: don’t check ID documents at all, regardless of contents of the traveler's identificationDocument field.
+    * - `TRUE`, but with an empty identificationDocument field: check the traveler's identity, using whatever document is acceptable to the carrier.
+    * - `TRUE`, with an identificationDocument field: check the traveler's identity, using the identification document specified.
+    */
+    identificationRequired      BOOLEAN                     DEFAULT FALSE,
+
+    /**
+    * Indicator of whether validation of the traveler age is required (e.g. in case of reductions).
+    */
+    ageCheckRequired            BOOLEAN                     DEFAULT FALSE,
+
+    /**
+    * Indicator of whether validation of the travelers reduction card is required (e.g. in case of reductions).
+    */
+    reductionCardCheckRequired  BOOLEAN                     DEFAULT FALSE,
+
+    /**
+    * Tickets, that are not encoded in this ticket, which need to be controlled together with this ticket to form a valid ticket.
+    */
+    linkedTickets               SEQUENCE OF TicketLink      OPTIONAL,
+
+    /**
+    * Free text instructions for specific control instructions to be presented to the ticket controller where these
+    *  instructions can't be expressed in structured data, e.g. "Verify no more than two people over 18" on a family group ticket.
+    */
+    infoText                    UnicodeText                 OPTIONAL,
+
+    /**
+    * Proprietary data defined bilaterally.
+    */
+    extension                   SEQUENCE (SIZE(1..8)) OF Data{ControlDataExtensions} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!C" | "!P"))
+    }) OPTIONAL
+}
+
+ControlDataExtensions DATA-ELEMENT ::= { ... }
+
+OnlineValidationStatus ::= ENUMERATED {
+    /**
+    * No information is available online so it is useless to check.
+    */
+    notPossible (1),
+    /**
+    * The ticket can be fully validated and checked offline, i.e. the ticket contains all the information necessary
+    * for validation and inspection and is therefore self-sufficient, but some operators, in an interoperability
+    * scenario, nevertheless choose to operate this ticket in ABT mode and validate it online.
+    */
+    optional    (2),
+    /**
+    * Online operations **MUST** be performed to validate or check this ticket, e.g.:
+    * - For a Pay-as-you-go ticket, check during inspection that it has been validated.
+    * - For a ticket valid for 3 hours from the first validation, check when this first validation took place.
+    * - For a fully ABT (Account Based Ticketing) document: check the details of the ticket in the ABT account (whose ID may be specified in 'token').
+    * - For a ticket authorizing a limited number of trips: check how many trips have already been made.
+    * - For a ticket that can be refunded until the last moment: check if the ticket has been cancelled and refunded.
+    */
+    mandatory   (3)
+}
+
+OnlineValidationType ::= CHOICE {
+    /**
+    * The ticket may be checked against the UIC's eTCD.
+    */
+    eTCD                        NULL,
+    /**
+    * The ticket may be checked against a proprietary platform of the security provider; e.g. the Deutschlandtarifverbund's security portal.
+    */
+    securityProviderProprietary NULL,
+    /**
+    * The ticket may be checked against a proprietary platform of the issuer; e.g. bwegt check-in check-out (Baden-Württemberg).
+    */
+    issuerProprietary           NULL,
+    /**
+    * The ticket may be checked against the platform operated by the specified company; e.g. Entur.
+    */
+    external                    CompanyCode,
+    /**
+    * The ticket may be checked against some other external platform, as identified by the string. It can be of the following forms:
+    * - `+` + [2-letters uppercase ISO 3166 country code] + [addon, chosen by the national standards body of that country]
+    * - `_` + [RICS or ERA Organisation Code] + [addon, chosen by this company]
+    * - `!I` + [addon, chosen by the issuer] - equivalent to the _RICS format, without repetition of the issuer's code.
+    * - `!C` + [addon, chosen by the carrier] - equivalent to the _RICS format, without repetition of the carriers' code.
+    * - `!P` + [addon, chosen by the product owner] - equivalent to the _RICS format, without repetition of the product owner's code.
+    * - `*` + [addon] - private use, not guaranteed to avoid clashes.
+    *
+    * Any other value only after registration in the appropriate registry.
+    * Unregistered values (outside of the national, company, and private use ranges) **MUST NOT** be used.
+    * If an organisation has a RICS or an ERA Organisation Code the private use format **MUST NOT** be used.
+    * All values **SHOULD** be registered via the UIC Github repository.
+    */
+    other                       ONLINE-VALIDATION-METHOD.&id({OnlineValidationMethods})
+}
+
+ONLINE-VALIDATION-METHOD ::= CLASS {
+    &id VisibleString (SIZE(1..8)) UNIQUE,
+    &name UTF8String
+} WITH SYNTAX {
+    &id MEANING &name
+}
+
+OnlineValidationMethods ONLINE-VALIDATION-METHOD ::= { ... }
 
 Activation ::= SEQUENCE {
     /**
@@ -1028,7 +1016,7 @@ Conditions ::= SEQUENCE {
     * To require verification of these cards during an inspection, use `ControlData.reductionCardCheckRequired`.
     * Omitted if these cards have already been verified at the time of purchase and their verification is not requested during inspection.
     */
-    reductionCard                   SEQUENCE (SIZE(0..15)) OF CardReference,
+    reductionCard                   SEQUENCE (SIZE(1..16)) OF CardReference                 OPTIONAL,
 
     rareDetails                     RareDetails                                             OPTIONAL
 }
@@ -1579,7 +1567,7 @@ Product ::= SEQUENCE {
     /**
     * Product id to identify the issued product codelist defined by the product owner.
     */
-    productId           ProductId   OPTIONAL,
+    productId           GenericId   OPTIONAL,
 
     /**
     * Short readable description of the product.
@@ -1644,10 +1632,10 @@ Tariff ::= SEQUENCE {
     /**
     * Additional conditions applying specifically to this tariff entitlement.
     * These conditions restrict the circumstances in which the passengers
-    * described by this Tariff are included in the transport product.
+    * described by this `Tariff` are included in the transport product.
     *
     * They do not restrict the validity of the transport product for passengers
-    * described by other Tariff elements.
+    * described by other `Tariff` elements.
     *
     * Index into `TransportProduct.conditions`.
     * The first element has index 1.
@@ -1755,13 +1743,13 @@ RareTravelerDetails ::= SEQUENCE {
     /**
     * Details of the document (ID card, passport...) identifying the traveler.
     */
-    identificationDocument           SEQUENCE (SIZE(0..15)) OF IdentificationDocument,
+    identificationDocument           SEQUENCE (SIZE(1..16)) OF IdentificationDocument   OPTIONAL,
 
     /**
     * Cards (reduction, discount, loyalty...) held by the traveler.
     * Only present if they serve a purpose (e.g. access to a lounge in a station).
     */
-    reductionCard                    SEQUENCE (SIZE(0..15)) OF CardReference,
+    reductionCard                    SEQUENCE (SIZE(1..16)) OF CardReference            OPTIONAL,
 
     /**
     * Customer id might be numerical or alphanumerical.
@@ -1813,15 +1801,12 @@ CustomerStatus ::= SEQUENCE {
 * Data for vouchers. Data included are quite basic, further study is required (e.g. through a meeting with people knowing vouchers).
 */
 Voucher ::= SEQUENCE {
+    controlData     ControlData,
+
     /**
     * Identification of the product (owner, id, textual description).
     */
     product         Product,
-
-    /**
-    * Internal reference of the voucher.
-    */
-    reference       GenericId               OPTIONAL,
 
     /**
     * Begin / end of validity in local date wherever the traveler is located.
@@ -1889,12 +1874,14 @@ VoucherConstraints ::= SEQUENCE {
 * Note: customer data are included in the traveler data structure.
 */
 CustomerCard ::= SEQUENCE {
+    controlData         ControlData,
+
     /**
     * Identification of what variety of customer card it is.
     */
    	product             Product,
     /**
-    * The ID identifying this specific card. The ID identifying the card product goes into `product`.
+    * The ID identifying this specific card. The ID identifying the card product/variety goes into `product`.
     */
     individualCardId    GenericId,
 
@@ -1928,24 +1915,21 @@ CustomerCardConstraints ::= SEQUENCE {
 * - DB parking ground reservation
 */
 ParkingGround ::= SEQUENCE {
+    controlData                 ControlData,
+
     /**
     * Identification of the product (owner, id, textual description).
     */
-    product                       Product,
-
-    /**
-    * Internal reference to the document.
-    */
-    reference                     GenericId                  OPTIONAL,
+    product                     Product,
 
     /**
     * Start and end of validity of parking entitlement. Date and time in time zone of the parking.
     * When validFromTime == 0, validity is the whole day depending on opening hours of the parking facility.
     */
-    validFrom                     ValidFrom,
-    validUntil                    ValidUntil,
+    validFrom                   ValidFrom,
+    validUntil                  ValidUntil,
 
-    parkingDetails                Parking
+    parkingDetails              Parking
 }
 
 /**
@@ -2018,15 +2002,12 @@ ParkingConstraints ::= SEQUENCE {
 * e.g. for staff working in a station.
 */
 StationPassage ::= SEQUENCE {
+    controlData         ControlData,
+
     /**
     * Identification of the product (owner, id, textual description).
     */
     product             Product,
-
-    /**
-    * Internal reference to the document.
-    */
-    reference           GenericId                                           OPTIONAL,
 
     /**
     * Station(s) concerned.
@@ -2102,6 +2083,8 @@ TokenConstraints ::= SEQUENCE {
 * Confirmation of the delay of a transport
 */
 DelayConfirmation ::= SEQUENCE {
+    controlData     ControlData,
+
     /**
     * Transport number of the delayed transport.
     */
@@ -2327,14 +2310,6 @@ RegisteredLuggage ::= SEQUENCE {
     * Sum of length with and height in cm.
     */
     maxSize                   INTEGER (1..300)  OPTIONAL
-}
-
-/**
-* Identification of a product, according to the code list defined in the container object.
-*/
-ProductId ::= CHOICE {
-    productIdNum   INTEGER (0..65535),
-    productIdIA5   VisibleString
 }
 
 /**

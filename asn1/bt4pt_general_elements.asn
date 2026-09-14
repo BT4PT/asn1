@@ -17,7 +17,7 @@ EXPORTS ALL;
 * Note, the choice of encoding variant has no differentiating effect on the value. That is, `1234` encoded as an `idNum` is the exact
 * same logical value as the string `"1234"` encoded as `idIA5`, and the same logical value as the octal string `'31323334'H`.
 */
-GenericId ::= CHOICE {
+GenericId ::= [APPLICATION 13] CHOICE {
     idNum   INTEGER,        -- for numerical IDs
     idIA5   VisibleString,  -- for alphanumerical IDs
     idOct   OCTET STRING    -- for binary IDs such as UUIDs
@@ -413,13 +413,13 @@ cuperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(
 * The contents of the data element is a raw bytes value. Only permitted when the `&Type` is `OCTET STRING`.
 */
 rawEncoding OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
-    uic(17218) fcb(1) bt4pt(2) encoding(8) raw(0)}
+    uic(17218) fcb(1) bt4pt(2) encoding(10) raw(0)}
 
 /**
 * The data element contains no data. Only permitted when the `&Type` is `NULL`.
 */
 nullEncoding OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
-    uic(17218) fcb(1) bt4pt(2) encoding(8) null(1)}
+    uic(17218) fcb(1) bt4pt(2) encoding(10) null(1)}
 
 /**
 * A TRANSPORT ORGANIZATION in Transmodel (EN 12896-1:2016 § 5.6.8).
@@ -465,9 +465,9 @@ CompanyCodeFormats COMPANY-CODE-FORMAT ::= {
     ...
 }
 
-CompanyConstraint ::= CHOICE {
-    securityProvider    NULL,
-    permitted           SEQUENCE (SIZE(1..32)) OF CompanyCode
+CompanyConstraint ::= SEQUENCE {
+    securityProvider    BOOLEAN,
+    permitted           SEQUENCE (SIZE(1..32)) OF CompanyCode OPTIONAL
 }
 
 /**
