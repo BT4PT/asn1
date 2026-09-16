@@ -2416,7 +2416,11 @@ PassengerType ::= ENUMERATED {
     * An accompanying dog for a PRM (Passenger with Restricted Mobility).
     */
     accompDog       (12),
-    bicycle         (13)
+    bicycle         (13),
+    /**
+    * Can be used for e.g. unaccompanied luggage.
+    */
+    luggage         (14)
 }
 
 TicketLinkMode ::= ENUMERATED {
