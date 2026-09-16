@@ -1,0 +1,49 @@
+/**
+* BT4PT Encrypted Data - DRAFT.
+*/
+BT4PT-EncryptedDataV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) encryptedData(11) v1(1) 0
+} DEFINITIONS ::= BEGIN
+
+EXPORTS EncryptedData, encryptedData;
+IMPORTS GenericId, CompanyCode, DATA-ELEMENT, Data, cuperEncoding
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
+
+EncryptedData ::= SEQUENCE {
+    header      EncryptedDataHeader,
+    /**
+    * The encrypted data.
+    * A new 128-bit Content Encryption Key **SHALL** be generated uniformly at random for every `EncryptedData` value and **SHALL NOT** be reused.
+    * The ciphertext uses AES-128-GCM encryption with a nonce of 12 null bytes and associated data being the CUPER encoding of `EncryptedDataHeader`.
+    */
+    ciphertext  OCTET STRING
+}
+
+encryptedData DATA-ELEMENT ::= { EncryptedData IDENTIFIED BY "ENC1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+
+EncryptedDataHeader ::= SEQUENCE {
+    /**
+    * An X25519 ephemeral public key.
+    */
+    ephemeralPublicKey  OCTET STRING (SIZE(32)),
+    recipients          SEQUENCE SIZE(1..32) OF Recipient
+}
+
+Recipient ::= SEQUENCE {
+    key         RecipientKey,
+    /**
+    * The 128-bit Content Encryption Key, wrapped according to [RFC 3394](https://datatracker.ietf.org/doc/html/rfc3394.html).
+    * The wrapping key is derived as follows:
+    * - let `SK` be the result of the X25519 exchange between the ephemeral key and the long term key identified by `(securityProvider, keyId)`.
+    * - if `SK` is the all-zero 32-byte string, the key agreement **SHALL** be considered to have failed.
+    * - the wrapping key is the output of `HKDF-SHA256(SK, length=32 bytes, salt=ephemeralPublicKey, info="BT4PT-EncryptedDataV1-0" || CUPER(RecipientKey))`
+    */
+    wrappedKey  OCTET STRING (SIZE(24))
+}
+
+RecipientKey ::= SEQUENCE {
+    securityProvider    CompanyCode,
+    keyId               INTEGER (1..65536)
+}
+
+END
