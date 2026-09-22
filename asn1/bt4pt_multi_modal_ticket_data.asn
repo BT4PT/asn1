@@ -73,7 +73,7 @@ BT4PT-MultiModalTicketDataV1-0 {
 
 EXPORTS MultiModalTicket, multiModalTicketData;
 IMPORTS GenericId, GenericCode, CODE-TABLE-IDENTIFIER, CompanyCode, Station, StationSet, AreaSet, NUTSArea, LineId,
- TransportId, GeoCoordinate, GeoUnit, CoachPlaces, Data, DATA-ELEMENT, cuperEncoding, rawEncoding, UnicodeText, Timestamp,
+ TransportId, GeoPosition, CoachPlaces, Data, DATA-ELEMENT, cuperEncoding, rawEncoding, UnicodeText, Timestamp,
  SharedVehicleVariety, SharedVehiclePropulsionType, SharedVehicleReturnConstraint, CompanyConstraint, DataAuthorization
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
@@ -115,7 +115,7 @@ MultiModalTicket ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension             SEQUENCE (SIZE(1..8)) OF Data{MultiModalTicketExtensions} (WITH COMPONENTS {
+    extension             SEQUENCE (SIZE(1..8)) OF Data{{MultiModalTicketExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
@@ -224,7 +224,7 @@ IssuingData ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{IssuingDataExtensions} (WITH COMPONENTS {
+    extension           SEQUENCE (SIZE(1..8)) OF Data{{IssuingDataExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
@@ -409,7 +409,7 @@ TransportProduct ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{TransportProductExtensions}   OPTIONAL
+    extension                   SEQUENCE (SIZE(1..8)) OF Data{{TransportProductExtensions}} OPTIONAL
 } (
     (WITH COMPONENTS {
         ...,
@@ -450,7 +450,7 @@ TransportProductConstraints ::= SEQUENCE {
     /**
     * Every `coveringNetwork` asserted by the transport product **MUST** be in the `permittedNetwork` list.
     */
-    permittedNetwork        SEQUENCE OF GenericCode{GenericId, NetworkCodeTables}   OPTIONAL,
+    permittedNetwork        SEQUENCE OF GenericCode{GenericId, {NetworkCodeTables}}   OPTIONAL,
     extension               DataAuthorization{{TransportProductExtensions}}         OPTIONAL,
     conditionsExtension     DataAuthorization{{ConditionsExtensions}}               OPTIONAL
 }
@@ -511,7 +511,7 @@ GeoValidity ::= CHOICE {
     /**
     * Specific proprietary geographical validity in case the above predefined types do not allow it to be described.
     */
-    proprietary         Data{GeoValidityExtensions}
+    proprietary         Data{{GeoValidityExtensions}}
 }
 
 GeoValidityExtensions DATA-ELEMENT ::= { ... }
@@ -627,8 +627,7 @@ Line ::= SEQUENCE {
 * Geographical validity defined as a polygon.
 */
 Polygon ::= SEQUENCE {
-    firstEdge     GeoCoordinate,
-    edges         SEQUENCE OF GeoUnit
+    edges         SEQUENCE OF GeoPosition
 }
 
 /**
@@ -679,7 +678,7 @@ SharedVehicle ::= SEQUENCE {
     infoText            UnicodeText                 OPTIONAL,
 
     -- Proprietary data defined bilaterally.
-    extension       SEQUENCE (SIZE(1..8)) OF Data{SharedVehicleExtensions} OPTIONAL
+    extension       SEQUENCE (SIZE(1..8)) OF Data{{SharedVehicleExtensions}} OPTIONAL
 }
 
 SharedVehicleExtensions DATA-ELEMENT ::= { ... }
@@ -741,7 +740,7 @@ SegmentData ::= SEQUENCE {
     *   - In France, the codeTable of national can be used to refer to an Afnor network/region ID, e.g. to refer to the
     *      Maconnais Beaujolais Agglomération: `{ codeTable national : 250, id idNum : 145 }`
     */
-    coveringNetwork                 SEQUENCE OF GenericCode{GenericId, NetworkCodeTables}   OPTIONAL,
+    coveringNetwork                 SEQUENCE OF GenericCode{GenericId, {NetworkCodeTables}}   OPTIONAL,
 
     /**
     * Identification of the product (owner, id, textual description).
@@ -815,10 +814,13 @@ SegmentData ::= SEQUENCE {
 }
 
 NetworkCodeTables CODE-TABLE-IDENTIFIER ::= {
-    {{
+    /**
+    * As defined in NF P99-502 NAO (France).
+    */
+    {&table {
         owner national : 250,
         version 0
-    } MEANING "NF P99-502 NAO (France)"},
+    }},
     ...
 }
 
@@ -874,7 +876,7 @@ ControlData ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{ControlDataExtensions} (WITH COMPONENTS {
+    extension                   SEQUENCE (SIZE(1..8)) OF Data{{ControlDataExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
@@ -921,6 +923,7 @@ OnlineValidationType ::= CHOICE {
     * The ticket may be checked against the platform operated by the specified company; e.g. Entur.
     */
     external                    CompanyCode,
+
     /**
     * The ticket may be checked against some other external platform, as identified by the string. It can be of the following forms:
     * - `+` + [2-letters uppercase ISO 3166 country code] + [addon, chosen by the national standards body of that country]
@@ -1077,7 +1080,7 @@ RareTimingConditions ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                               SEQUENCE (SIZE(1..8)) OF Data{TimingExtensions} OPTIONAL
+    extension                               SEQUENCE (SIZE(1..8)) OF Data{{TimingExtensions}} OPTIONAL
 }
 
 TimingExtensions DATA-ELEMENT ::= { ... }
@@ -1117,7 +1120,7 @@ RareDetails ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{ConditionsExtensions} OPTIONAL
+    extension                   SEQUENCE (SIZE(1..8)) OF Data{{ConditionsExtensions}}   OPTIONAL
 }
 
 ConditionsExtensions DATA-ELEMENT ::= { ... }
@@ -1697,6 +1700,21 @@ IdentificationDocument ::= SEQUENCE {
 *  from the type of travel document.
 * E.g. it can include the date of birth as this is part of the traveler,
 *  but not the indication "Senior" as this is tariff dependent.
+*
+* When comparing names with identity documents, or when a Latinized representation of a name is required,
+*   the system **MUST** transliterate according to ICAO 9303 Part 3, specifically sections 4.6 and 6.
+* The text stored in the ticket **SHOULD** be in its original script, with transliteration performed by the reading device.
+* The reading device **SHOULD** show both the original script, and the Latinized form.
+*
+* The `language` field, if present, **MUST** be used to select to correct Latinization of Cyrillic characters.
+* The relevant languages for special considerations in ICAO 9303 Latinization are:
+* - `be`: Belarusian
+* - `bg`: Bulgarian
+* - `uk`: Ukrainian
+* - `mk`: Macedonian
+* - `sr`: Serbian
+*
+* The `language` field **MAY** also be used to influence other transliterations, e.g. the different handling of diaereses by language.
 */
 Traveler ::= SEQUENCE {
     /**
@@ -1773,7 +1791,7 @@ RareTravelerDetails ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension       SEQUENCE (SIZE(1..8)) OF Data{TravelerExtensions} (WITH COMPONENTS {
+    extension       SEQUENCE (SIZE(1..8)) OF Data{{TravelerExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT "!C")
     }) OPTIONAL
@@ -1841,7 +1859,7 @@ Voucher ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension       SEQUENCE (SIZE(1..8)) OF Data{VoucherExtensions} (WITH COMPONENTS {
+    extension       SEQUENCE (SIZE(1..8)) OF Data{{VoucherExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT "!P")
     }) OPTIONAL
@@ -1900,7 +1918,7 @@ CustomerCard ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{CustomerCardExtensions}   OPTIONAL
+    extension           SEQUENCE (SIZE(1..8)) OF Data{{CustomerCardExtensions}}   OPTIONAL
 }
 
 CustomerCardExtensions DATA-ELEMENT ::= { ... }
@@ -1987,7 +2005,7 @@ Parking ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{ParkingExtensions}    OPTIONAL
+    extension           SEQUENCE (SIZE(1..8)) OF Data{{ParkingExtensions}}    OPTIONAL
 }
 
 ParkingExtensions DATA-ELEMENT ::= { ... }
@@ -2043,7 +2061,7 @@ StationPassage ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{StationPassageExtensions} OPTIONAL
+    extension           SEQUENCE (SIZE(1..8)) OF Data{{StationPassageExtensions}} OPTIONAL
 }
 
 StationPassageExtensions DATA-ELEMENT ::= { ... }
@@ -2204,7 +2222,7 @@ DelayConfirmation ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension             SEQUENCE (SIZE(1..8)) OF Data{DelayConfirmationExtensions} (WITH COMPONENTS {
+    extension             SEQUENCE (SIZE(1..8)) OF Data{{DelayConfirmationExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!P"))
     }) OPTIONAL

@@ -26,11 +26,15 @@ jobs:
             examples/*.asn
       - name: Build ASN.1 Docs
         run: python3 -m asn1docs -o docs_out/ ${{ steps.glob.outputs.paths }}
-      - name: Upload docs as artifact
-        id: deployment
+      - name: Upload docs for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs_out/
+      - name: Upload ASN.1 module data
+        uses: actions/upload-artifact@v4
+        with:
+          name: asn1-modules
+          path: docs_out/modules.json
 
   deploy:
     runs-on: ubuntu-latest

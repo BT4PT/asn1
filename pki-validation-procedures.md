@@ -76,7 +76,7 @@ Input: `dataElements`, a sequence of `Data`, and `authorisation` of type `DataAu
       2. Otherwise, continue without validating its format-specific constraint.
    3. Decode `dataElement.value` as `object.&Type` using `object.&encoding`.
        If decoding fails, return `INVALID`.
-   4. Decode `authorizationEntry.constraint` as `object.&CertificateConstraint` using `object.&encoding`.
+   4. Decode `authorizationEntry.constraint` as `object.&Constraints` using `object.&encoding`.
        If decoding fails, return `INVALID-CERTIFICATE-CHAIN`.
    5. Perform the certificate-constraint validation procedure specified by object with the decoded data 
        element and decoded constraint as inputs, returning any error.

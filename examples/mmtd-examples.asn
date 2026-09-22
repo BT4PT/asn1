@@ -90,7 +90,7 @@ dbIceTicket MultiModalTicket ::= {
                         country 276,
                         locationCode 15264
                     },
-                    stationNameUTF8 {
+                    stationName {
                         /**
                         * SCSU for Jägersfreude.
                         */
@@ -199,7 +199,7 @@ dbIceTicket MultiModalTicket ::= {
                         country 276,
                         locationCode 11577
                     },
-                    stationNameUTF8 {
+                    stationName {
                         /**
                         * SCSU for Braunschweig Hbf.
                         */
@@ -223,7 +223,7 @@ dbIceTicket MultiModalTicket ::= {
                         country 276,
                         locationCode 11577
                     },
-                    stationNameUTF8 {
+                    stationName {
                         /**
                         * SCSU for Braunschweig Hbf.
                         */
@@ -312,7 +312,7 @@ dbIceTicket MultiModalTicket ::= {
                         country 276,
                         locationCode 19153
                     },
-                    stationNameUTF8 {
+                    stationName {
                         /**
                         * SCSU for Saarbrücken Hbf.
                         */
@@ -325,7 +325,9 @@ dbIceTicket MultiModalTicket ::= {
         }, {
             validitySegment area : {
                 area included : generic : {
-                    codeTable productOwner : NULL,
+                    codeTable {
+                        owner productOwner : NULL
+                    },
                     id idNum : {8000323}
                 }
             },
@@ -342,7 +344,7 @@ dbIceTicket MultiModalTicket ::= {
                 country 276
             }},
             product {
-                productId idIA5 : "ICE-Fahrkarte"
+                productId idStr : "ICE-Fahrkarte"
             },
             directionIsMandatory TRUE,
             tariff {{
@@ -360,7 +362,7 @@ dbIceTicket MultiModalTicket ::= {
                 /**
                 * This is the ID of the ticket in the eTCD (Electronic Ticket Control Database).
                 */
-                ticketControlNumber idIA5 : "B3W1LZAV",
+                ticketControlNumber idStr : "B3W1LZAV",
                 /**
                 * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
                 * against the eTCD does not render the ticket inadmissible.
@@ -498,7 +500,7 @@ dbIceTicket MultiModalTicket ::= {
                     /**
                     * A BahnCard 50.
                     */
-                    productId idIA5 : "BC50"
+                    productId idStr : "BC50"
                 }
             }}
         }, {
@@ -562,7 +564,7 @@ ukTicket MultiModalTicket ::= {
         * This ticket was issued digitally, and is valid without being on secure paper.
         */
         securePaperTicket notOnSecurePaper,
-        saleId idIA5 : "EXAMPLE-ID",
+        saleId idStr : "EXAMPLE-ID",
         /**
         * British Pound Sterling.
         */
@@ -625,7 +627,7 @@ ukTicket MultiModalTicket ::= {
                 /**
                 * Anytime return.
                 */
-                productId idIA5 : "SOR"
+                productId idStr : "SOR"
             },
             tariff {{
                 numberOfPassengers 1,
@@ -642,7 +644,7 @@ ukTicket MultiModalTicket ::= {
                 /**
                 * This is the ID of the ticket in the TVD (the UTN).
                 */
-                ticketControlNumber idIA5 : "GRHMY3EDK",
+                ticketControlNumber idStr : "GRHMY3EDK",
                 /**
                 * The ticket **MAY** be validated against the TVD, but a fault (e.g. loss of network signal) in checking
                 * against the TVD does not render the ticket inadmissible.
@@ -673,7 +675,7 @@ ukTicket MultiModalTicket ::= {
                     /**
                     * 16-26 Railcard
                     */
-                    productId idIA5 : "16-25"
+                    productId idStr : "16-25"
                 }
             }},
             /**
@@ -737,7 +739,7 @@ dsbTicket MultiModalTicket ::= {
         /**
         * DSB booking code.
         */
-        saleId idIA5 : "HNG4RF",
+        saleId idStr : "HNG4RF",
         productRetail {
             /**
             * This ticket was sold directly by the DSB.
@@ -764,7 +766,9 @@ dsbTicket MultiModalTicket ::= {
                     /**
                     * National Rejsekort zones.
                     */
-                    codeTable national : 208,
+                    codeTable {
+                        owner national : 208
+                    },
                     id idNum : {4301, 4303, 4307, 4342}
                 }, station : {
                     /**
@@ -789,7 +793,7 @@ dsbTicket MultiModalTicket ::= {
             }},
             product {
                 productOwner orgCode : "1186",
-                productId idIA5 : "TICKET"
+                productId idStr : "TICKET"
             },
             tariff {{
                 numberOfPassengers 1,
@@ -799,7 +803,7 @@ dsbTicket MultiModalTicket ::= {
                 /**
                 * This is the ID of the ticket in the DSB's Elektronisk Billetkontrol Database.
                 */
-                ticketControlNumber idIA5 : "T2044683593",
+                ticketControlNumber idStr : "T2044683593",
                 /**
                 * The ticket **MAY** be validated against the eTCD, but a fault (e.g. loss of network signal) in checking
                 * against the eTCD does not render the ticket inadmissible.
@@ -855,7 +859,7 @@ ukRailcard MultiModalTicket ::= {
         },
         specimen TRUE,
         securePaperTicket notOnSecurePaper,
-        saleId idIA5 : "EXAMPLE-ID",
+        saleId idStr : "EXAMPLE-ID",
         currency 826,
         productRetail {
             retailerId otherCode : {
@@ -873,7 +877,7 @@ ukRailcard MultiModalTicket ::= {
     }},
     transportDocument {customerCard : {
         controlData {
-            ticketControlNumber idIA5 : "GCB4L298N",
+            ticketControlNumber idStr : "GCB4L298N",
             onlineValidationRequired optional,
             /**
             * This ticket's online validation in stored in an RDG compliant TVD.
@@ -888,9 +892,9 @@ ukRailcard MultiModalTicket ::= {
         },
         product {
             productOwner orgCode : "1170",
-            productId idIA5 : "FAM"
+            productId idStr : "FAM"
         },
-        individualCardId idIA5 : "11ZMK1000000136",
+        individualCardId idStr : "11ZMK1000000136",
         classCode notApplicable,
         validFrom {
             validFromDay 0,
@@ -913,7 +917,7 @@ dbBahncard MultiModalTicket ::= {
         },
         specimen TRUE,
         securePaperTicket notOnSecurePaper,
-        saleId idIA5 : "EXAMPLE-ID"
+        saleId idStr : "EXAMPLE-ID"
     },
     traveler {{
         firstName '51'H,
@@ -922,14 +926,14 @@ dbBahncard MultiModalTicket ::= {
     }},
     transportDocument {customerCard : {
         controlData {
-            ticketControlNumber idIA5 : "1-2NHJW6CT",
+            ticketControlNumber idStr : "1-2NHJW6CT",
             onlineValidationRequired optional,
             onlineValidationType eTCD : NULL,
             identificationRequired TRUE
         },
         product {
             productOwner orgCode : "1080",
-            productId idIA5 : "BC50"
+            productId idStr : "BC50"
         },
         individualCardId idNum : 7081411227884182,
         classCode second,

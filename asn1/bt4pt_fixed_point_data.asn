@@ -47,7 +47,7 @@ FixedPoint ::= SEQUENCE {
     * Additional important information about this fixed point.
     */
     infoText    UnicodeText                                             OPTIONAL,
-    extension   SEQUENCE (SIZE(1..8)) OF Data{FixedPointExtensions} (WITH COMPONENTS {
+    extension   SEQUENCE (SIZE(1..8)) OF Data{{FixedPointExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL

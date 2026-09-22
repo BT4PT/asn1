@@ -47,7 +47,7 @@ EndEntityCertificate ::= SEQUENCE {
 * All values **SHOULD** be registered via the UIC Github repository.
 */
 CERTIFICATE-EXTENSION ::= CLASS {
-    &id VisibleString (SIZE(1..8)) UNIQUE OPTIONAL,
+    &id VisibleString (SIZE(1..8) ^ (ALL EXCEPT ("!I" | "!C" | "!P"))) UNIQUE OPTIONAL,
     &oid OBJECT IDENTIFIER UNIQUE,
     &Type,
     &encoding OBJECT IDENTIFIER
