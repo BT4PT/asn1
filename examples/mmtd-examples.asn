@@ -675,7 +675,7 @@ ukTicket MultiModalTicket ::= {
                     /**
                     * 16-26 Railcard
                     */
-                    productId idStr : "16-25"
+                    productId idStr : "YNG"
                 }
             }},
             /**
