@@ -15,7 +15,7 @@ EXPORTS ALL;
 *
 * The choice of variant has _no_ differentiating effect on the value in equality comparisons.
 * That is, `1234` encoded as an `idNum` is the exact same logical value as the string `"1234"` encoded as `idStr`,
-* and the same logical value as the octal string `'31323334'H`.
+* and the same logical value as the binary string `'31323334'H`.
 */
 GenericId ::= [APPLICATION 13] CHOICE {
     /**
@@ -315,27 +315,27 @@ StationSet ::= [APPLICATION 7] SEQUENCE {
 }
 
 /**
-* This data structure is used to identify a service line, for which may services may run in a day.
+* This data structure is used to identify a service line, for which many services may run in a day.
 * In Transmodel terms, it identifies a LINE (EN 12896-2:2016 § 5.3.7.4).
 */
-LineId ::= [APPLICATION 8] SEQUENCE {
+LineId ::= [APPLICATION 8] CHOICE {
     /**
-    * The identifier of the line.
+    * An end-user-visible (i.e. published in timetables) identifier for the line.
     */
-    id      CHOICE {
+    publicIdentifier    SEQUENCE {
         /**
-        * An end-user-visible (i.e. published in timetables) identifier for the line; e.g. "RE1", "S1", etc.
+        * The identifier of the line; e.g. "RE1", "S1", etc.
         */
-        publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
+        id      VisibleString (FROM ("A".."Z"|"0".."9")),
         /**
-        * A non-end-user-visible identifier for the line.
+        * The carrier that operates the line.
         */
-        generic             GenericCode{GenericId, {LineIdCodeTables}}
+        carrier CompanyCode
     },
     /**
-    * The carrier that operates the line.
+    * A non-end-user-visible identifier for the line.
     */
-    carrier CompanyCode
+    generic             GenericCode{GenericId, {LineIdCodeTables}}
 }
 
 /**
@@ -368,24 +368,21 @@ LineIdCodeTables CODE-TABLE-IDENTIFIER ::= {
 * This data structure is used to identify a singular transport service, ideally unique within a day.
 * In Transmodel terms, it identifies a SERVICE JOURNEY (EN 12896-3:2016 § 5.3.2).
 */
-TransportId ::= [APPLICATION 9] SEQUENCE {
+TransportId ::= [APPLICATION 9] CHOICE {
     /**
-    * The identifier of the service.
+    * An end-user-visible (i.e. published in timetables) identifier for the service.
     */
-    id      CHOICE {
+    publicIdentifier    SEQUENCE {
         /**
-        * An end-user-visible (i.e. published in timetables) identifier for the service; e.g. "ICE107", etc.
+        * The identifier of the service; e.g. "ICE107", etc.
         */
-        publicIdentifier    VisibleString (FROM ("A".."Z"|"0".."9")),
+        id      VisibleString (FROM ("A".."Z"|"0".."9")),
         /**
-        * A non-end-user-visible identifier for the service.
+        * The carrier that operates the service.
         */
-        generic             GenericCode{GenericId, {TransportIdCodeTables}}
+        carrier CompanyCode
     },
-    /**
-    * The carrier that operates the service.
-    */
-    carrier CompanyCode
+    generic             GenericCode{GenericId, {TransportIdCodeTables}}
 }
 
 /**
@@ -948,15 +945,29 @@ DataAuthorizationEntry{DATA-ELEMENT: ElementSet} ::= SEQUENCE {
 * @len The length, in bytes, of each of `r` and `s`. That is, half the total signature length.
 */
 DSSSignature{INTEGER: len} ::= SEQUENCE {
+    /**
+    * The output r of the DSS signature process.
+    */
     r OCTET STRING (SIZE(len)),
+    /**
+    * The output s of the DSS signature process.
+    */
     s OCTET STRING (SIZE(len))
 }
 
 /**
-* @len The length, in bytes, required to represent the x coördinate on a curve.
+* @len The length, in bytes, required to represent the X coördinate on a curve.
 */
 ECPublicKey{INTEGER: len} ::= SEQUENCE {
+    /**
+    * An indicator of the Y coördinate of the elliptic curve point being odd or even.
+    * This field **SHALL** be `FALSE` if the first byte of the SEC 1 compressed encoding of this point would be `02h`,
+    * and **SHALL** be `TRUE` if the first byte of the SEC 1 compressed encoding of this point would be `03h`.
+    */
     yIsOdd BOOLEAN,
+    /**
+    * The X coördinate of the elliptic curve point.
+    */
     x OCTET STRING (SIZE(len))
 }
 

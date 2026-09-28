@@ -1702,11 +1702,11 @@ IdentificationDocument ::= SEQUENCE {
 *  but not the indication "Senior" as this is tariff dependent.
 *
 * When comparing names with identity documents, or when a Latinized representation of a name is required,
-*   the system **MUST** transliterate according to ICAO 9303 Part 3, specifically sections 4.6 and 6.
+*   the system **SHALL** transliterate according to ICAO 9303 Part 3, specifically sections 4.6 and 6.
 * The text stored in the ticket **SHOULD** be in its original script, with transliteration performed by the reading device.
 * The reading device **SHOULD** show both the original script, and the Latinized form.
 *
-* The `language` field, if present, **MUST** be used to select to correct Latinization of Cyrillic characters.
+* The `language` field, if present, **SHALL** be used to select to correct Latinization of Cyrillic characters.
 * The relevant languages for special considerations in ICAO 9303 Latinization are:
 * - `be`: Belarusian
 * - `bg`: Bulgarian

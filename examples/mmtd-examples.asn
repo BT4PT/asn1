@@ -386,9 +386,9 @@ dbIceTicket MultiModalTicket ::= {
         segmentData {{
             directionIsMandatory TRUE,
             transportService transportLink : {{
-                transportNumber {{
+                transportNumber {publicIdentifier : {
                     carrier orgCode : "1080",
-                    id publicIdentifier : "ICE563"
+                    id "ICE563"
                 }},
                 /**
                 * 17th of March, 08:49 UTC+01:00 (CET)
@@ -399,9 +399,9 @@ dbIceTicket MultiModalTicket ::= {
                     departureUTCOffset -4
                 }
             }, {
-                transportNumber {{
+                transportNumber {publicIdentifier : {
                     carrier orgCode : "1080",
-                    id publicIdentifier : "ICE374"
+                    id "ICE374"
                 }},
                 /**
                 * 17th of March, 10:30 UTC+01:00 (CET)
@@ -416,9 +416,9 @@ dbIceTicket MultiModalTicket ::= {
         }, {
             directionIsMandatory TRUE,
             transportService transportLink : {{
-                transportNumber {{
+                transportNumber {publicIdentifier : {
                     carrier orgCode : "1080",
-                    id publicIdentifier : "ICE379"
+                    id "ICE379"
                 }},
                 /**
                 * 19th of March, 17:57 UTC+01:00 (CET)
@@ -429,9 +429,9 @@ dbIceTicket MultiModalTicket ::= {
                     departureUTCOffset -4
                 }
             }, {
-                transportNumber {{
+                transportNumber {publicIdentifier : {
                     carrier orgCode : "1080",
-                    id publicIdentifier : "ICE935"
+                    id "ICE935"
                 }},
                 /**
                 * 19th of March, 21:57 UTC+01:00 (CET)

@@ -1,25 +1,5 @@
 /**
 *  BT4PT Fixed Point Data - DRAFT.
-*
-*  The barcode header need not be signed, if the situation does not require it.
-*
-*  ## Optional format for combining a FixedPointData structure with a URL for inclusion in a QR code
-*  This is useful, for example, in the case of customer feedback barcodes that should link to the operator's website.
-*  for reporting faults, or for directing users to download an app to access a shared vehicle.
-*
-*  1. Encode this structure in the barcode header in the usual way, optionally signed
-*  2. Base-41 encode the resultant binary data, with the alphabet `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*-.:`; see here: [github.com/sveljko/base41](https://github.com/sveljko/base41)
-*  3. Append it to the end of a URL with the prefix `$UIC:`
-*
-*  Example: `HTTPS://RAIL.EXAMPLE/QRFB/$UIC:A2I9...`
-*  n.b. uppercase should be used in the whole URL, as this is much more efficient to encode in a QR code
-*
-*  ## Encoding in an NFC tag
-*  1. Encode this structure in the barcode header in the usual way, optionally signed
-*  2. Place the encoded barcode header in an NDEF record of the format 0x02 (IANA Media Type), with the media type `application/[TBD]`, as appropriate
-*  3. Write the NDEF record to an NDEF formatted NFC tag
-*
-*  Other records may exist in the same NDEF message. Readers MUST be prepared to look beyond the first record to find a BT4PT record.
 */
 BT4PT-FixedPointDataV1-0 {
     iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) fpd(5) v1(1) 0

@@ -97,8 +97,8 @@ uicDynamicContentDataV1-0-5 OBJECT IDENTIFIER ::= { uicFcbAsn1Modules dcd(3) v1(
 -- BT4PT General cross-module elements - version 1.0, currently a draft
 bt4ptGeneralElementsV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules general(1) v1(1) 0 }
 
--- BT4PT Barcode Header - version 1.0, currently a draft
-bt4ptBarcodeHeaderV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules header(2) v1(1) 0 }
+-- BT4PT Envelope - version 1.0, currently a draft
+bt4ptEnvelopeV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules envelope(2) v1(1) 0 }
 
 -- BT4PT Multi-Modal Ticket Data - version 1.0, currently a draft
 bt4ptMultiModalTicketDataV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules mmtd(3) v1(1) 0 }

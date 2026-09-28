@@ -1,14 +1,14 @@
 /**
-* BT4PT Barcode Header - DRAFT.
+* BT4PT Envelope - DRAFT.
 *
-* The header **SHALL** be encoded with the Aligned Packed Encoding Rules, as this makes it easier to work with in constrained environments such as HSMs.
+* The envelope **SHALL** be encoded with the Aligned Packed Encoding Rules, as this makes it easier to work with in constrained environments such as HSMs.
 * Data elements within the header **SHOULD** be encoded with the Unaligned Packed Encoding Rules, for space savings.
 */
-BT4PT-BarcodeHeaderV1-0 {
-    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) header(2) v1(1) 0
+BT4PT-EnvelopeV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0
 } DEFINITIONS ::= BEGIN
 
-EXPORTS BarcodeHeader, IssuerDataElements;
+EXPORTS BT4PTEnvelope, IssuerDataElements;
 IMPORTS CompanyCode, Timestamp, Data, DSSSignature, ECPublicKey, DATA-ELEMENT
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  EndEntityCertificate
@@ -31,66 +31,66 @@ IMPORTS CompanyCode, Timestamp, Data, DSSSignature, ECPublicKey, DATA-ELEMENT
  FROM DynamicContentDataV1 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) modules(0) dcd(3) v1(1) 5 };
 
 /**
-* This data structure is basic entry point of the barcode.
-* A BT4PT barcode **SHALL** consist of the bytes resulting from encoding this data structure using the ITU-T X.691
+* This data structure is the basic entry point of the envelope.
+* A BT4PT envelope **SHALL** consist of the bytes resulting from encoding this data structure using the ITU-T X.691
 * Canonical Aligned Packed Encoding Rules.
 */
-BarcodeHeader ::= SEQUENCE {
+BT4PTEnvelope ::= CHOICE {
     /**
-    * This field **SHALL** be set to the byte string `U3`.
-    * This results in this barcode header being prefixed with `U3` at the start, allowing identification of this
-    *  format of barcode header.
+    * This variant contains the list of data elements that the envelope encodes, in an unsigned fashion, with no
+    * additional security data.
+    *
+    * This variant is **SHALL** only be used where no security is required. That is, when an unsigned envelope
+    * is considered suitable for the application.
     */
-    format      OCTET STRING (SIZE(2)),
-    contents    CHOICE {
+    unsigned    [1] SEQUENCE (SIZE(1..16)) OF Data{{IssuerDataElements}} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!I" | "!C" | "!P"))
+    }),
+    /**
+    * This variant is used for a signed envelope. It contains the list of data elements that the envelope encodes,
+    * along with a signature from the Security Provider, the certificate for the end-entity that output this envelope,
+    * and an optional binding of this envelope to a end-device's public key.
+    */
+    signed      [2] SEQUENCE {
+        data            DeviceSignedData,
         /**
-        * This variant contains the list of data elements that the barcode encodes, in an unsigned fashion, with no additional
-        * security data.
+        * This field is used as part of the device binding of envelopes. When an envelope is bound to a Presentment
+        * Device, it **SHALL** contain a signature, calculated over the Canonical Aligned Packed Encoding Rules encoding
+        * of {@link DeviceSignedData}, using the device held private key corresponding to the public key provided in the
+        * `level2PublicKey` field of `IssuerSignedData`.
         *
-        * This variant is **SHALL** only be used where no security is required. That is, when an unsigned barcode
-        * is considered suitable for the application.
+        * If the the `deviceBinding` field of `IssuerSignedData` field is unset, and this field is set, the envelope **SHALL** be
+        * construed as invalid.
+        * If the the `deviceBinding` field of `IssuerSignedData` field is set, and this field is unset, the envelope **SHALL** be
+        * construed as invalid.
         */
-        unsigned    [1] SEQUENCE (SIZE(1..16)) OF Data{{IssuerDataElements}} (WITH COMPONENTS {
-            ...,
-            format (ALL EXCEPT ("!I" | "!C" | "!P"))
-        }),
-        /**
-        * This variant is used for a signed barcode. It contains the list of data elements that the barcode encodes,
-        * along with a signature from the security provider, the certificate for the end-entity that output this barcode,
-        * and an optional binding of this barcode to a end-device's public key.
-        */
-        signed      [2] SEQUENCE {
-            data            DeviceSignedData,
-            /**
-            * This field is used as part of the device binding of barcodes. When a barcode is bound to a device,
-            * it **SHALL** contain a signature, calculated over the Canonical Aligned Packed Encoding Rules encoding of
-            * the field `data`, using the device held private key corresponding to the public key provided in the
-            * `level2PublicKey` field of `IssuerSignedData`.
-            *
-            * If the the `deviceBinding` field of `IssuerSignedData` field is unset, and this field is set, the barcode **SHALL** be
-            * considered invalid.
-            * If the the `deviceBinding` field of `IssuerSignedData` field is set, and this field is unset, the barcode **SHALL** be
-            * considered invalid.
-            */
-            deviceSignature Signature OPTIONAL
-        }
+        deviceSignature Signature OPTIONAL
     }
 }
 
 DeviceSignedData ::= SEQUENCE {
     /**
-    * Signed content is the A-PER encoding of `IssuerSignedData`.
+    * This field contains the data signed by the Security Provider, in a message recovery fashion.
+    * Its inner data is the Canonical Aligned Packed Encoding Rules encoding of {@link IssuerSignedData}.
     */
     data        MessageRecoverySignature,
+    /**
+    * This field contains the end-entity certificate used to sign the `data` field.
+    */
     certificate EndEntityCertificate,
     /**
-    * Generation time of the device data. **MUST** be set if `IssuerSignedData.deviceBinding` is set, otherwise the barcode is invalid.
+    * This field contains the timestamp at which the Presentment Device generated the envelope.
+    *
+    * This field **SHALL** be set if `IssuerSignedData.deviceBinding` is set, otherwise the envelope **SHALL** be
+    * construed as invalid.
+    * If this timestamp is more than `IssuerSignedData.deviceBinding.validityDuration` seconds in the past,
+    * the envelope **SHALL** be construed as invalid.
     */
     timestamp   Timestamp   OPTIONAL,
     /**
-    * Dynamic Content Data goes here.
-    *
-    * Note: the inclusion of device data without the `IssuerSignedData.deviceBinding` field being set is **not** an error.
+    * This field contains data elements signed only by the Presentment Device, or not signed at all.
+    * Note: the inclusion of device data without the `IssuerSignedData.deviceBinding` field being set is _not_ an error.
     * It is permissible to include unauthenticated device data, for example as a debugging aid.
     */
     deviceData  SEQUENCE (SIZE(1..8)) OF Data{{DeviceDataElements}} (WITH COMPONENTS {
@@ -99,41 +99,62 @@ DeviceSignedData ::= SEQUENCE {
     }) OPTIONAL
 }
 
-
 IssuerSignedData ::= [APPLICATION 12] SEQUENCE {
     /**
-    * This variant contains the list of data elements signed by the security provider of this barcode.
+    * This field contains data elements signed by the Security Provider.
     */
     data                SEQUENCE (SIZE(1..64)) OF Data{{IssuerDataElements}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!I" | "!C" | "!P"))
     }),
     /**
-    * This field allows for the encoding of an expiry data for the barcode. After this timestamp the barcode needs to be
-    * regenerated by the security provider for it to remain valid.
+    * This field allows for the encoding of an expiry data for the envelope. After this timestamp the envelope needs to
+    * be regenerated by the Security Provider for it to remain valid.
     *
-    * Note: this is different from the ticket validity encoded in a data element. A barcode envelope could be valid
-    * for more or less time than the transport product encoded in a data element.
+    * Note: this is different from the ticket validity encoded in a data element. An envelope could be valid for more or
+    * for less time than the transport product encoded in a data element.
     */
     endOfValidity       Timestamp   OPTIONAL,
     /**
     * This field allows for the binding of a barcode envelope to a specific end-device.
     */
     deviceBinding       [1] SEQUENCE {
+        /**
+        * If device binding is in use, this field **SHALL** contain the public-key of the Presentment Device.
+        */
         level2PublicKey     CHOICE {
+            /**
+            * A point on the NIST P-256 curve.
+            */
             nistP256    [1] ECPublicKey{32},
+            /**
+            * A point on the SEC p256k1 curve.
+            */
             secp256K1   [2] ECPublicKey{32},
+            /**
+            * A point on the NIST P-384 curve.
+            */
             nistP384    [3] ECPublicKey{48},
+            /**
+            * A point on the NIST P-521 curve.
+            */
             nistP521    [4] ECPublicKey{66},
+            /**
+            * The compressed encoding of an Ed25519 point.
+            */
             ed25519     [5] OCTET STRING (SIZE (32)),
+            /**
+            * The compressed encoding of an Ed448 point.
+            */
             ed448       [6] OCTET STRING (SIZE (57)),
             /**
-            * DER encoded SubjectPublicKeyInfo.
+            * If the public-key is not one of the above types, this variant **SHALL** be used, and **SHALL** contain the
+            * an X.509 `SubjectPublicKeyInfo` structure, encoded according to the Distinguished Encoding Rules.
             */
             other       [7] OCTET STRING
         },
         /**
-        * Validity duration in seconds of the barcode with reference to the time stamp in the dynamic content data.
+        * This field sets how long, in seconds, an envelope signed by the Presentment Device stays valid after generation.
         */
         validityDuration    INTEGER (1..3600)
    	} OPTIONAL
@@ -161,57 +182,82 @@ DeviceDataElements DATA-ELEMENT ::= {
 * @len The length, in bytes, of each of `r` and `s`. That is, half the total signature length.
 */
 ECKNRSignature{INTEGER: len} ::= SEQUENCE {
+    /**
+    * The output r of the ECKNR signature process.
+    */
     r OCTET STRING (SIZE(len)),
+    /**
+    * The output s of the ECKNR signature process.
+    */
     s OCTET STRING (SIZE(len)),
+    /**
+    * The non-recoverable data part. That is, the remaining data of the ECKNR signature process.
+    */
     remainder OCTET STRING
 }
 
+/**
+* This data structure contains a Elliptic Curve KCDSA/Nyberg-Rueppel message recovery signature.
+* Such a signature is defined in ISO/IEC 9796-3:2006 Sec. 13.
+*/
 MessageRecoverySignature ::= [APPLICATION 11] CHOICE {
     /**
-    * NIST P-256 curve and SHA-256.
+    * An ECKNR signature over the NIST P-256 curve with the SHA-256 hash function.
     */
     es256   [1] ECKNRSignature{32},
     /**
-    * secp256k1 curve and SHA-256.
+    * An ECKNR signature over the SEC p256k1 curve with the SHA-256 hash function.
     */
     es256k  [2] ECKNRSignature{32},
     /**
-    * NIST P-384 curve and SHA-384.
+    * An ECKNR signature over the NIST P-384 curve with the SHA-384 hash function.
     */
     es384   [3] ECKNRSignature{48},
     /**
-    * NIST P-521 curve and SHA-512.
+    * An ECKNR signature over the NIST P-521 curve with the SHA-512 hash function.
     */
     es512   [4] ECKNRSignature{66}
 }
 
+/**
+* This data structure contains a non-message recovery (i.e. standard) signature.
+*/
 Signature ::= CHOICE {
     /**
-    * ECDSA using the NIST P-256 curve and SHA-256.
+    * An ECDSA signature over the NIST P-256 curve with the SHA-256 hash function.
     */
     es256       [1] DSSSignature{32},
     /**
-    * ECDSA using the secp256k1 curve and SHA-256.
+    * An ECDSA signature over the SEC p256k1 curve with the SHA-256 hash function.
     */
     es256k      [2] DSSSignature{32},
     /**
-    * ECDSA using the NIST P-384 curve and SHA-384.
+    * An ECDSA signature over the NIST P-384 curve with the SHA-384 hash function.
     */
     es384       [3] DSSSignature{48},
     /**
-    * ECDSA using the NIST P-521 curve and SHA-512.
+    * An ECDSA signature over the NIST P-521 curve with the SHA-512 hash function.
     */
     es512       [4] DSSSignature{66},
     /**
-    * EdDSA over Curve25519.
+    * An EdDSA signature over the Curve25519 curve.
     */
     ed25519     [5] OCTET STRING (SIZE (64)),
     /**
-    * EdDSA over Curve448.
+    * An EdDSA signature over the Curve448 curve.
     */
     ed448       [6] OCTET STRING (SIZE (114)),
+    /**
+    * If the signature scheme is not one of the above types, this variant **SHALL** be used.
+    */
     other       [7] SEQUENCE {
+        /**
+        * An object identifier specifying which signature scheme is in use.
+        */
         algId       OBJECT IDENTIFIER,
+        /**
+        * The encoded signature, as per the above `algId`.
+        */
         signature   OCTET STRING
     }
 }

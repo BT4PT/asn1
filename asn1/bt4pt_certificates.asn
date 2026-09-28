@@ -9,7 +9,7 @@ EXPORTS EndEntityCertificate;
 IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, DATA-ELEMENT, cuperEncoding, nullEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  IssuerDataElements
- FROM BT4PT-BarcodeHeaderV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) header(2) v1(1) 0 };
+ FROM BT4PT-EnvelopeV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0 };
 
 EndEntityCertificate ::= SEQUENCE {
     serial                      INTEGER (1..16777216),
