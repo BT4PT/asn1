@@ -216,6 +216,50 @@ UnicodeText ::= [APPLICATION 4] SEQUENCE {
 }
 
 /**
+* This data structure is used fo the encoding of a person's name.
+* The encoding considerations and rules of {@link UnicodeText} apply equally to this structure.
+*
+* When comparing names with identity documents, or when a Latinized representation of a name is required,
+*   the system **SHALL** transliterate according to ICAO 9303 Part 3, specifically sections 4.6 and 6.
+* The text stored in the ticket **SHOULD** be in its original script, with transliteration performed by the reading device.
+* The reading device **SHOULD** show both the original script, and the Latinized form.
+*
+* The `language` field, if present, **SHALL** be used to select to correct Latinization of Cyrillic characters.
+* The relevant languages for special considerations in ICAO 9303 Latinization are:
+* - `be`: Belarusian
+* - `bg`: Bulgarian
+* - `uk`: Ukrainian
+* - `mk`: Macedonian
+* - `sr`: Serbian
+*
+* The `language` field **MAY** also be used to influence other transliterations, e.g. the different handling of diaereses by language.
+*
+* All 3 name parts are encoded with SCSU compression (as per {@link UnicodeText}).
+* The language tag applies to all 3 name parts.
+* That is, the name parts are to be construed as 3 UnicodeText SEQUENCEs with the same language tag set.
+*/
+Name ::= SEQUENCE {
+    /**
+    * The forename(s) of the person.
+    */
+    forename        OCTET STRING                                OPTIONAL,
+    /**
+    * The middle name(s) of the person, if applicable.
+    */
+    middleName      OCTET STRING                                OPTIONAL,
+    /**
+    * The surname(s) of the person.
+    * In the case of a mononym, this field **SHALL** contain the name, and the `forename` and `middleName` fields
+    * **SHALL** be unset.
+    */
+    surname         OCTET STRING                                OPTIONAL,
+    /**
+    * The [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) of the names' language.
+    */
+    language        VisibleString (SIZE(2) ^ FROM ("a".."z"))   OPTIONAL
+}
+
+/**
 * This data structure is used to identify a station, stop, or other such boarding/alighting point.
 * In Transmodel terms, it identifies a STOP PLACE (EN 12896-2:2016 § 5.4.3).
 */

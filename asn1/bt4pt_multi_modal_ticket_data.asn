@@ -72,7 +72,7 @@ BT4PT-MultiModalTicketDataV1-0 {
 } DEFINITIONS ::= BEGIN
 
 EXPORTS MultiModalTicket, multiModalTicketData;
-IMPORTS GenericId, GenericCode, CODE-TABLE-IDENTIFIER, CompanyCode, Station, StationSet, AreaSet, NUTSArea, LineId,
+IMPORTS GenericId, GenericCode, CODE-TABLE-IDENTIFIER, CompanyCode, Name, Station, StationSet, AreaSet, NUTSArea, LineId,
  TransportId, GeoPosition, CoachPlaces, Data, DATA-ELEMENT, cuperEncoding, rawEncoding, UnicodeText, Timestamp,
  SharedVehicleVariety, SharedVehiclePropulsionType, SharedVehicleReturnConstraint, CompanyConstraint, DataAuthorization
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
@@ -1700,35 +1700,9 @@ IdentificationDocument ::= SEQUENCE {
 *  from the type of travel document.
 * E.g. it can include the date of birth as this is part of the traveler,
 *  but not the indication "Senior" as this is tariff dependent.
-*
-* When comparing names with identity documents, or when a Latinized representation of a name is required,
-*   the system **SHALL** transliterate according to ICAO 9303 Part 3, specifically sections 4.6 and 6.
-* The text stored in the ticket **SHOULD** be in its original script, with transliteration performed by the reading device.
-* The reading device **SHOULD** show both the original script, and the Latinized form.
-*
-* The `language` field, if present, **SHALL** be used to select to correct Latinization of Cyrillic characters.
-* The relevant languages for special considerations in ICAO 9303 Latinization are:
-* - `be`: Belarusian
-* - `bg`: Bulgarian
-* - `uk`: Ukrainian
-* - `mk`: Macedonian
-* - `sr`: Serbian
-*
-* The `language` field **MAY** also be used to influence other transliterations, e.g. the different handling of diaereses by language.
 */
 Traveler ::= SEQUENCE {
-    /**
-    * All 3 name parts are encoded with SCSU compression (as per `UnicodeText`).
-    * The language tag applies to all 3 name parts.
-    * That is, the name parts are to be construed as 3 UnicodeText SEQUENCEs with the same language tag set.
-    */
-    firstName       OCTET STRING                                OPTIONAL,
-    secondName      OCTET STRING                                OPTIONAL,
-    lastName        OCTET STRING                                OPTIONAL,
-    /**
-    * ISO 639-1 coding (lower case) of the names' language.
-    */
-    language        VisibleString (SIZE(2) ^ FROM ("a".."z"))   OPTIONAL,
+    name            Name,
 
     /**
     * The definition of which passenger is which type in this field is per the issuer,

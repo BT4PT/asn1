@@ -51,18 +51,20 @@ dbIceTicket MultiModalTicket ::= {
         securePaperTicket notOnSecurePaper
     },
     traveler {{
-        /**
-        * SCSU for "Max".
-        */
-        firstName '4D6178'H,
-        /**
-        * SCSU for "Mustermann".
-        */
-        lastName '4D75737465726D616E6E'H,
-        /**
-        * This is a German language name.
-        */
-        language "de",
+        name {
+            /**
+            * SCSU for "Max".
+            */
+            forename '4D6178'H,
+            /**
+            * SCSU for "Mustermann".
+            */
+            surname '4D75737465726D616E6E'H,
+            /**
+            * This is a German language name.
+            */
+            language "de"
+        },
         passengerType person,
         /**
         * The passenger was born on the 3rd of October 1990.
@@ -871,9 +873,11 @@ ukRailcard MultiModalTicket ::= {
         }
     },
     traveler {{
-        firstName '4D6178'H,
-        lastName '4D75737465726D616E6E'H,
-        language "de"
+        name {
+            forename '4D6178'H,
+            surname '4D75737465726D616E6E'H,
+            language "de"
+        }
     }},
     transportDocument {customerCard : {
         controlData {
@@ -920,9 +924,11 @@ dbBahncard MultiModalTicket ::= {
         saleId idStr : "EXAMPLE-ID"
     },
     traveler {{
-        firstName '51'H,
-        lastName '4D6973656C6C'H,
-        language "de"
+        name {
+            forename '51'H,
+            surname '4D6973656C6C'H,
+            language "de"
+        }
     }},
     transportDocument {customerCard : {
         controlData {
