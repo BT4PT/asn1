@@ -1,0 +1,50 @@
+/**
+* BT4PT Luggage Tag - DRAFT.
+*/
+BT4PT-LuggageTagV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) luggageTag(12) v1(1) 0
+} DEFINITIONS ::= BEGIN
+
+EXPORTS LuggageTag, luggageTag;
+IMPORTS GenericId, CompanyCode, Name, DATA-ELEMENT, Data, cuperEncoding
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
+
+LuggageTag ::= SEQUENCE {
+    /**
+    * The ID **SHOULD** be eternally unique per issuer.
+    */
+    id          GenericId,
+    /**
+    * If different from the security provider.
+    * **SHALL** be set if the barcode is unsigned (i.e. no security provider).
+    */
+    issuer              CompanyCode                                     OPTIONAL,
+    /**
+    * The name of the owner of the luggage.
+    */
+    name                Name,
+    /**
+    * The E.164 international telephone number of the owner, without the leading `+`,
+    * e.g. "447700900378" for a UK mobile number.
+    */
+    telephone           VisibleString (SIZE(1..15) ^ FROM ("0".."9"))   OPTIONAL,
+    /**
+    * The email address of the owner. Implementations **SHALL** support RFC 6531 Internationalised Email Addresses.
+    */
+    email               UTF8String                                      OPTIONAL,
+    /**
+    * The [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) of
+    * the language that the luggage owner prefers to be spoken to in.
+    */
+    preferredLanguage   VisibleString (SIZE(2) ^ FROM ("a".."z"))       OPTIONAL,
+    extension   SEQUENCE (SIZE(1..8)) OF Data{{LuggageTagExtensions}} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!C" | "!P"))
+    }) OPTIONAL
+}
+
+luggageTag DATA-ELEMENT ::= { LuggageTag IDENTIFIED BY "LUG1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+
+LuggageTagExtensions DATA-ELEMENT ::= { ... }
+
+END
