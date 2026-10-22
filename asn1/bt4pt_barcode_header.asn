@@ -36,7 +36,7 @@ IMPORTS CompanyCode, Timestamp, Data, DSSSignature, ECPublicKey, DATA-ELEMENT
 
 /**
 * This data structure is the basic entry point of the envelope.
-* A BT4PT envelope **SHALL** consist of the bytes resulting from encoding this data structure using the ITU-T X.691
+* A BT4PT envelope **SHALL** consist of the bytes resulting from encoding this data structure using the [](cite:rfc5870)
 * Canonical Aligned Packed Encoding Rules.
 */
 BT4PTEnvelope ::= CHOICE {
@@ -128,32 +128,29 @@ IssuerSignedData ::= [APPLICATION 12] SEQUENCE {
         */
         level2PublicKey     CHOICE {
             /**
-            * A point on the NIST P-256 curve.
+            * A point on the [NIST P-256](cite:nist-sp800-186) curve.
             */
             nistP256    [1] ECPublicKey{32},
             /**
-            * A point on the SEC p256k1 curve.
-            */
-            secp256K1   [2] ECPublicKey{32},
-            /**
-            * A point on the NIST P-384 curve.
+            * A point on the [NIST P-384](cite:nist-sp800-186) curve.
             */
             nistP384    [3] ECPublicKey{48},
             /**
-            * A point on the NIST P-521 curve.
+            * A point on the [NIST P-521](cite:nist-sp800-186) curve.
             */
             nistP521    [4] ECPublicKey{66},
             /**
-            * The compressed encoding of an Ed25519 point.
+            * The compressed encoding of an Ed25519 point, per [](cite:rfc8032).
             */
             ed25519     [5] OCTET STRING (SIZE (32)),
             /**
-            * The compressed encoding of an Ed448 point.
+            * The compressed encoding of an Ed448 point, per [](cite:rfc8032).
             */
             ed448       [6] OCTET STRING (SIZE (57)),
             /**
             * If the public-key is not one of the above types, this variant **SHALL** be used, and **SHALL** contain the
-            * an X.509 `SubjectPublicKeyInfo` structure, encoded according to the Distinguished Encoding Rules.
+            * an [X.509](cite:x509) `SubjectPublicKeyInfo` structure, encoded according to the Distinguished Encoding
+            * Rules per [](cite:x690).
             */
             other       [7] OCTET STRING
         },
@@ -184,7 +181,7 @@ DeviceDataElements DATA-ELEMENT ::= {
 }
 
 /**
-* Message recovery signature as per ISO/IEC 9796-3:2006 Sec. 13 (ECKNR).
+* Message recovery signature as per [](cite:iso9796-3 "13").
 * @len The length, in bytes, of each of `r` and `s`. That is, half the total signature length.
 */
 ECKNRSignature{INTEGER: len} ::= SEQUENCE {
@@ -204,23 +201,19 @@ ECKNRSignature{INTEGER: len} ::= SEQUENCE {
 
 /**
 * This data structure contains a Elliptic Curve KCDSA/Nyberg-Rueppel message recovery signature.
-* Such a signature is defined in ISO/IEC 9796-3:2006 Sec. 13.
+* Such a signature is defined in [](cite:iso9796-3 "13")
 */
 MessageRecoverySignature ::= [APPLICATION 11] CHOICE {
     /**
-    * An ECKNR signature over the NIST P-256 curve with the SHA-256 hash function.
+    * An ECKNR signature over the [NIST P-256](cite:nist-sp800-186) curve with the [SHA-256 hash function](cite:fips180).
     */
     es256   [1] ECKNRSignature{32},
     /**
-    * An ECKNR signature over the SEC p256k1 curve with the SHA-256 hash function.
-    */
-    es256k  [2] ECKNRSignature{32},
-    /**
-    * An ECKNR signature over the NIST P-384 curve with the SHA-384 hash function.
+    * An ECKNR signature over the [NIST P-384](cite:nist-sp800-186) curve with the SHA-384 hash function](cite:fips180).
     */
     es384   [3] ECKNRSignature{48},
     /**
-    * An ECKNR signature over the NIST P-521 curve with the SHA-512 hash function.
+    * An ECKNR signature over the [NIST P-521](cite:nist-sp800-186) curve with the SHA-512 hash function](cite:fips180).
     */
     es512   [4] ECKNRSignature{66}
 }
@@ -230,27 +223,23 @@ MessageRecoverySignature ::= [APPLICATION 11] CHOICE {
 */
 Signature ::= CHOICE {
     /**
-    * An ECDSA signature over the NIST P-256 curve with the SHA-256 hash function.
+    * An [ECDSA](cite:x9.62) signature over the [NIST P-256](cite:nist-sp800-186) curve with the [SHA-256 hash function](cite:fips180).
     */
     es256       [1] DSSSignature{32},
     /**
-    * An ECDSA signature over the SEC p256k1 curve with the SHA-256 hash function.
-    */
-    es256k      [2] DSSSignature{32},
-    /**
-    * An ECDSA signature over the NIST P-384 curve with the SHA-384 hash function.
+    * An [ECDSA](cite:x9.62) signature over the [NIST P-384](cite:nist-sp800-186) curve with the [SHA-384 hash function](cite:fips180).
     */
     es384       [3] DSSSignature{48},
     /**
-    * An ECDSA signature over the NIST P-521 curve with the SHA-512 hash function.
+    * An [ECDSA](cite:x9.62) signature over the [NIST P-521](cite:nist-sp800-186) curve with the [SHA-512 hash function](cite:fips180).
     */
     es512       [4] DSSSignature{66},
     /**
-    * An EdDSA signature over the Curve25519 curve.
+    * An [EdDSA](cite:rfc8032) signature over Curve25519.
     */
     ed25519     [5] OCTET STRING (SIZE (64)),
     /**
-    * An EdDSA signature over the Curve448 curve.
+    * An [EdDSA](cite:rfc8032) signature over Curve448.
     */
     ed448       [6] OCTET STRING (SIZE (114)),
     /**

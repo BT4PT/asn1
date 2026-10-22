@@ -74,7 +74,7 @@ CodeTable ::= SEQUENCE {
         */
         area            [4] NULL,
         /**
-        * Identifiers are defined a national authority for a country. This field contains the ISO 3166-1 numeric code
+        * Identifiers are defined a national authority for a country. This field contains the [](cite:iso3166-1) numeric code
         * of that country.
         *
         * This variant **SHALL NOT** be used for an identifier before it is registered with [insert registration authority].
@@ -117,12 +117,12 @@ GenericCode{IdType, CODE-TABLE-IDENTIFIER: TableSet} ::= [APPLICATION 5] SEQUENC
 /**
 * This data structure is used throughout this standard when referring to the various organisations or authorities
 * responsible for the various aspects of ticketing and carriage of passengers. In Transmodel terms it identifies a
-* TRANSPORT ORGANIZATION (EN 12896-1:2016 § 5.6.8).
+* TRANSPORT ORGANIZATION per [](cite:en12896-1 "5.6.8").
 */
 CompanyCode ::= [APPLICATION 2] CHOICE {
     /**
-    * For companies within the EU this field **SHALL** be their ERA assigned Organisation Code, as available
-    *  from [teleref.era.europa.eu](https://teleref.era.europa.eu).
+    * For companies within the EU this field **SHALL** be their ERA assigned Organisation Code per [](cite:cid2018-1614 "II.3.2.4"),
+    *  as available from [teleref.era.europa.eu](https://teleref.era.europa.eu).
     * For others this field **SHALL** be their UIC assigned RICS, as available
     *  from [uic.org/support-activities/it/rics](https://uic.org/support-activities/it/rics).
     */
@@ -136,10 +136,10 @@ CompanyCode ::= [APPLICATION 2] CHOICE {
 	otherCode   SEQUENCE {
 	    /**
 		* The company identifier format is constructed according to one of the following options:
-		* 1. The literal character `+` (`U+002B`, PLUS SIGN), concatenated with a 2-character uppercase ISO-3166 country
-		*    code, concatenated with a string chosen by the national standards body of that country.
-		* 2. The literal character `_` (`U+005F`, LOW LINE), concatenated with a 4-character ERA Organisation Code or RICS,
-		*    concatenated with a string chosen by that company.
+		* 1. The literal character `+` (`U+002B`, PLUS SIGN), concatenated with a 2-character uppercase [](cite:iso3166-1)
+		*    country code, concatenated with a string chosen by the national standards body of that country.
+		* 2. The literal character `_` (`U+005F`, LOW LINE), concatenated with a 4-character ERA Organisation Code per
+		*    [](cite:cid2018-1614 "II.3.2.4") or RICS, concatenated with a string chosen by that company.
 		* 3. The literal character `*` (`U+002A`, ASTERISK), concatenated with privately chosen string. **Note:** this variant has no guarantees
 		*    of avoiding clashes in assignment, and **SHOULD NOT** be used unless no other option is available.
 		*    If an organisation has a ERA Organisation Code or a RICS, this variant **SHALL NOT** be used.
@@ -162,8 +162,8 @@ COMPANY-CODE-FORMAT ::= CLASS {
 }
 
 /**
-* When a company does not have an ERA Organisation Code, an entry from this list **SHALL** be used to signify
-* which alternative dataset is being used to identify the company.
+* When a company does not have an ERA Organisation Code per [](cite:cid2018-1614 "II.3.2.4"), an entry from this list
+* **SHALL** be used to signify which alternative dataset is being used to identify the company.
 *
 * The entries in this list are managed by [insert registration authority].
 */
@@ -193,24 +193,24 @@ CompanyConstraint ::= SEQUENCE {
 * This data structure is used throughout this standard for the encoding of text which is intended to be displayed to
 * a human being. This standard utilises the Unicode character set for such purposes.
 *
-* Implementations of this standard **SHALL** be compliant to DIN 91379, with regards to processing text in this structure.
-* That is, they are able to handle (store, transfer, recall, and represent) all characters as specified in DIN 91379 without error.
+* Implementations of this standard **SHALL** be compliant to [](cite:din91379), with regards to processing text in this structure.
+* That is, they are able to handle (store, transfer, recall, and represent) all characters as specified in [](cite:din91379) without error.
 */
 UnicodeText ::= [APPLICATION 4] SEQUENCE {
     /**
-    * The textual data, encoded according to the [Standard Compression Scheme for Unicode (SCSU)](https://www.unicode.org/reports/tr6/tr6-4.html).
-    * All Unicode text, before being fed into the SCSU compressor, **SHALL** be in Normalisation Form C.
+    * The textual data, encoded according to the [Standard Compression Scheme for Unicode (SCSU)](cite:uts6).
+    * All Unicode text, before being fed into the SCSU compressor, **SHALL** be in [Normalisation Form C](cite:uax6).
     *
-    * For encoders than only ever output US-ASCII and ISO 8859-1 (Latin-1) between `U+0020` and `U+00FF`, no special
+    * For encoders than only ever output Latin-1 (per [](cite:iso8859-1) between `U+0020` and `U+00FF`, no special
     * handling is required to generate SCSU data, the Latin-1 encoding is already valid SCSU.
-    * All decoders **MUST** be able to handle the full SCSU specification when  reading and parsing data.
+    * All decoders **MUST** be able to handle the full SCSU specification when reading and parsing data.
     *
     * If you are unsure which implementation to use, the [International Components for Unicode](https://icu.unicode.org/)
     *  is the recommended implementation of SCSU, although it is by no means required.
     */
     text        OCTET STRING,
     /**
-    * The [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) of the text.
+    * The [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) (per [](cite:bcp47)) of the text.
     */
     language    VisibleString (SIZE(2) ^ FROM ("a".."z"))
 }
@@ -220,7 +220,7 @@ UnicodeText ::= [APPLICATION 4] SEQUENCE {
 * The encoding considerations and rules of {@link UnicodeText} apply equally to this structure.
 *
 * When comparing names with identity documents, or when a Latinized representation of a name is required,
-*   the system **SHALL** transliterate according to ICAO 9303 Part 3, specifically sections 4.6 and 6.
+*   the system **SHALL** transliterate according to [](cite:icao9303-3), specifically sections 4.6 and 6.
 * The text stored in the ticket **SHOULD** be in its original script, with transliteration performed by the reading device.
 * The reading device **SHOULD** show both the original script, and the Latinized form.
 *
@@ -254,14 +254,14 @@ Name ::= SEQUENCE {
     */
     surname         OCTET STRING                                OPTIONAL,
     /**
-    * The [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) of the names' language.
+    * The [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) (per [](cite:bcp47)) of the names' language.
     */
     language        VisibleString (SIZE(2) ^ FROM ("a".."z"))   OPTIONAL
 }
 
 /**
 * This data structure is used to identify a station, stop, or other such boarding/alighting point.
-* In Transmodel terms, it identifies a STOP PLACE (EN 12896-2:2016 § 5.4.3).
+* In Transmodel terms, it identifies a STOP PLACE per [](cite:en12896-1 "5.4.3").
 */
 Station ::= [APPLICATION 6] SEQUENCE {
     /**
@@ -269,7 +269,7 @@ Station ::= [APPLICATION 6] SEQUENCE {
     */
     station     CHOICE {
         /**
-        * Identification of the station by its ERA assigned Primary Location Code, as per [teleref.era.europa.eu](https://teleref.era.europa.eu).
+        * Identification of the station by its ERA assigned Primary Location Code per [](cite:cir2026-253 "9.3.b"), as available from [teleref.era.europa.eu](https://teleref.era.europa.eu).
         * This variant **SHALL** be used when a station has such a code assigned.
         *
         * **Note:** a PLC is _not_ equivalent to a UIC station ID, an IBNR (Internationale/Interne Bahnhofsnummer),
@@ -278,7 +278,7 @@ Station ::= [APPLICATION 6] SEQUENCE {
         */
         eraPlc      SEQUENCE {
             /**
-            * The ISO 3166-1 numeric code of the country of the PLC.
+            * The [](cite:iso3166-1) numeric code of the country of the PLC.
             */
             country         INTEGER (0..999),
             /**
@@ -360,7 +360,7 @@ StationSet ::= [APPLICATION 7] SEQUENCE {
 
 /**
 * This data structure is used to identify a service line, for which many services may run in a day.
-* In Transmodel terms, it identifies a LINE (EN 12896-2:2016 § 5.3.7.4).
+* In Transmodel terms, it identifies a LINE [](cite:en12896-1 "5.3.7.4").
 */
 LineId ::= [APPLICATION 8] CHOICE {
     /**
@@ -410,7 +410,7 @@ LineIdCodeTables CODE-TABLE-IDENTIFIER ::= {
 
 /**
 * This data structure is used to identify a singular transport service, ideally unique within a day.
-* In Transmodel terms, it identifies a SERVICE JOURNEY (EN 12896-3:2016 § 5.3.2).
+* In Transmodel terms, it identifies a SERVICE JOURNEY [](cite:en12896-1 "5.3.2").
 */
 TransportId ::= [APPLICATION 9] CHOICE {
     /**
@@ -426,6 +426,9 @@ TransportId ::= [APPLICATION 9] CHOICE {
         */
         carrier CompanyCode
     },
+    /**
+    * This field **SHALL** contain the Lead Railway Undertaking for the service per [](cite:cir2026-253 "13").
+    */
     generic             GenericCode{GenericId, {TransportIdCodeTables}}
 }
 
@@ -464,7 +467,7 @@ TransportIdCodeTables CODE-TABLE-IDENTIFIER ::= {
 
 /**
 * This structure identifies a geographic area defined under the Nomenclature of Territorial Units for
-* Statistics (Regulation EC 1059/2003), or a compatible system for those countries outside of the NUTS system.
+* Statistics (per [](cite:reg2003-1059)), or a compatible system for those countries outside of the NUTS system.
 *
 * Divisions all the way down to the Local Administrative Unit are permitted.
 * LAUs must be appended to their NUTS3 code, e.g. `270942` for Emmendingen, Stadt is coded with the subdivision `133270942`.
@@ -545,13 +548,27 @@ AreaCodeTables CODE-TABLE-IDENTIFIER ::= {
     {&table {
         owner national : 208,
         version 0
+    }} |
+    /**
+    * German _Amtlicher Regionalschlüssel_ (ARS).
+    * ARS IDs **SHALL** be encoded as `idStr` and contain only decimal digits.
+    * Values **SHALL** have one of the following lengths:
+    * - length 2 (00-99): _Land_ (Federal State)
+    * - length 3 (00 0-99 9): _Regierungsbezirk_ (Administrative Area)
+    * - length 5 (00 0 00-99 9 99): _Kreis_ (County)
+    * - length 9 (00 0 00 0000-99 9 99 9999): _Gemeindeverband_ (Municipal Association)
+    * - length 12 (00 0 00 0000 000-99 9 99 9999 9999): _Gemeinde_ (Municipality)
+    */
+    {&table {
+        owner national : 276,
+        version 0
     }},
     ...
 }
 
 /**
 * This data structure is used to locate seats/places within a coach/carriage. It is used, for example, when encoding
-* a seat reservation barcode. The data **SHALL** be construed according to ERA TEL TSI B.5.
+* a seat reservation barcode. The data **SHALL** be construed in accordance with [](cite:tel-tsi-b5).
 */
 CoachPlaces ::= SEQUENCE {
     /**
@@ -563,7 +580,7 @@ CoachPlaces ::= SEQUENCE {
     */
     placeNumber         [2] SEQUENCE OF PlaceNumber OPTIONAL,
     /**
-    * This field **MAY** be used to provide more details about the seats/places, in accordance with ERA TEL TSI B.5.
+    * This field **MAY** be used to provide more details about the seats/places, in accordance with [](cite:tel-tsi-b5).
     */
     details             [3] PlaceDetails            OPTIONAL,
     /**
@@ -588,19 +605,19 @@ PlaceNumber ::= CHOICE {
 }
 
 /**
-* This data structure provides additional details about a seat/place/compartment, according to ERA TEL TSI B.5.
+* This data structure provides additional details about a seat/place/compartment, in accordance with [](cite:tel-tsi-b5).
 */
 PlaceDetails ::= SEQUENCE {
     /**
-    * This field **SHALL** contain a value per ERA TEL TSI Code List B.5.51.1.
+    * This field **SHALL** contain a value per [](cite:tel-tsi-b5 "51.1").
     */
     coachType       INTEGER (0..99),
     /**
-    * This field **SHALL** contain a value per ERA TEL TSI Code List B.5.51.2.
+    * This field **SHALL** contain a value per [](cite:tel-tsi-b5 "51.2").
     */
     compartmentType INTEGER (0..99),
     /**
-    * This field **SHALL** contain a value per ERA TEL TSI Code List B.5.51.3.
+    * This field **SHALL** contain a value per [](cite:tel-tsi-b5 "51.3").
     */
     specialOffers   INTEGER (0..99),
     /**
@@ -612,7 +629,7 @@ PlaceDetails ::= SEQUENCE {
 
 /**
 * This data structure is used to represent points on the globe. It **SHALL** contain a latitude and longitude as
-* measurements compatible with the World Geodetic System 1984, as used by GPS navigation satellites.
+* measurements compatible with [](cite:wgs84), as used by GPS navigation satellites.
 */
 GeoCoordinate ::= SEQUENCE {
     /**
@@ -632,7 +649,7 @@ GeoCoordinate ::= SEQUENCE {
 * from the given centre coördinate.
 *
 * To convert between meters of accuracy and degrees of accuracy, an implementation **SHALL**:
-* 1. Let the earth's circumference be 40,075,016.7 meters, per WGS84.
+* 1. Let the earth's circumference be 40,075,016.7 meters, per [](cite:wgs84).
 * 2. Let the meters per degree at a given latitude be the cosine of the latitude in radians, times the earth's circumference, divided by 360.
 *    That is, the following formula: `M = cos(latitude * π / 180) * 40075016.7 / 360`.
 * 3. The degrees of accuracy is the meters of accuracy divided by the meters per degree at the latitude.
@@ -740,7 +757,7 @@ Timestamp ::= [APPLICATION 1] SEQUENCE {
 
 /**
 * This enumeration is used to describe the variety of a shared vehicle. Its values are taken from NeTEx's
-* `PersonalVehicleCategory` (CEN/TS 16614-5:2022 § 10.1.4.3.4.2).
+* `PersonalVehicleCategory` per [](cite:cents16614-5 "10.1.4.3.4.2").
 */
 SharedVehicleVariety ::= ENUMERATED {
     /**
@@ -816,7 +833,7 @@ SharedVehicleVariety ::= ENUMERATED {
 
 /**
 * This enumeration is used to describe the propulsion method of a shared vehicle. Its values are taken from NeTEx's
-* PropulsionType (CEN/TS 16614-5:2022 § 10.1.4.3.2.2).
+* `PropulsionType` per [](cite:cents16614-5 "10.1.4.3.2.2").
 */
 SharedVehiclePropulsionType ::= ENUMERATED {
     /**
@@ -843,8 +860,7 @@ SharedVehiclePropulsionType ::= ENUMERATED {
 }
 
 /**
-* This enumeration is used to describe the return constraints of a shared Vehicle. Its values are taken from
-* the General Bikeshare Feed Specification version 3.0.
+* This enumeration is used to describe the return constraints of a shared Vehicle. Its values are taken from [](cite:gbfs).
 */
 SharedVehicleReturnConstraint ::= ENUMERATED {
     /**
@@ -879,10 +895,10 @@ SharedVehicleReturnConstraint ::= ENUMERATED {
 DATA-ELEMENT ::= CLASS {
     /**
     * The data element identifier format is constructed according to one of the following options:
-    * 1. The literal character `+` (`U+002B`, PLUS SIGN), concatenated with a 2-character uppercase ISO-3166 country
+    * 1. The literal character `+` (`U+002B`, PLUS SIGN), concatenated with a 2-character uppercase [](cite:iso3166-1) country
     *    code, concatenated with a string chosen by the national standards body of that country.
-    * 2. The literal character `_` (`U+005F`, LOW LINE), concatenated with a 4-character ERA Organisation Code or RICS,
-    *    concatenated with a string chosen by that company.
+    * 2. The literal character `_` (`U+005F`, LOW LINE), concatenated with a 4-character ERA Organisation Code per
+    *    [](cite:cid2018-1614 "II.3.2.4") or RICS, concatenated with a string chosen by that company.
     * 4. The literal character string `!I` (`U+0021`, EXCLAMATION MARK, `U+0049`, Latin Capital Letter I),
     *    concatenated with a string chosen by the issuer. This variant **SHALL** be construed as equivalent to the
     *    corresponding 2nd variant. It **SHALL** be used where possible to avoid repetition of the issuer's company code.
@@ -927,13 +943,13 @@ DATA-ELEMENT ::= CLASS {
 }
 
 /**
-* This Object Identifier has been assigned by ITU-T X.691 to identify the Canonical Aligned Packed Encoding Rules.
+* This Object Identifier has been assigned by [](cite:x691) to identify the Canonical Aligned Packed Encoding Rules.
 * This **SHALL** be used within a {@link DATA-ELEMENT} object to signify that it is encoded with the CAPER.
 */
 caperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(3) canonical(1) aligned(0)}
 
 /**
-* This Object Identifier has been assigned by ITU-T X.691 to identify the Canonical Unaligned Packed Encoding Rules.
+* This Object Identifier has been assigned by [](cite:x691) to identify the Canonical Unaligned Packed Encoding Rules.
 * This **SHALL** be used within a {@link DATA-ELEMENT} object to signify that it is encoded with the CUPER.
 */
 cuperEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) packed-encoding(3) canonical(1) unaligned(1)}
@@ -1005,8 +1021,8 @@ DSSSignature{INTEGER: len} ::= SEQUENCE {
 ECPublicKey{INTEGER: len} ::= SEQUENCE {
     /**
     * An indicator of the Y coördinate of the elliptic curve point being odd or even.
-    * This field **SHALL** be `FALSE` if the first byte of the SEC 1 compressed encoding of this point would be `02h`,
-    * and **SHALL** be `TRUE` if the first byte of the SEC 1 compressed encoding of this point would be `03h`.
+    * This field **SHALL** be `FALSE` if the first byte of the [](cite:sec1) compressed encoding of this point would be `02h`,
+    * and **SHALL** be `TRUE` if the first byte of the [](cite:sec1) compressed encoding of this point would be `03h`.
     */
     yIsOdd BOOLEAN,
     /**

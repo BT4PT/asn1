@@ -11,7 +11,8 @@ IMPORTS DATA-ELEMENT, cuperEncoding
 
 HSMTrace ::= SEQUENCE {
     /**
-    * An opaque random ID assigned to the HSM at personalisation.
+    * An opaque random ID. This value **SHALL** be assigned by a cryptographically secure pseudo-random number generator
+    *  at the personalisation of the Hardware Security Module.
     */
     hsmId               OCTET STRING (SIZE(8)),
     /**
@@ -20,8 +21,14 @@ HSMTrace ::= SEQUENCE {
     keySlot             INTEGER (0..255),
     /**
     * Monotonically increasing global counter of signatures performed by the HSM, encoded as a big-endian integer.
-    * Wrap-around is not permitted; once the counter reaches its limit, the HSM is considered spent.
+    * That is, this counter is for the entire HSM, not merely one key slot.
     * The sequence need not be contiguous; gaps are permitted between values, as long as the counter does not go backwards.
+    *
+    * This counter **SHALL** be maintained by the HSM itself, **SHALL** be incremented for each
+    *   signature generated, successful or not.
+    *
+    * Wrap-around is not permitted; once the counter reaches its limit, the HSM is considered spent.
+    * A HSM whose signature counter has reached its maximum value **SHALL NOT** generate any further signatures.
     */
     signatureCounter    OCTET STRING (SIZE(4))
 }
