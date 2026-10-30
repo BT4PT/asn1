@@ -395,8 +395,8 @@ TransportProduct ::= SEQUENCE {
 
     /**
     * Data that applies to only certain segments of this transport product.
-    * If a particular condition is defined in both the general and the general data,
-    *  the one in specific data overrules the one in the general data.
+    * If a particular condition is defined in both the general and the segment data,
+    *  the one in segment data overrules the one in the general data.
     */
     segmentData                 SEQUENCE (SIZE (1..32)) OF SegmentData                      OPTIONAL,
 
