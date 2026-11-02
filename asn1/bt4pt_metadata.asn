@@ -21,7 +21,9 @@ SubordinateCertificateList ::= SEQUENCE {
     */
     data        TbsSubordinateCertificateList,
     /**
-    * This field **SHALL** contain the DER encoding of a signature over the DER encoding of `TbsSubordinateCertificateList`.
+    * This field **SHALL** contain a signature over the DER encoding of `TbsSubordinateCertificateList`, made using the
+    * algorithm given in `signatureAlgorithm`. For ECDSA, the signature **SHALL** be the DER encoding of an
+    * `ECDSA-Sig-Value`. For ML-DSA, the signature **SHALL** be the octets of the signature as specified in FIPS 204.
     * The signature **SHALL** be made using the private key corresponding to the CA certificate containing the extension
     * which references this certificate list.
     */
@@ -30,17 +32,17 @@ SubordinateCertificateList ::= SEQUENCE {
 
 TbsSubordinateCertificateList ::= SEQUENCE {
     /**
-    * A monotonically increasing number. If a client sees a certificate list with a number less than or equal to the
+    * A strictly increasing number. If a client sees a certificate list with a number less than or equal to the
     * greatest `manifestNumber` previously accepted for the same CA certificate it **SHALL** ignore such a list.
     */
     manifestNumber      INTEGER (0..MAX),
     /**
-    * The point in time at which this certificate was list generated.
+    * The point in time at which this certificate list was generated.
     */
     thisUpdate          Timestamp,
     /**
     * The point in time that clients **SHOULD** next refetch this list.
-    * Note: a cached manifest that is older than its `recommendedRefresh` does not immediately invalidate all certificates
+    * Note: a cached manifest that is older than its `recommendRefresh` does not immediately invalidate all certificates
     * listed within, it **MAY** be used until a new certificate list can be downloaded.
     */
     recommendRefresh    Timestamp,
@@ -68,7 +70,7 @@ CertificateEntry ::= SEQUENCE {
     * A public HTTPS URL where the X.509 certificate, encoded using ASN.1 DER, may be downloaded.
     * The data **SHALL** be presented with the `Content-Type` of `application/pkix-cert`.
     *
-    * A client **MUST** validate that the file it downloads calculates to the same SHA-256 hash as given above.
+    * A client **SHALL** validate that the file it downloads calculates to the same SHA-256 hash as given above.
     */
     url             VisibleString
 }
