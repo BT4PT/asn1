@@ -10,15 +10,20 @@ IMPORTS Timestamp
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 /**
-* This data type **SHALL** be encoded using ASN.1 DER and made available on a public HTTPS URL
-* that is referenced in the CA's X.509 certificate extensions.
+* This structure **SHALL** be encoded using the ASN.1 Distinguished Encoding Rules and made available on the public
+* URL that is referenced in the CA's X.509 certificate extensions.
+*
+* The data **SHALL** be presented with the `Content-Type` of `application/vnd.bt4pt.cert-list+der`.
 */
 SubordinateCertificateList ::= SEQUENCE {
+    /**
+    * This field contains the data of the certificate list, before signing.
+    */
     data        TbsSubordinateCertificateList,
     /**
-    * The DER encoded signature output per `data.signatureAlgorithm` using the private key corresponding to the CA
-    * certificate containing the extension which references this certificate list.
-    * The signature is calculated over the DER encoding of `TbsSubordinateCertificateList`.
+    * This field **SHALL** contain the DER encoding of a signature over the DER encoding of `TbsSubordinateCertificateList`.
+    * The signature **SHALL** be made using the private key corresponding to the CA certificate containing the extension
+    * which references this certificate list.
     */
     signature   OCTET STRING
 }
@@ -26,29 +31,32 @@ SubordinateCertificateList ::= SEQUENCE {
 TbsSubordinateCertificateList ::= SEQUENCE {
     /**
     * A monotonically increasing number. If a client sees a certificate list with a number less than or equal to the
-    * greatest `manifestNumber` previously accepted for the same publishing CA it **MUST** ignore such a list.
+    * greatest `manifestNumber` previously accepted for the same CA certificate it **SHALL** ignore such a list.
     */
     manifestNumber      INTEGER (0..MAX),
     /**
-    * At what point in time was this certificate list generated.
+    * The point in time at which this certificate was list generated.
     */
     thisUpdate          Timestamp,
     /**
-    * At what point in time **SHOULD** a client refetch the manifest.
+    * The point in time that clients **SHOULD** next refetch this list.
     * Note: a cached manifest that is older than its `recommendedRefresh` does not immediately invalidate all certificates
-    * listed within.
+    * listed within, it **MAY** be used until a new certificate list can be downloaded.
     */
     recommendRefresh    Timestamp,
     /**
-    * An identifier of what algorithm is used to calculate the wrapping `signature`.
+    * An identifier of the algorithm used to calculate the wrapping `signature`.
     */
     signatureAlgorithm  OBJECT IDENTIFIER,
     /**
-    * A list of all subordinate X.509 certificates directly issued by the publishing CA and participating in the BT4PT PKI.
+    * A list of all subordinate X.509 certificates directly issued by the relevant CA.
     */
     certificateList     SEQUENCE OF CertificateEntry
 }
 
+/**
+* One, and only one of these entries **SHALL** exist for each certificate the CA has issued.
+*/
 CertificateEntry ::= SEQUENCE {
     /**
     * The SHA-256 hash of the DER encoded certificate content.
@@ -58,6 +66,8 @@ CertificateEntry ::= SEQUENCE {
     certificateHash OCTET STRING (SIZE(32)),
     /**
     * A public HTTPS URL where the X.509 certificate, encoded using ASN.1 DER, may be downloaded.
+    * The data **SHALL** be presented with the `Content-Type` of `application/pkix-cert`.
+    *
     * A client **MUST** validate that the file it downloads calculates to the same SHA-256 hash as given above.
     */
     url             VisibleString

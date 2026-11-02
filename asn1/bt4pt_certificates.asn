@@ -11,119 +11,207 @@ IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, DATA-ELE
  IssuerDataElements
  FROM BT4PT-EnvelopeV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0 };
 
+/**
+* Extensions to X.509 made within this specification are identified under this following OID tree.
+*/
+bt4ptPkiExt OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
+    uic(17218) fcb(1) bt4pt(2) pkiExt(9)}
+
 EndEntityCertificate ::= SEQUENCE {
+    /**
+    * This field **SHALL** be unique amongst all End-Entity Certificates issued by that Issuing Certificate Authority key pair.
+    */
     serial                      INTEGER (1..16777216),
-    issuingSecurityProvider     CompanyCode,
+    /**
+    * The operator of the Issuing Certificate Authority.
+    */
+    issuingOrg                  CompanyCode,
+    /**
+    * This field, together with the previous field, identifies the Issuing Certificate Authority by its [Certificate ID](#certificate-id).
+    */
     caId                        INTEGER (1..65536),
+    /**
+    * This field, together with the next field, give the last day, in UTC, on which the certificate is valid.
+    * The certificate **SHALL** be considered expired after the end of that day.
+    * There is no start of validity encoded in the certificate; an End-Entity Certificate is valid from its issuance.
+    * The validity of an End-Entity Certificate **SHALL NOT** extend beyond the validity of its Issuing Certificate Authority certificate.
+    */
     validUntilYear              INTEGER (2026..2281),
+    /**
+    * The ordinal day of the year, with 1 January being day `1`.
+    */
     validUntilDay               INTEGER (1..366),
     /**
-    * The public key **MUST** be of the same EC curve as the issuing certificate's public key.
-    * If it is not the certificate **MUST** be treated as invalid.
-    * This public key is calculated as per [SEC 4](https://www.secg.org/sec4-1.0.pdf).
+    * This field contains the public key reconstruction point `P_U` as specified in [](cite:sec4).
+    * Its curve **SHALL** be the curve of the Issuing Certificate Authority's public key; if it is not, the certificate
+    * **SHALL** be treated as invalid.
     */
-    publicKeyReconstructionData CHOICE {
+    keyData                     CHOICE {
+        /**
+        * A point on the [NIST P-256](cite:nist-sp800-186) curve.
+        */
         nistP256    [1] ECPublicKey{32},
-        secp256K1   [2] ECPublicKey{32},
+        /**
+        * A point on the [NIST P-384](cite:nist-sp800-186) curve.
+        */
         nistP384    [3] ECPublicKey{48},
+        /**
+        * A point on the [NIST P-521](cite:nist-sp800-186) curve.
+        */
         nistP521    [4] ECPublicKey{66}
     },
+    /**
+    * The extensions of the certificate.
+    */
     extensions                  SEQUENCE (SIZE(0..15)) OF CertificateExtension
 }
 
 /**
-* A certificate extension, containing data as specified by its `&Type`, and encoded into an `OCTET STRING` as specified by its `&encoding`.
-* When included in an `EndEntityCertificate` it is identified by its `&id`.
-* If `&id` is not set, then the extension may not appear in an `EndEntityCertificate`, only an X.509 certificate.
-* When included in an X.509 certificate, it is identified by its `&oid`.
-* The identifier `&id` can be of the following forms:
-* - `+` + [2-letters uppercase ISO 3166 country code] + [addon, chosen by the national standards body of that country]
-* - `_` + [RICS or ERA Organisation Code] + [addon, chosen by this company]
-* - `*` + [addon] - private use, not guaranteed to avoid clashes.
+* This class defines extensions to X.509 and End-Entity Certificates for use in this standard.
 *
-* Any other value only after registration in the appropriate registry.
-* Unregistered values (outside of the national, company, and private use ranges) **MUST NOT** be used.
-* If an organisation has a RICS or an ERA Organisation Code the private use format **MUST NOT** be used.
-* All values **SHOULD** be registered via the UIC Github repository.
+* Each object of this class identifies a extension and specifies the ASN.1 type used to represent its contents and the
+* encoding rules used to encode those contents.
+*
+* In End-Entity Certificates extensions are identified by their `id`.
+* If `&id` is not set, then the extension may not appear in an End-Entity Certificates, only an X.509 certificate.
+*
+* In X.509 Certificates they are identified by their `oid`. The `extnValue` of such an extension **SHALL** contain the
+* encoding of the extension's `&Type` using the encoding rules identified by the object's `&encoding`.
+* Note: this may not be DER and is frequently UPER.
 */
 CERTIFICATE-EXTENSION ::= CLASS {
+    /**
+    * The extension identifier format is constructed according to one of the following options:
+    * 1. The literal character `+` (`U+002B`, PLUS SIGN), concatenated with a 2-character uppercase [](cite:iso3166-1) country
+    *    code, concatenated with a string chosen by the national standards body of that country.
+    * 2. The literal character `_` (`U+005F`, LOW LINE), concatenated with a 4-character ERA Organisation Code per
+    *    [](cite:cid2018-1614 "II.3.2.4") or RICS, concatenated with a string chosen by that company.
+    * 3. The literal character `*` (`U+002A`, ASTERISK), concatenated with privately chosen string. **Note:** this variant has no guarantees
+    *    of avoiding clashes in assignment, and **SHOULD NOT** be used unless no other option is available.
+    *    If an organisation has a ERA Organisation Code or a RICS, this variant **SHALL NOT** be used.
+    * 4. Any other string, as assigned in this standard. Unregistered values of this variant **SHALL NOT** be used.
+    *
+    * The 1st and 2nd variant **SHOULD** be registered _before_ their first use.
+    * The 4th variant **SHALL** be registered _before_ its first use.
+    * Registrations **SHALL** be made with [insert registration authority].
+    */
     &id VisibleString (SIZE(1..8) ^ (ALL EXCEPT ("!I" | "!C" | "!P"))) UNIQUE OPTIONAL,
+    /**
+    * The Object Identifier for this extension.
+    */
     &oid OBJECT IDENTIFIER UNIQUE,
+    /**
+    * The data structure that describes the contents of this extension.
+    */
     &Type,
+    /**
+    * An object identifier specifying which of the ASN.1 encoding rules used to encode `Type` into an `OCTET STRING`
+    * for the placing of this extension into a certificate.
+    */
     &encoding OBJECT IDENTIFIER
 } WITH SYNTAX {
     &Type [IDENTIFIED BY &id] WITH OID &oid ENCODED WITH &encoding
 }
 
+/**
+* This set defines the BT4PT specific certificate extensions which are permissible to appear on X.509 Certificates.
+*/
+CertificateExtensions CERTIFICATE-EXTENSION ::= {
+    specimenPoisonExt |
+    issuerDataAuthorizationExt |
+    certificateIdExt |
+    eeCertCRLExt |
+    subordinateCertificateRepositoryV1-0Ext,
+    ...
+}
+
+/**
+* This data structure encodes an extension to an End-Entity Certificate, identified by its `id`.
+* An extension without an `id` **SHALL NOT** appear in an End-Entity Certificate.
+*/
 CertificateExtension ::= [APPLICATION 3] SEQUENCE {
     /**
-    * If the data format is not recognised, or can't be processed, and it is marked critical, the certificate **MUST** be treated as invalid;
-    * otherwise, it is permitted to ignore extensions not understood.
+    * This field allows for the introduction of new, security critical, elements in the future.
+    * If an extension alters the validity of a certificate in a way which would cause Ticket Inspection Devices unaware of
+    * the semantics of the extension to treat the ticket as valid where it shouldn't have been, this field **SHALL** be `TRUE`.
     */
     critical    BOOLEAN,
+    /**
+    * This field identifies which type of data element is encoded.
+    * Its value is used to identify which type is contained within the `value` field, and what encoding has been used
+    * for it.
+    */
     format      CERTIFICATE-EXTENSION.&id({EECertificateExtensions}),
+    /**
+    * This field contains the type identified by the `format` field, encoded according to the encoding given in the
+    * corresponding {@link CERTIFICATE-EXTENSION} object.
+    */
     value       OCTET STRING (CONTAINING CERTIFICATE-EXTENSION.&Type({EECertificateExtensions}{@format}))
 }
 
+/**
+* This set defines the BT4PT specific certificate extensions which are permissible to appear on End-Entity Certificates.
+*/
 EECertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
     issuerDataAuthorizationExt,
     ...
 }
 
-CertificateExtensions CERTIFICATE-EXTENSION ::= {
-    specimenPoisonExt |
-    issuerDataAuthorizationExt |
-    certificateIdExt |
-    eeCertCRLExt,
-    ...
-}
-
-bt4ptPkiExt OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
-    uic(17218) fcb(1) bt4pt(2) pkiExt(9)}
-
 id-specimenPoison OBJECT IDENTIFIER ::= {bt4ptPkiExt specimenPoison(0)}
 /**
-* Any barcode signed by a certificate containing this poison marker **MUST** be considered a specimen barcode,
-* regardless of any other specimen flag.
+* Any envelope whose certificate chain contains, in any certificate, the Specimen Poison extension **SHALL** be considered
+* a specimen, regardless of the value of any other specimen indicator in the envelope or its data elements.
+*
+* Certificate Authorities **SHALL** include this extension when a certificate they issue is not to be used in production.
 */
 specimenPoisonExt CERTIFICATE-EXTENSION ::= { NULL IDENTIFIED BY "SP" WITH OID id-specimenPoison ENCODED WITH nullEncoding }
 
 id-issuerDataAuthorization OBJECT IDENTIFIER ::= {bt4ptPkiExt issuerDataAuthorization(1)}
 /**
-* This extension specifies which issuer data elements may be included in a barcode signed by this certificate, and
-* what constraints apply to them.
+* The Issuer Data Authorisation extension specifies which Security Provider signed data elements may be included in an
+* envelope signed under the certificate, and which constraints apply to them. A certificate which contains no Issuer Data
+* Authorisation record places no restriction on the data elements of envelopes signed under it.
+*
+* An Issuer Data Authorisation record **SHALL NOT** contain more than one entry with the same `format`.
 */
 issuerDataAuthorizationExt CERTIFICATE-EXTENSION ::= { DataAuthorization{{IssuerDataElements}} IDENTIFIED BY "ID" WITH OID id-issuerDataAuthorization ENCODED WITH cuperEncoding }
 
-CertificateId ::= SEQUENCE {
-    issuingSecurityProvider     CompanyCode,
-    caId                        INTEGER (1..65536)
-}
-
 id-certificateId OBJECT IDENTIFIER ::= {bt4ptPkiExt certificateId(2)}
 /**
-* This extension is placed in the X.509 certificate of a CA issuing end-entity certificates.
-* It uniquely identifies a key-pair in the BT4PT PKI.
-* A CA certificate **MAY** be re-issued with updated metadata and the same certificate ID, but a change of public key
-* requires a new certificate ID.
+* This extension is placed in the X.509 certificate of a Issuing Certificate Authority.
+* The tuple of the Issuing Certificate Authority Company Code and the Certificate ID **SHALL** uniquely identify a key pair within the BT4PT PKI.
+* An entity **SHALL NOT** assign the same CA ID to two different key pairs.
+*
+* An Issuing Certificate Authority certificate **MAY** be re-issued with updated metadata (for example, changed Issuer
+* Data Authorisation) whilst retaining the same Certificate ID, provided that the public key is unchanged.
 */
-certificateIdExt CERTIFICATE-EXTENSION ::= { CertificateId WITH OID id-certificateId ENCODED WITH cuperEncoding }
+certificateIdExt CERTIFICATE-EXTENSION ::= { INTEGER (1..65536) WITH OID id-certificateId ENCODED WITH cuperEncoding }
 
 id-eeCertCRL OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRL(3)}
 /**
-* This extension contains the HTTPS URL at which the X.509 Certificate Revocation List for end-entity certificates directly issued by this CA may be retrieved.
+* This extension **SHALL** contain a `https://` URL at which the [Certificate Revocation List](cite:x509) covering the
+* End-Entity Certificates it has issued may be retrieved.
+* That is, it is not the CRL covering the certificate itself, but the complete CRL for all subordinate certificates
+* directly issued by the given certificate.
+* The file at the URL **SHALL** be openly accessible on the Internet without any authentication, free of charge.
 */
 eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-eeCertCRL ENCODED WITH cuperEncoding }
 
 /**
-* This extension defines a notice to be displayed to inspection staff upon encountering a revoked certificate.
-* It is to be included as an extension to a Certificate Revocation List Entry.
-* Each entry in the `localisedNotices` **SHOULD** convey the same information in a different language.
-* The device performing the ticket validation can select which language, of those provided, is most appropriate to be
-* displayed.
+* The Revocation Notice contains a notice, in one or more languages, to be displayed to inspection staff upon the
+* inspection of an envelope signed under a revoked certificate. It may, for example, contain instructions as to how such
+* tickets are to be treated.
+*
+* Certificate Authorities **SHALL** include such a notice when the circumstances of revocation warrant further explanation
+* to ticket control staff. The notice **SHOULD** be provided in the predominant languages of the area in which envelopes
+* relating to this revocation are likely to be encountered.
 */
 RevocationNotice ::= SEQUENCE {
+    /**
+    * Each entry in the **SHOULD** convey the same information in a different language.
+    * The Ticket Inspection Device selects which language, of those provided, is most appropriate to be displayed.
+    */
     localisedNotices    SEQUENCE OF UnicodeText
 }
 id-revocationNotice OBJECT IDENTIFIER ::= {bt4ptPkiExt revocationNotice(4)}
@@ -131,12 +219,31 @@ revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID id-rev
 
 id-subordinateCertificateRepositoryV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt subordinateCertificateRepositoryV1-0(5)}
 /**
-* This extension contains the HTTPS URL at which the `SubordinateCertificateList`, defined in the `BT4PT-MetadataV1-0` module, containing certificates directly issued by this CA may be retrieved.
+* All Certificate Authority Certificates that are not Issuing Certificate Authority Certificates **SHALL** contain this
+* extension. This extension **SHALL** contain a `https://` URL at which the Repository for the given CA
+* Certificate can be retrieved. The file at the URL, as well as any URLs referenced in the repository **SHALL** be openly
+* accessible on the Internet without any authentication, free of charge.
 */
 subordinateCertificateRepositoryV1-0Ext CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-subordinateCertificateRepositoryV1-0 ENCODED WITH cuperEncoding }
 
+/**
+* The Last Known-good Signature Counter allows the revocation of a key held in a Hardware Security Module only into the
+* future. This permits, for example, a Hardware Security Module that is known to have been stolen to be revoked, without
+* invalidating the legitimate envelopes it signed before it was stolen.
+*
+* This extension **SHALL** only be used in a Certificate Revocation List for End-Entity Certificates.
+*
+* This extension **SHALL NOT** be used when there is evidence a private key has been extracted from a HSM. It is only
+* suitable to use when the private key is still secured within the HSM, but the HSM is in malicious hands.
+*/
 LastGoodSignatureCounter ::= SEQUENCE {
+    /**
+    * The identifier of the HSM, as per its HSM tracing record, specified in [](#hsm-tracing).
+    */
     hsmId               OCTET STRING (SIZE(8)),
+    /**
+    * The maximum value to accept for the signature counter.
+    */
     signatureCounter    OCTET STRING (SIZE(4))
 }
 id-lastGoodSignatureCounter OBJECT IDENTIFIER ::= {bt4ptPkiExt lastGoodSignatureCounter(6)}
@@ -144,9 +251,14 @@ lastGoodSignatureCounterExt CERTIFICATE-EXTENSION ::= { LastGoodSignatureCounter
 
 id-onlineValidationRequiredMarker OBJECT IDENTIFIER ::= {bt4ptPkiExt onlineValidationRequiredMarker(7)}
 /**
-* This extension is placed in an X.509 CRL entry.
-* It marks that the private key is likely compromised, and that online (e.g. eTCD) validation **MUST** be performed to
-* assertain if a ticket is validly issued or not.
+* The Online Validation Required Marker indicates that the private key corresponding to the revoked certificate is
+* likely compromised, but that envelopes signed under it may nonetheless be legitimate. This extension instructs
+* Ticket Inspection Devices to perform an online check against a ticket control database before accepting an envelope,
+* instead of outright rejecting such envelopes.
+*
+* When there is a high risk of inconvenience to the travelling public by revocation, a CA **SHALL** use this extension.
+* This situation arises, for example, when key has been used to issue many paper tickets whose barcodes cannot now
+* be updated.
 */
 onlineValidationRequiredMarkerExt CERTIFICATE-EXTENSION ::= { NULL WITH OID id-onlineValidationRequiredMarker ENCODED WITH nullEncoding }
 
@@ -166,7 +278,7 @@ id-endEntityCAMarker OBJECT IDENTIFIER ::= {bt4ptPkiExt endEntityCAMarker(9)}
 
 /**
 * This OID is used in the X.509 `GeneralName.otherName` to signify a DER-encoded `CompanyCode`.
-* It may be used in either the Subject Alternative Name or Issuer Alternative Name X.509 extensions.
+* It is to be used in either the Subject Alternative Name or Issuer Alternative Name X.509 extensions.
 */
 id-otherNameCompanyCode OBJECT IDENTIFIER ::= {bt4ptPkiExt otherNameCompanyCode(10)}
 

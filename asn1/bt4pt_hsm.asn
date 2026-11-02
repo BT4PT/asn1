@@ -33,6 +33,15 @@ HSMTrace ::= SEQUENCE {
     signatureCounter    OCTET STRING (SIZE(4))
 }
 
+/**
+* When the private key of an End-Entity is held in a Hardware Security Module, the HSM **SHALL** include this HSM Trace
+* data element in each envelope it signs. This allows tracing of the source of an envelope, and the revocation of keys
+* only from a given point in time onward.
+*
+*
+* When an End-Entity Certificate is not issued to a key pair held in a HSM the certificate authority **SHALL** not include
+* this tracing record in the certificate's Issuer Data Authorization
+*/
 hsmTraceData DATA-ELEMENT ::= { HSMTrace IDENTIFIED BY "HSM1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
 
 END
