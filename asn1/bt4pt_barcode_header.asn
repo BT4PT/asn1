@@ -57,16 +57,19 @@ BT4PTEnvelope ::= CHOICE {
     * and an optional binding of this envelope to a end-device's public key.
     */
     signed      [2] SEQUENCE {
+        /**
+        * This field contains the Issuer Signed Data, as well as any additional data to be signed by the device.
+        */
         data            DeviceSignedData,
         /**
         * This field is used as part of the device binding of envelopes. When an envelope is bound to a Presentment
         * Device, it **SHALL** contain a signature, calculated over the Canonical Aligned Packed Encoding Rules encoding
         * of {@link DeviceSignedData}, using the device held private key corresponding to the public key provided in the
-        * `level2PublicKey` field of `IssuerSignedData`.
+        * `level2PublicKey` field of {@link IssuerSignedData}.
         *
-        * If the the `deviceBinding` field of `IssuerSignedData` field is unset, and this field is set, the envelope **SHALL** be
+        * If the `deviceBinding` field of the {@link IssuerSignedData} is unset, and this field is set, the envelope **SHALL** be
         * construed as invalid.
-        * If the the `deviceBinding` field of `IssuerSignedData` field is set, and this field is unset, the envelope **SHALL** be
+        * If the `deviceBinding` field of the {@link IssuerSignedData} is set, and this field is unset, the envelope **SHALL** be
         * construed as invalid.
         */
         deviceSignature Signature OPTIONAL
@@ -76,7 +79,8 @@ BT4PTEnvelope ::= CHOICE {
 DeviceSignedData ::= SEQUENCE {
     /**
     * This field contains the data signed by the Security Provider, in a message recovery fashion.
-    * Its inner data is the Canonical Aligned Packed Encoding Rules encoding of {@link IssuerSignedData}.
+    * Its inner data is the Canonical Aligned Packed Encoding Rules encoding of {@link IssuerSignedData}, prefixed with
+    * the first 16 bytes of the SHA-256 hash of the encoding.
     */
     data        MessageRecoverySignature,
     /**
@@ -86,10 +90,10 @@ DeviceSignedData ::= SEQUENCE {
     /**
     * This field contains the timestamp at which the Presentment Device generated the envelope.
     *
-    * This field **SHALL** be set if `IssuerSignedData.deviceBinding` is set, otherwise the envelope **SHALL** be
-    * construed as invalid.
-    * If this timestamp is more than `IssuerSignedData.deviceBinding.validityDuration` seconds in the past,
-    * the envelope **SHALL** be construed as invalid.
+    * This field **SHALL** be set if the `deviceBinding` field of the {@link IssuerSignedData} is set, otherwise the
+    * envelope **SHALL** be construed as invalid.
+    * If this timestamp is more than the `deviceBinding.validityDuration` field of the {@link IssuerSignedData} seconds
+    * in the past, the envelope **SHALL** be construed as invalid.
     */
     timestamp   Timestamp   OPTIONAL,
     /**
@@ -161,6 +165,10 @@ IssuerSignedData ::= [APPLICATION 12] SEQUENCE {
    	} OPTIONAL
 }
 
+/**
+* The following data elements can appear in the `data` field of the {@link IssuerSignedData} structure.
+* Note: other data elements, not defined in this standard, are also permitted to appear.
+*/
 IssuerDataElements DATA-ELEMENT ::= {
     multiModalTicketData |
     fixedPointData |
@@ -173,6 +181,10 @@ IssuerDataElements DATA-ELEMENT ::= {
     ...
 }
 
+/**
+* The following data elements can appear in the `deviceData` field of the {@link DeviceSignedData} structure.
+* Note: other data elements, not defined in this standard, are also permitted to appear.
+*/
 DeviceDataElements DATA-ELEMENT ::= {
     dynamicContentData |
     dynamicContentDataAligned |
@@ -209,11 +221,11 @@ MessageRecoverySignature ::= [APPLICATION 11] CHOICE {
     */
     es256   [1] ECKNRSignature{32},
     /**
-    * An ECKNR signature over the [NIST P-384](cite:nist-sp800-186) curve with the SHA-384 hash function](cite:fips180).
+    * An ECKNR signature over the [NIST P-384](cite:nist-sp800-186) curve with the [SHA-384 hash function](cite:fips180).
     */
     es384   [3] ECKNRSignature{48},
     /**
-    * An ECKNR signature over the [NIST P-521](cite:nist-sp800-186) curve with the SHA-512 hash function](cite:fips180).
+    * An ECKNR signature over the [NIST P-521](cite:nist-sp800-186) curve with the [SHA-512 hash function](cite:fips180).
     */
     es512   [4] ECKNRSignature{66}
 }
