@@ -5,7 +5,7 @@ BT4PT-HSMTraceV1-0 {
     iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) hsm(6) v1(1) 0
 } DEFINITIONS ::= BEGIN
 
-EXPORTS HSMTrace, hsmTraceData;
+EXPORTS HSMTrace, HSMTraceConstraints, hsmTraceData;
 IMPORTS DATA-ELEMENT, cuperEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
@@ -34,6 +34,28 @@ HSMTrace ::= SEQUENCE {
 }
 
 /**
+* The constraints placed on the HSM Trace data element by an Issuer Data Authorisation record. They bind the key pair
+* certified by a certificate to the Hardware Security Module holding it.
+*
+* As Issuer Data Authorisation is cumulative, every Certificate Authority in the chain of a HSM-held key has to permit
+* the HSM Trace data element, but only the Issuing Certificate Authority can know which Hardware Security Modules hold the
+* key. `permittedHsmId` is therefore optional, and an entry without it permits the data element without restricting its
+* `hsmId`.
+*
+* When any Issuer Data Authorisation record in the certificate chain of an envelope contains an entry for the HSM Trace
+* data element which has `permittedHsmId`, the Security Provider signed data of the envelope **SHALL** contain exactly
+* one HSM Trace data element, and its `hsmId` **SHALL** be one of the `permittedHsmId` of every such entry. Otherwise,
+* the envelope **SHALL** be construed as invalid.
+*/
+HSMTraceConstraints ::= SEQUENCE {
+    /**
+    * The `hsmId` value of the Hardware Security Module which holds the private key, and is thus permitted to sign
+    * envelopes under the certificate.
+    */
+    permittedHsmId     OCTET STRING (SIZE(8)) OPTIONAL
+}
+
+/**
 * When the private key of an End-Entity is held in a Hardware Security Module, the Security Provider **SHALL** include
 * this HSM Trace data element in the Security Provider signed data of each envelope signed with that key. This allows
 * tracing of the source of an envelope, and the revocation of keys only from a given point in time onward.
@@ -43,9 +65,11 @@ HSMTrace ::= SEQUENCE {
 * counter for that signature, and refuse to sign otherwise. The values of this data element **SHALL NOT** be alterable by
 * any entity outside the HSM.
 *
+* When an End-Entity Certificate is issued to a key pair held in a HSM, the Issuing Certificate Authority **SHALL**
+* include `permittedHsmId` in the entry for this data element in the Issuer Data Authorisation of the End-Entity Certificate.
 * When an End-Entity Certificate is not issued to a key pair held in a HSM, the Certificate Authority **SHALL NOT**
 * permit this data element in the Issuer Data Authorisation of the certificate.
 */
-hsmTraceData DATA-ELEMENT ::= { HSMTrace IDENTIFIED BY "HSM1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+hsmTraceData DATA-ELEMENT ::= { HSMTrace IDENTIFIED BY "HSM1" ENCODED WITH cuperEncoding CONSTRAINED BY HSMTraceConstraints }
 
 END
