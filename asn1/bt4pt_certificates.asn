@@ -6,7 +6,7 @@ BT4PT-CertificatesV1-0 {
 } DEFINITIONS ::= BEGIN
 
 EXPORTS EndEntityCertificate;
-IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, DATA-ELEMENT, cuperEncoding, nullEncoding
+IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, Timestamp, DATA-ELEMENT, cuperEncoding, nullEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  IssuerDataElements
  FROM BT4PT-EnvelopeV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0 };
@@ -205,21 +205,134 @@ id-eeCertCRL OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRL(3)}
 eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-eeCertCRL ENCODED WITH cuperEncoding }
 
 /**
-* The Revocation Notice contains a notice, in one or more languages, to be displayed to inspection staff upon the
-* inspection of an envelope signed under a revoked certificate. It may, for example, contain instructions as to how such
-* tickets are to be treated.
+* The Revocation Notice informs inspection staff and Ticket Inspection Devices of the reason for the revocation of a
+* certificate, and of how envelopes signed under it are to be treated. It consists of a coded reason, a coded action,
+* and an optional notice in one or more languages to be displayed to inspection staff.
 *
-* Certificate Authorities **SHALL** include such a notice when the circumstances of revocation warrant further explanation
-* to ticket control staff. The notice **SHOULD** be provided in the predominant languages of the area in which envelopes
-* relating to this revocation are likely to be encountered.
+* Every entry of a Certificate Revocation List **SHALL** contain exactly one Revocation Notice. An entry which does not
+* **SHALL** be considered invalid and ignored.
+*
+* Certificate Authorities **SHALL** include a textual notice in `localisedNotices` when the circumstances of revocation
+* warrant further explanation to ticket control staff. The textual notice **SHOULD** be provided in the predominant
+* languages of the area in which envelopes relating to this revocation are likely to be encountered. Where the coded
+* `reason` and `action` convey all the necessary information, `localisedNotices` **MAY** be empty.
 */
 RevocationNotice ::= SEQUENCE {
     /**
+    * The reason for the revocation, as it is to be presented to inspection staff. Ticket Inspection Devices **SHOULD**
+    * display a description of this reason in the language of the inspection staff.
+    */
+    reason              RevocationNoticeReason,
+    /**
+    * The action to be taken by inspection staff, or a Ticket Inspection Device, upon the inspection of an envelope
+    * signed under the revoked certificate.
+    */
+    action              InspectorAction         DEFAULT reject,
+    /**
+    * The end of the period during which the `action` applies. This field **SHALL** be present if, and only if, `action`
+    * is `acceptUntil`.
+    */
+    actionEnd           Timestamp               OPTIONAL,
+    /**
     * Each entry in `localisedNotices` **SHOULD** convey the same information in a different language.
+    * This field **MAY** be empty if the circumstances are described entirely by the above fields.
     * The Ticket Inspection Device selects which language, of those provided, is most appropriate to be displayed.
     */
     localisedNotices    SEQUENCE OF UnicodeText
 }
+
+/**
+* The reason for the revocation of a certificate, as presented to inspection staff.
+*
+* The values 1 to 3 are aligned with the `HotListStatusCode` of [](cite:en1545-1). Other values below 64 are reserved
+* for alignment with [](cite:en1545-1).
+*/
+RevocationNoticeReason ::= ENUMERATED {
+    /**
+    * No reason is given.
+    */
+    notGiven                (0),
+    /**
+    * The reason is undefined. This variant can be used when the circumstances are described entirely by the localised notices.
+    */
+    undefined               (1),
+    /**
+    * A Hardware Security Module, or other device holding the private key, has been stolen.
+    */
+    deviceStolen            (2),
+    /**
+    * A Hardware Security Module, or other device holding the private key, has been lost.
+    */
+    deviceLost              (3),
+    /**
+    * The private key is known, or suspected, to have been exposed.
+    */
+    keyCompromised          (64),
+    /**
+    * Envelopes were issued fraudulently under the certificate.
+    */
+    fraudulentIssuance      (65),
+    /**
+    * The certificate was used outside of its authorisation.
+    */
+    misuse                  (66),
+    /**
+    * The certificate was issued in error, for example with and Issuer Data Authorisation.
+    */
+    issuedInError           (67),
+    /**
+    * The evidence of resistance of a Hardware Security Module holding the private key was withdrawn, or a component
+    * not meeting the requirements of this standard was used.
+    */
+    uncertifiedComponent    (68),
+    /**
+    * The issuer or Security Provider has ceased to operate, or its contract or authorisation has ended.
+    */
+    issuerCeased            (69),
+    /**
+    * The certificate is revoked pending further investigation.
+    */
+    suspended               (70),
+    /**
+    * The key has been retired in the normal course of operations, with no security concern.
+    */
+    routineRetirement       (71),
+    ...
+}
+
+/**
+* The action to be taken upon the inspection of an envelope signed under a revoked certificate.
+*/
+InspectorAction ::= ENUMERATED {
+    /**
+    * The envelope is not to be accepted.
+    */
+    reject                      (0),
+    /**
+    * The envelope is to be accepted if the traveller presents proof of purchase, such as a receipt or booking
+    * confirmation.
+    */
+    acceptWithProofOfPurchase   (1),
+    /**
+    * The envelope is to be accepted if the identity of the traveller matches that of the booking.
+    */
+    acceptWithIdentity          (2),
+    /**
+    * The envelope is to be accepted, and its details recorded and referred to the issuer.
+    */
+    referToIssuer               (3),
+    /**
+    * The envelope is to be accepted until the `actionEnd` of the Revocation Notice, and not accepted thereafter.
+    */
+    acceptUntil                 (4),
+    /**
+    * The envelope is not to be accepted, and the ticket on which it is presented is to be retained, for example in the
+    * case of a ticket on secure paper.
+    */
+    retainDocument              (5),
+    ...
+}
+
 id-revocationNotice OBJECT IDENTIFIER ::= {bt4ptPkiExt revocationNotice(4)}
 revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID id-revocationNotice ENCODED WITH cuperEncoding }
 
