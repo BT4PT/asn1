@@ -20,9 +20,9 @@ IMPORTS CompanyCode, Timestamp, Data, DSSSignature, ECPublicKey, DATA-ELEMENT
  fixedPointData
  FROM BT4PT-FixedPointDataV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) fpd(5) v1(1) 0 }
  encryptedData
- FROM BT4PT-CertificatesV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) encryptedData(11) v1(1) 0 }
+ FROM BT4PT-EncryptedDataV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) encryptedData(11) v1(1) 0 }
  luggageTag
- FROM BT4PT-CertificatesV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) luggageTag(12) v1(1) 0 }
+ FROM BT4PT-LuggageTagV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) luggageTag(12) v1(1) 0 }
  hsmTraceData
  FROM BT4PT-HSMTraceV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) hsm(6) v1(1) 0 }
  uicRailTicketData

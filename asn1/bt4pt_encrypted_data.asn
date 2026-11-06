@@ -9,7 +9,7 @@ EXPORTS EncryptedData, encryptedData;
 IMPORTS GenericId, CompanyCode, DATA-ELEMENT, Data, cuperEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  luggageTag
- FROM BT4PT-CertificatesV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) luggageTag(12) v1(1) 0 };
+ FROM BT4PT-LuggageTagV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) luggageTag(12) v1(1) 0 };
 
 EncryptedData ::= SEQUENCE {
     header      EncryptedDataHeader,

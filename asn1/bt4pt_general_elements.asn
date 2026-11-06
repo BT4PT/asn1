@@ -996,7 +996,15 @@ Data{DATA-ELEMENT: ElementSet} ::= [APPLICATION 3] SEQUENCE {
 DataAuthorization{DATA-ELEMENT: ElementSet} ::= SEQUENCE (SIZE(1..64)) OF DataAuthorizationEntry{{ElementSet}}
 
 DataAuthorizationEntry{DATA-ELEMENT: ElementSet} ::= SEQUENCE {
+    /**
+    * This field identifies the type of data element to which this entry applies.
+    */
     format      DATA-ELEMENT.&id({ElementSet}),
+    /**
+    * This field contains the constraints type identified by the `format` field, encoded according to the encoding
+    * given in the corresponding {@link DATA-ELEMENT} object, regardless of the encoding of the structure containing
+    * this entry.
+    */
     constraint  OCTET STRING (CONTAINING DATA-ELEMENT.&Constraints({ElementSet}{@format}))
 }
 

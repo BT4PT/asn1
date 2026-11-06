@@ -133,6 +133,10 @@ MultiModalTicketConstraints ::= SEQUENCE {
     mandatoryOnlineValidation   BOOLEAN                                         DEFAULT FALSE,
     controlExtensions           DataAuthorization{{ControlDataExtensions}}      OPTIONAL,
     carriers                    CompanyConstraint                               OPTIONAL,
+    /**
+    * The service brands, per code list B.4.7009 of [](cite:tel-tsi-codes), on which tickets signed under the
+    * certificate may permit travel.
+    */
     serviceBrands               SEQUENCE OF INTEGER (1..32000)                  OPTIONAL,
     transportTypes              SEQUENCE (SIZE(1..31)) OF INTEGER (1..31)       OPTIONAL,
     products                    SEQUENCE (SIZE(1..32)) OF ProductRestriction    OPTIONAL,
@@ -1010,7 +1014,7 @@ Conditions ::= SEQUENCE {
     classCode                       TravelClass                                             DEFAULT second,
 
     /**
-    * Per TEL TSI Code List B.5.308.
+    * Per code list B.5.308 of [](cite:tel-tsi-codes).
     */
     fareCode                        VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
 
@@ -1037,7 +1041,7 @@ TransportVariety ::= SEQUENCE {
     */
     transportType   INTEGER (1..31)     OPTIONAL,
     /**
-    * Per TEL TSI Code List B.4.7009.
+    * Per code list B.4.7009 of [](cite:tel-tsi-codes).
     */
     serviceBrand    INTEGER (1..32000)  OPTIONAL
 }
@@ -1143,11 +1147,11 @@ Car ::= SEQUENCE {
     vehiclePlate        UnicodeText,
     trailerPlate        UnicodeText         OPTIONAL,
     /**
-    * Per TEL TSI Code List B.5.29.
+    * Per code list B.5.29 of [](cite:tel-tsi-codes).
     */
     carCategory         INTEGER (1..8),
     /**
-    * Per TEL TSI Code List B.5.29.
+    * Per code list B.5.29 of [](cite:tel-tsi-codes).
     */
     boatCategory        INTEGER (1..8)      OPTIONAL,
     textileRoof         BOOLEAN,
@@ -1321,12 +1325,12 @@ TransportLink ::= SEQUENCE {
     * Service brand.
     * Omitted if this specific service brand is already specified in the associated leg, and is the only one that is specified for this leg
     * (a leg can allow many service brands, but a transport link only specifies one).
-    * Per TEL TSI Code List B.4.7009.
+    * Per code list B.4.7009 of [](cite:tel-tsi-codes).
     */
     serviceBrand            INTEGER (1..32000)                                       OPTIONAL,
 
     /**
-    * Per TEL TSI Code List B.5.308.
+    * Per code list B.5.308 of [](cite:tel-tsi-codes).
     * Omitted if the same fare code is already specified in the description of the associated leg.
     */
     fareCode                VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL
@@ -1381,18 +1385,18 @@ ReservationSegment ::= SEQUENCE {
     /**
     * Omitted if this specific service brand is already specified in the associated leg, and is the only one that is specified for this leg
     * (a leg can allow many service brands, but a reservation only specifies one).
-    * Per TEL TSI Code List B.4.7009.
+    * Per code list B.4.7009 of [](cite:tel-tsi-codes).
     */
     serviceBrand            INTEGER (1..32000)                                       OPTIONAL,
 
     /**
-    * Per TEL TSI Code List B.5.308.
+    * Per code list B.5.308 of [](cite:tel-tsi-codes).
     * Omitted if the same fare code is already specified in the description of the associated leg.
     */
     fareCode                VisibleString (SIZE(1..2) ^ FROM ("A".."Z"|"0".."9"))   OPTIONAL,
 
     /**
-    * Per TEL TSI B.5.
+    * Per [](cite:tel-tsi-b5).
     */
     service                 ServiceType                                             DEFAULT seat,
 
@@ -2183,7 +2187,7 @@ DelayConfirmation ::= SEQUENCE {
         additionalCarrier       SEQUENCE OF CompanyCode,
         /**
         * Additional service brands the passenger is permitted to travel in.
-        * Per TEL TSI Code List B.4.7009.
+        * Per code list B.4.7009 of [](cite:tel-tsi-codes).
         */
         additionalServiceBrand  SEQUENCE OF INTEGER (1..32000)
     } OPTIONAL,
@@ -2252,7 +2256,7 @@ TicketLink ::= SEQUENCE {
 }
 
 /**
-* Sleeper compartment according to TEL TSI B.5.
+* Sleeper compartment according to [](cite:tel-tsi-b5).
 */
 BerthDetailData ::= SEQUENCE {
     berthType              BerthType,
