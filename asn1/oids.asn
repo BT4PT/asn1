@@ -121,4 +121,22 @@ bt4ptMetadataV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules metadata(8) v1(1) 0 }
 -- BT4PT Encrypted Data - version 1.0, currently a draft
 bt4ptEncryptedDataV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules encryptedData(11) v1(1) 0 }
 
+-- BT4PT Luggage Tag - version 1.0, currently a draft
+bt4ptLuggageTagV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules luggageTag(12) v1(1) 0 }
+
+-- BT4PT Presentment Applet - version 1.0, currently a draft
+bt4ptPresentmentAppletModuleV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules presentmentApplet(13) v1(1) 0 }
+
+
+bt4ptApplets OBJECT IDENTIFIER ::= { uicFcb bt4ptApplets(3) }
+
+-- BT4PT Presentment Applet - general OID
+bt4ptPresentmentApplet OBJECT IDENTIFIER ::= { bt4ptApplets presentmentApplet(1) }
+
+-- BT4PT Presentment Applet - version 1.0
+bt4ptPresentmentAppletV1 OBJECT IDENTIFIER ::= { bt4ptPresentmentApplet v1(1) }
+
+-- BT4PT HSM Applet
+bt4ptHSMAppletV1 OBJECT IDENTIFIER ::= { bt4ptApplets hsmApplet(2) v1(1) }
+
 END

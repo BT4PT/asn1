@@ -8,36 +8,37 @@ IMPORTS Timestamp, GeoCoordinate, Data, GenericId, DATA-ELEMENT, cuperEncoding, 
 
 DynamicContent ::= SEQUENCE {
     /**
-    * Identification of the mobile application that generated the barcode and filled in the dynamic part.
-    * Values as defined by the security provider.
-    */
-    dynamicContentMobileAppId           VisibleString       OPTIONAL,
-
-    /**
-    * Coordinates of the location where the dynamic content was been generated.
-    */
-    dynamicContentGeoCoordinate         GeoCoordinate       OPTIONAL,
-
-    dynamicContentResponseToChallenge   SEQUENCE OF Data{{ResponsesToChallenge}} (WITH COMPONENTS {
-        ...,
-        format (ALL EXCEPT ("!I" | "!C" | "!P"))
-    }),
-
-    /**
     * A unique ID for this instance of a dynamic barcode (i.e. updated each time the dynamic segment is regenerated).
     * This field **SHALL NOT** be used in assessing the validity of a ticket, it exists for debugging purposes.
     * This field has no relation to any ticket ID in any ticket control database.
     */
-    dynamicContentId                    GenericId           OPTIONAL,
+    id                    GenericId           OPTIONAL,
+
+    /**
+    * Identification of the mobile application that generated the barcode and filled in the dynamic part.
+    * Values as defined by the security provider.
+    */
+    mobileAppId         VisibleString       OPTIONAL,
+
+    /**
+    * Coordinates of the location where the dynamic content was been generated.
+    */
+    location            GeoCoordinate       OPTIONAL,
+
+    /**
+    * Responses to challenges supplied by a Ticket Inspection Device.
+    */
+    responseToChallenge SEQUENCE OF Data{{ResponsesToChallenge}} (WITH COMPONENTS {
+        ...,
+        format (ALL EXCEPT ("!I" | "!C" | "!P"))
+    }),
 
     /**
     * Traceability information linked to the about the application that generated the barcode and filled in the dynamic part.
     * Values as defined by the security provider.
     * This field **SHALL NOT** be used in assessing the validity of a ticket, it exists for debugging purposes.
     */
-    dynamicContentTraceability          VisibleString       OPTIONAL,
-
-    ...
+    traceability        VisibleString       OPTIONAL
 }
 
 dynamicContentData DATA-ELEMENT ::= { DynamicContent IDENTIFIED BY "DCD1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
