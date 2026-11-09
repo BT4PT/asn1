@@ -93,7 +93,14 @@ DeviceSignedData ::= SEQUENCE {
     * This field **SHALL** be set if the `deviceBinding` field of the {@link IssuerSignedData} is set, otherwise the
     * envelope **SHALL** be construed as invalid.
     * If this timestamp is more than the `deviceBinding.validityDuration` field of the {@link IssuerSignedData} seconds
-    * in the past, the envelope **SHALL** be construed as invalid.
+    * in the past, the envelope **SHALL** be construed as invalid, subject to the clock tolerance specified in
+    * [](#clock-skew).
+    *
+    * A Presentment Device **SHALL NOT** rely on its local clock alone when generating the `timestamp` of the device
+    * signed data. It **SHALL** determine the offset of its local clock from the time of a reliable source, such as the
+    * systems of the issuer, whenever it is online, and **SHALL** correct the `timestamp` by that offset. A Presentment
+    * Device whose clock is set incorrectly, whether accidentally or deliberately, will otherwise generate envelopes
+    * that are rejected as expired or as having a timestamp in the future.
     */
     timestamp   Timestamp   OPTIONAL,
     /**
@@ -160,6 +167,7 @@ IssuerSignedData ::= [APPLICATION 12] SEQUENCE {
         },
         /**
         * This field sets how long, in seconds, an envelope signed by the Presentment Device stays valid after generation.
+        * This value **SHOULD NOT** be less than 30 seconds, as a shorter duration leaves little margin for clock skew, etc.
         */
         validityDuration    INTEGER (1..3600)
    	} OPTIONAL

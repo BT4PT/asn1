@@ -273,7 +273,7 @@ SecurePaperTicket ::= ENUMERATED {
 RetailInformation ::= SEQUENCE {
     /**
     * A unique identifier for the sale transaction that caused this ticket to be issued.
-    * The value of this field **SHALL** be unique within the scope of an retailer's (or of the issuer's, where
+    * The value of this field **SHALL** be unique within the scope of a retailer's (or of the issuer's, where
     * `retailerId` is absent) company code.
     */
     saleId              GenericId,
