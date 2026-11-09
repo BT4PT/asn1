@@ -163,70 +163,80 @@ ProductRestriction ::= SEQUENCE {
 multiModalTicketData DATA-ELEMENT ::= { MultiModalTicket IDENTIFIED BY "MMT1" ENCODED WITH cuperEncoding CONSTRAINED BY MultiModalTicketConstraints }
 
 /**
-* Details of the issuer and the issue of the ticket.
-* - Details of the issuer
-* - Indication of test tickets (specimen)
-* - Retail information
-* - Proprietary extension data
+* This data structure encodes the information relating to the issuance of a ticket.
+* It represents who issued it, when it was issued, how it was issued, and other associated such details.
 */
 IssuingData ::= SEQUENCE {
     /**
-    * Issuer of the binary content of the transport document, if different from the security provider as encoded in the barcode header.
+    * The issuer of the content of the transport document.
+    * This field **SHALL NOT** be set unless it is different from the Security Provider in the envelope.
     */
     issuer              CompanyCode                 OPTIONAL,
 
+    /**
+    * In cases of a ticket directly tied to a sale process, this **SHALL** the time the process was completed to a state
+    * sufficient to issue the ticket. This could be, for example, when payment was confirmed.
+    *
+    * In other cases, this is the generation time of the envelope.
+    */
     issuedAt            Timestamp,
 
     /**
-    * A unique identifier for the sale transaction that caused this ticket to be issued.
-    */
-    saleId              GenericId,
-
-    /**
-    * Specimen indicates a test specimen not valid for traveling.
+    * This field **SHALL** be TRUE when it is in a specimen ticket.
+    * Such tickets **SHALL NOT** be accepted for travel.
     */
     specimen            BOOLEAN,
 
+    /**
+    * This field is used to control duplication of tickets by means of secure (non-copyable) paper.
+    */
     securePaperTicket   SecurePaperTicket,
 
     /**
-    * Currency of the price - ISO 4217 numeric currency code.
-    * Default 978 = Euro.
+    * This field indicates the currency for any price information in this ticket.
+    * It **SHALL** contain the [](cite:iso4217) numeric code for that currency.
+    *
+    * The default value for this field is the code for the Euro.
     */
     currency            INTEGER (0..999)              DEFAULT 978,
 
     /**
-    * Fraction of the prices included.
+    * This field indicates the decimal places for any price information in this ticket.
+    * That is, when this field is 0, the integer prices encoded are full units of the currency;
+    * when it is 1, the integers encoded are tenths of the currency; when it is 2, hundredths; etc.
+    *
+    * The default value for this field is hundredths of the full unit, e.g. Euro cents.
     */
     currencyFract       INTEGER (0..3)                DEFAULT 2,
 
     /**
-    * Location of sale (transport number and/or line number) in case of a sale on board of a transport.
+    * When a ticket is issued on board a transport (i.e. it isn't purchased ahead of time), this field **SHALL**
+    * contain information about that transport.
     */
     issuedOnBoard       SEQUENCE {
         /**
-        * Identifier of a specific journey, e.g. the running number of an individual train service.
+        * The identifier of a specific journey.
         */
         transport   TransportId OPTIONAL,
         /**
-        * Identifier of the general route, e.g. a train running as an RE1 service.
+        * The identifier of the general route.
         */
         line        LineId      OPTIONAL
     } OPTIONAL,
 
     /**
-    * Information about how the document was sold.
+    * Optional information about how the ticket was sold.
     */
-    productRetail       ProductRetailData             OPTIONAL,
+    retail              RetailInformation           OPTIONAL,
 
     /**
-    * Language that the traveler / group of travelers prefer to be spoken to in.
-    * IANA language subtag of the language (see: https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry).
+    * The language that the traveler / group of travelers prefer to be spoken to in.
+    * This field **SHALL* contain an [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry), per [](cite:bcp47).
     */
     preferredLanguage   VisibleString (SIZE(2) ^ FROM ("a".."z"))  OPTIONAL,
 
     /**
-    * Proprietary data defined bilaterally.
+    * Optional proprietary extension data, see [](#data-elements).
     */
     extension           SEQUENCE (SIZE(1..8)) OF Data{{IssuingDataExtensions}} (WITH COMPONENTS {
         ...,
@@ -237,58 +247,74 @@ IssuingData ::= SEQUENCE {
 IssuingDataExtensions DATA-ELEMENT ::= { ... }
 
 /**
-* Secure paper indicates that this barcode is issued with a secure paper ticket to ensure the uniqueness of the ticket.
-* This allows to use the same control procedure as for e-tickets also for anonymous tickets.
-* The double use of the ticket is in this case excluded by the secure paper.
+* This enumeration is used to indicate if a ticket was issued on secure to ensure the uniqueness of the ticket.
+* The duplicate use of the ticket is in this case excluded through the use of secure paper.
 */
 SecurePaperTicket ::= ENUMERATED {
+    /**
+    * The ticket was issued digitally, or on paper that isn't secure (e.g. standard A4 printer paper).
+    */
     notOnSecurePaper                        (0),
+    /**
+    * The ticket was printed on secure paper.
+    * It **SHALL NOT** be accepted for travel, except when presented on such paper.
+    */
     onSecurePaper                           (1),
     /**
-    * The ticket is only valid if additionally physically stamped (DE: Entwerten)
+    * In addition to being printed on secure paper (per above), the ticket is only valid if additionally physically stamped (DE: Entwerten).
+    * It **SHALL NOT** be accepted for travel, except when presented on secure paper and with a suitable stamp.
     */
     onSecurePaperValidationStampRequired    (2)
 }
 
 /**
-* Data allowing to describe possible information about product retail, i.e. how it was sold.
+* This data structure encodes information about the retail of a ticket, i.e. how it was sold.
 */
-ProductRetailData ::= SEQUENCE {
+RetailInformation ::= SEQUENCE {
     /**
-    * Identifier of the company that is the retailer for this contract of carriage, as per the definition of a retailer in ISO 24014-1.
+    * A unique identifier for the sale transaction that caused this ticket to be issued.
+    * The value of this field **SHALL** be unique within the scope of an retailers's company code.
+    */
+    saleId              GenericId,
+
+    /**
+    * The identifier of the company that is the retailer for this ticket.
+    * A retailer is defined as per the definition in [](cite:iso24014-1).
+    *
+    * This field **SHALL NOT** be set unless it is different from the issuer.
     */
     retailerId            CompanyCode       OPTIONAL,
 
     /**
-    * Retailer specific identifier of the server that sold the contract of carriage.
+    * A retailer specific identifier of the server that sold the contract of carriage.
     */
     retailServerId        GenericId         OPTIONAL,
 
     /**
-    * Retailer specific identifier of the ticket generation platform.
+    * A retailer specific identifier of the ticket generation platform.
     * If omitted, identical to retailServerId.
     */
     retailGeneratorId     GenericId         OPTIONAL,
 
     /**
-    * Channel through which the traveler requested the contract / the barcode.
+    * The channel through which the traveler was sold the ticket.
     */
     retailChannel         RetailChannel     OPTIONAL,
 
     /**
-    * Type of equipment that distributed the contract / the barcode (code table of the product retailer).
+    * The type of equipment that distributed the ticket, as per the code table of the retailer.
     */
     retailEquipmentType   GenericId         OPTIONAL,
 
     /**
-    * Identifier of the final distribution point of the barcode (code table of the product retailer).
+    * An identifier for the final distribution point of the ticket, as per the code table of the retailer.
     */
     retailPointId         GenericId         OPTIONAL,
 
     /**
-    * Traceability information linked to the barcode or contract generation
-    * (e.g. name and version of the generation software)
-    * (code table of the product retailer).
+    * Traceability information for this ticket.
+    * Its value, format, and meaning is defined by the retailer.
+    * It could contain, for example, the name and version of the ticketing software.
     */
     retailTraceability    VisibleString     OPTIONAL
 }

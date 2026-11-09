@@ -27,15 +27,11 @@ dbIceTicket MultiModalTicket ::= {
         * This is a test barcode.
         */
         specimen TRUE,
-        /**
-        * DB Auftragsnummer.
-        */
-        saleId idNum : 872729465991,
-        productRetail {
+        retail {
             /**
-            * This ticket was sold directly by the DB.
+            * DB Auftragsnummer.
             */
-            retailerId orgCode : "1080",
+            saleId idNum : 872729465991,
             /**
             * This ticket was sold over bahn.de.
             */
@@ -566,19 +562,12 @@ ukTicket MultiModalTicket ::= {
         * This ticket was issued digitally, and is valid without being on secure paper.
         */
         securePaperTicket notOnSecurePaper,
-        saleId idStr : "EXAMPLE-ID",
         /**
         * British Pound Sterling.
         */
         currency 826,
-        productRetail {
-            /**
-            * This ticket was sold directly by RailEasy.
-            */
-            retailerId otherCode : {
-                format "_1170XX",
-                code "RD"
-            },
+        retail {
+            saleId idStr : "EXAMPLE-ID",
             /**
             * This ticket was sold on the app.
             */
@@ -738,15 +727,11 @@ dsbTicket MultiModalTicket ::= {
         * This ticket was issued digitally, and is valid without being on secure paper.
         */
         securePaperTicket notOnSecurePaper,
-        /**
-        * DSB booking code.
-        */
-        saleId idStr : "HNG4RF",
-        productRetail {
+        retail {
             /**
-            * This ticket was sold directly by the DSB.
+            * DSB booking code.
             */
-            retailerId orgCode : "1186",
+            saleId idStr : "HNG4RF",
             /**
             * This ticket was sold over dsb.dk.
             */
@@ -861,13 +846,9 @@ ukRailcard MultiModalTicket ::= {
         },
         specimen TRUE,
         securePaperTicket notOnSecurePaper,
-        saleId idStr : "EXAMPLE-ID",
         currency 826,
-        productRetail {
-            retailerId otherCode : {
-                format "_1170XX",
-                code "R5"
-            },
+        retail {
+            saleId idStr : "EXAMPLE-ID",
             retailChannel mobileApplication,
             retailPointId idNum : 1001
         }
@@ -921,7 +902,9 @@ dbBahncard MultiModalTicket ::= {
         },
         specimen TRUE,
         securePaperTicket notOnSecurePaper,
-        saleId idStr : "EXAMPLE-ID"
+        retail {
+            saleId idStr : "EXAMPLE-ID"
+        }
     },
     traveler {{
         name {
