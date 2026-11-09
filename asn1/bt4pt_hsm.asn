@@ -1,5 +1,5 @@
 /**
-* A record to include in the BT4PT barcode header IssuerSignedData to allow for tracing which HSM generated a signature.
+* A record to include in the BT4PT barcode header SecurityProviderSignedData to allow for tracing which HSM generated a signature.
 */
 BT4PT-HSMTraceV1-0 {
     iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) hsm(6) v1(1) 0
