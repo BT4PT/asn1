@@ -8,20 +8,32 @@ EXPORTS ALL;
 * This data structure is used throughout this standard when encoding as identifier for some object, event, entity, etc.
 * The exact values and their meaning are defined by the context in which the identifier is used.
 *
-* When encoding an identifier, an implementation of this standard **SHALL**:
-* 1. encode using the `idNum` variant, if the value to be encoded is contains only numerical characters;
-* 2. encode using the `idStr` variant, if the value to be encoded is contains only alphanumerical character, or;
-* 3. encode using the `idOct` variant, if the value to be encoded is binary
+* For the purposes of this structure, an identifier is *integer-compatible* if its value consists exclusively of
+* decimal digits (U+0030 to U+0039), and either consists of the single digit 0, or does not begin with the digit 0.
+* An identifier containing leading zeroes **SHALL NOT** be considered integer-compatible, as those zeroes may be
+* significant to the identity of the identifier.
 *
-* The choice of variant has _no_ differentiating effect on the value in equality comparisons.
-* That is, `1234` encoded as an `idNum` is the exact same logical value as the string `"1234"` encoded as `idStr`,
-* and the same logical value as the binary string `'31323334'H`.
+*
+* When encoding an identifier, an implementation of this standard SHALL:
+* 1. encode using the `idNum` variant, if the value to be encoded is integer-compatible;
+* 2. encode using the `idStr` variant, if the value to be encoded is a string consisting only of characters
+*    representable by the ASN.1 `VisibleString` type, but is not integer-compatible; or
+* 3. encode using the `idOct` variant, if the value to be encoded is binary, or cannot be represented using either of the above variants.
+*
+* The `idStr` variant **MAY** contain punctuation, spaces, and other characters permitted by the `VisibleString` type.
+* Such characters **SHALL** be preserved in the canonical textual representation.
+*
+* Two values **SHALL** be considered equal if, and only if, their canonical textual representations, are identical.
+* The variant used **SHALL NOT** otherwise affect equality. That is, `1234` encoded as an `idNum` is the exact same
+* logical value as the string `"1234" encoded as idStr, and the same logical value as the binary string `'31323334'H`.
+* However, the string `"01234"` is a distinct identifier from ``1234"`, irrespective of the variant used to encode either value.
 */
 GenericId ::= [APPLICATION 13] CHOICE {
     /**
     * To be used for numeric IDs.
+    * Negative integers **SHALL NOT** be used as identifiers.
     */
-    idNum   INTEGER,
+    idNum   INTEGER (0..MAX),
     /**
     * To be used for alphanumeric IDs.
     */
@@ -178,7 +190,7 @@ CompanyCodeFormats COMPANY-CODE-FORMAT ::= {
     { &id "+GBNOC" } |
     /**
     * Swiss Business Organisation Identification.
-    * SBOIDs **SHALL** encoded omitting the `ch:1:sboid:` prefix.
+    * SBOIDs **SHALL** be encoded omitting the `ch:1:sboid:` prefix.
     */
     { &id "+CHSBOID" },
     ...
@@ -294,7 +306,7 @@ Station ::= [APPLICATION 6] SEQUENCE {
     },
     /**
     * This field **MAY** be used to provide a human-readable name for the station, to assist in cases where the
-    * device reading a ticket does not have the appropriate dataset to deference the identifier encoded in `station`.
+    * device reading a ticket does not have the appropriate dataset to dereference the identifier encoded in `station`.
     *
     * This field **SHALL NOT** be processed automatically, including, but not limited to, string matching the
     * provided station to a dataset. It **SHALL** only be used for display to a human being.
@@ -311,7 +323,7 @@ Station ::= [APPLICATION 6] SEQUENCE {
 StationCodeTables CODE-TABLE-IDENTIFIER ::= {
     /**
     * A UK National Location Code.
-    * NLCs **SHALL** encoded as `idStr`.
+    * NLCs **SHALL** be encoded as `idStr`.
     * This code table **SHALL NOT** be used except when an NLC contains letters, and thus can't be turned into an ERA PLC.
     */
     {&table {
@@ -319,7 +331,7 @@ StationCodeTables CODE-TABLE-IDENTIFIER ::= {
         version 0
     }} |
     /**
-    * A UK [NaPTAN](https://beta-naptan.dft.gov.uk/) Code. NaPTAN IDs **SHALL** encoded as `idStr`.
+    * A UK [NaPTAN](https://beta-naptan.dft.gov.uk/) Code. NaPTAN IDs **SHALL** be encoded as `idStr`.
     */
     {&table {
         owner national : 826,
@@ -327,7 +339,7 @@ StationCodeTables CODE-TABLE-IDENTIFIER ::= {
     }} |
     /**
     * A ZHV Deutschlandweite Haltestellen-ID.
-    * DHIDs **SHALL** encoded as `idStr`, omitting the `de:` prefix.
+    * DHIDs **SHALL** be encoded as `idStr`, omitting the `de:` prefix.
     */
     {&table {
         owner national : 276,
@@ -335,7 +347,7 @@ StationCodeTables CODE-TABLE-IDENTIFIER ::= {
     }} |
     /**
     * A Swiss LOcation IDentification.
-    * SLOIDs **SHALL** encoded as `idStr`, omitting the `ch:1:sloid:` prefix.
+    * SLOIDs **SHALL** be encoded as `idStr`, omitting the `ch:1:sloid:` prefix.
     */
     {&table {
         owner national : 756,
@@ -391,7 +403,7 @@ LineId ::= [APPLICATION 8] CHOICE {
 LineIdCodeTables CODE-TABLE-IDENTIFIER ::= {
     /**
     * VDV 431-2 Line ID.
-    * Line IDs **SHALL** encoded as `idStr`, omitting the `de:` prefix.
+    * Line IDs **SHALL** be encoded as `idStr`, omitting the `de:` prefix.
     */
     {&table {
         owner national : 276,
@@ -399,7 +411,7 @@ LineIdCodeTables CODE-TABLE-IDENTIFIER ::= {
     }} |
     /**
     * Swiss LiNe IDentification.
-    * SLNIDs **SHALL** encoded as `idStr`, omitting the `ch:1:slnid:` prefix.
+    * SLNIDs **SHALL** be encoded as `idStr`, omitting the `ch:1:slnid:` prefix.
     */
     {&table {
         owner national : 756,
@@ -423,11 +435,13 @@ TransportId ::= [APPLICATION 9] CHOICE {
         id      VisibleString (FROM ("A".."Z"|"0".."9")),
         /**
         * The carrier that operates the service.
+        *
+        * In cases of railway services, this field **SHALL** contain the Lead Railway Undertaking for the service per [](cite:cir2026-253 "13").
         */
         carrier CompanyCode
     },
     /**
-    * This field **SHALL** contain the Lead Railway Undertaking for the service per [](cite:cir2026-253 "13").
+    * A non-end-user-visible identifier for the transport.
     */
     generic             GenericCode{GenericId, {TransportIdCodeTables}}
 }
@@ -441,14 +455,14 @@ TransportId ::= [APPLICATION 9] CHOICE {
 TransportIdCodeTables CODE-TABLE-IDENTIFIER ::= {
     /**
     * VDV 431-2 Journey ID.
-    * Journey IDs **SHALL** encoded as `idStr`, omitting the `de:` prefix.
+    * Journey IDs **SHALL** be encoded as `idStr`, omitting the `de:` prefix.
     */
     {&table {
         owner national : 276,
         version 0
     }} |
     /**
-    * RDG UID. These **SHALL** encoded as `idStr`.
+    * RDG UID. These **SHALL** be encoded as `idStr`.
     */
     {&table {
         owner company : orgCode : "1170",
@@ -456,7 +470,7 @@ TransportIdCodeTables CODE-TABLE-IDENTIFIER ::= {
     }} |
     /**
     * Swiss JourneY IDentification.
-    * SJYIDs **SHALL** encoded as `idStr`, omitting the `ch:1:sjyid:` prefix.
+    * SJYIDs **SHALL** be encoded as `idStr`, omitting the `ch:1:sjyid:` prefix.
     */
     {&table {
         owner national : 756,
@@ -490,7 +504,7 @@ NUTSArea ::= [APPLICATION 10] SEQUENCE {
     * The NUTS code, without the country-code prefix.
     * If this field is unset, the structure refers to the entire country.
     */
-    subdivision     VisibleString (FROM ("A".."Z"|"1".."9")) OPTIONAL
+    subdivision     VisibleString (FROM ("A".."Z"|"0".."9")) OPTIONAL
 }
 
 /**
@@ -513,7 +527,7 @@ AreaSet ::= [APPLICATION 11] CHOICE {
         /**
         * To be used for numeric IDs.
         */
-        idNum    [1] SET OF INTEGER,
+        idNum    [1] SET OF INTEGER (0..MAX),
         /**
         * To be used for alphanumeric IDs.
         */
@@ -640,6 +654,9 @@ GeoCoordinate ::= SEQUENCE {
     /**
     * If known, the accuracy of the measurement given in `position`.
     * If the degrees of accuracy is more than 0.1 degrees, this value **SHALL** not be provided.
+    *
+    * At a latitude of exactly 90° north or south, the accuracy **SHALL** be considered greater than 0.1 degrees,
+    * and the GeoAccuracy field **SHALL** be omitted.
     */
     accuracy            GeoAccuracy OPTIONAL
 }
@@ -753,6 +770,25 @@ Timestamp ::= [APPLICATION 1] SEQUENCE {
     * The number of minutes into the above day, where 0 minutes is 00:00 and 1439 minutes is 23:59.
     */
     time INTEGER (0..1439)
+}
+
+/**
+* This data structure is used to represent a timestamp, including seconds, expressed in UTC.
+* Implementations **SHALL** convert any local times to UTC before encoding them into this structure.
+*/
+TimestampSeconds ::= [APPLICATION 16] SEQUENCE {
+    /**
+    * The year of the timestamp.
+    */
+    year INTEGER (2026..2281),
+    /**
+    * The number of the day in the above year, where the 1st of January is day number 1.
+    */
+    day INTEGER (1..366),
+    /**
+    * The number of second into the above day, where 0 seconds is 00:00:00 and 864000 seconds is 23:59:59.
+    */
+    time INTEGER (0..86400)
 }
 
 /**

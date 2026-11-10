@@ -209,8 +209,7 @@ eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-eeCertCRL ENC
 * certificate, and of how envelopes signed under it are to be treated. It consists of a coded reason, a coded action,
 * and an optional notice in one or more languages to be displayed to inspection staff.
 *
-* Every entry of a Certificate Revocation List **SHALL** contain exactly one Revocation Notice. An entry which does not
-* **SHALL** be considered invalid and ignored.
+* Every entry of a Certificate Revocation List **SHALL** contain exactly one Revocation Notice.
 *
 * Certificate Authorities **SHALL** include a textual notice in `localisedNotices` when the circumstances of revocation
 * warrant further explanation to ticket control staff. The textual notice **SHOULD** be provided in the predominant
@@ -360,6 +359,23 @@ subordinateCertificateRepositoryV1-0Ext CERTIFICATE-EXTENSION ::= { VisibleStrin
 * data element whose `hsmId` is equal to that of this extension, and whose `signatureCounter`, interpreted as a
 * big-endian unsigned integer, is less than or equal to that of this extension. All other envelopes signed under that
 * certificate **SHALL** be considered revoked.
+*
+* Before including this extension in a Certificate Revocation List, the Certificate Authority **SHALL** establish,
+* based on evidence provided by the Security Provider, a counter value below which signatures can reasonably be
+* considered to have been generated whilst the Hardware Security Module was under the legitimate control of the
+* Security Provider. The last observed or reported signature counter value **SHALL NOT**, on its own, be considered
+* sufficient evidence that all signatures up to that value were legitimately generated. The Certificate Authority
+* **SHALL** consider the records of signing operations, the history of authorisation grants, the circumstances of the
+* loss or theft of the Hardware Security Module, and any other relevant evidence.
+*
+* The Certificate Authority **MAY** select a lower counter value than the highest value supported by the available
+* evidence, to account for uncertainty about the circumstances of the incident.
+*
+* Where the Certificate Authority cannot establish a counter value for which it has reasonable confidence that
+* signatures up to that value were legitimately generated, it **SHALL NOT** use this extension.
+*
+* The Certificate Authority **SHALL** document the evidence used to establish the Last Known-good Signature Counter and
+* **SHALL** retain this evidence as part of its certificate revocation records.
 */
 LastGoodSignatureCounter ::= SEQUENCE {
     /**
