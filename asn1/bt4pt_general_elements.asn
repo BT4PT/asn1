@@ -979,6 +979,24 @@ DATA-ELEMENT ::= CLASS {
 }
 
 /**
+* This Object Identifier has been assigned by [](cite:x690) to identify the Basic Encoding Rules.
+* This **SHALL** be used within a {@link DATA-ELEMENT} object to signify that it is encoded with the BER.
+*/
+berEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) ber-encoding(1)}
+
+/**
+* This Object Identifier has been assigned by [](cite:x690) to identify the Canonical Encoding Rules.
+* This **SHALL** be used within a {@link DATA-ELEMENT} object to signify that it is encoded with the CER.
+*/
+cerEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) ber-derived-encoding(2) canonical(0)}
+
+/**
+* This Object Identifier has been assigned by [](cite:x690) to identify the Distinguished Encoding Rules.
+* This **SHALL** be used within a {@link DATA-ELEMENT} object to signify that it is encoded with the DER.
+*/
+derEncoding OBJECT IDENTIFIER ::= {joint-iso-itu-t(2) asn1(1) ber-derived-encoding(2) distinguished(1)}
+
+/**
 * This Object Identifier has been assigned by [](cite:x691) to identify the Canonical Aligned Packed Encoding Rules.
 * This **SHALL** be used within a {@link DATA-ELEMENT} object to signify that it is encoded with the CAPER.
 */

@@ -8,7 +8,7 @@ BT4PT-CertificatesV1-0 {
 EXPORTS EndEntityCertificate;
 IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, Timestamp, DATA-ELEMENT, cuperEncoding, nullEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
- IssuerDataElements
+ SecurityProviderDataElements
  FROM BT4PT-EnvelopeV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0 };
 
 /**
@@ -118,7 +118,7 @@ CERTIFICATE-EXTENSION ::= CLASS {
 */
 CertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
-    issuerDataAuthorizationExt |
+    securityProviderDataAuthorizationExt |
     certificateIdExt |
     eeCertCRLExt |
     subordinateCertificateRepositoryV1-0Ext,
@@ -154,7 +154,7 @@ CertificateExtension ::= [APPLICATION 3] SEQUENCE {
 */
 EECertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
-    issuerDataAuthorizationExt,
+    securityProviderDataAuthorizationExt,
     ...
 }
 
@@ -167,15 +167,15 @@ id-specimenPoison OBJECT IDENTIFIER ::= {bt4ptPkiExt specimenPoison(0)}
 */
 specimenPoisonExt CERTIFICATE-EXTENSION ::= { NULL IDENTIFIED BY "SP" WITH OID id-specimenPoison ENCODED WITH nullEncoding }
 
-id-issuerDataAuthorization OBJECT IDENTIFIER ::= {bt4ptPkiExt issuerDataAuthorization(1)}
+id-securityProviderDataAuthorization OBJECT IDENTIFIER ::= {bt4ptPkiExt securityProviderDataAuthorization(1)}
 /**
-* The Issuer Data Authorisation extension specifies which Security Provider signed data elements may be included in an
-* envelope signed under the certificate, and which constraints apply to them. A certificate which contains no Issuer Data
+* The Security Provider Data Authorisation extension specifies which Security Provider signed data elements may be included in an
+* envelope signed under the certificate, and which constraints apply to them. A certificate which contains no Security Provider Data
 * Authorisation record places no restriction on the data elements of envelopes signed under it.
 *
-* An Issuer Data Authorisation record **SHALL NOT** contain more than one entry with the same `format`.
+* A Security Provider Data Authorisation record **SHALL NOT** contain more than one entry with the same `format`.
 */
-issuerDataAuthorizationExt CERTIFICATE-EXTENSION ::= { DataAuthorization{{IssuerDataElements}} IDENTIFIED BY "ID" WITH OID id-issuerDataAuthorization ENCODED WITH cuperEncoding }
+securityProviderDataAuthorizationExt CERTIFICATE-EXTENSION ::= { DataAuthorization{{SecurityProviderDataElements}} IDENTIFIED BY "ID" WITH OID id-securityProviderDataAuthorization ENCODED WITH cuperEncoding }
 
 id-certificateId OBJECT IDENTIFIER ::= {bt4ptPkiExt certificateId(2)}
 /**
@@ -189,8 +189,8 @@ id-certificateId OBJECT IDENTIFIER ::= {bt4ptPkiExt certificateId(2)}
 * An End-Entity Certificate is issued by the Issuing Certificate Authority whose Certificate ID is equal to the
 * `issuingOrg` and `caId` of the End-Entity Certificate.
 *
-* An Issuing Certificate Authority certificate **MAY** be re-issued with updated metadata (for example, changed Issuer
-* Data Authorisation) whilst retaining the same Certificate ID, provided that the public key is unchanged.
+* An Issuing Certificate Authority certificate **MAY** be re-issued with updated metadata (for example, changed Security
+* Provider Data Authorisation) whilst retaining the same Certificate ID, provided that the public key is unchanged.
 */
 certificateIdExt CERTIFICATE-EXTENSION ::= { INTEGER (1..65536) WITH OID id-certificateId ENCODED WITH cuperEncoding }
 
@@ -276,7 +276,7 @@ RevocationNoticeReason ::= ENUMERATED {
     */
     misuse                  (66),
     /**
-    * The certificate was issued in error, for example with and Issuer Data Authorisation.
+    * The certificate was issued in error, for example with and Security Provider Data Authorisation.
     */
     issuedInError           (67),
     /**

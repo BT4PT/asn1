@@ -8,7 +8,7 @@ BT4PT-EnvelopeV1-0 {
     iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0
 } DEFINITIONS ::= BEGIN
 
-EXPORTS BT4PTEnvelope, IssuerDataElements;
+EXPORTS BT4PTEnvelope, SecurityProviderDataElements;
 IMPORTS CompanyCode, Timestamp, TimestampSeconds, Data, DSSSignature, ECPublicKey, DATA-ELEMENT
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  EndEntityCertificate
@@ -46,7 +46,7 @@ BT4PTEnvelope ::= CHOICE {
     * This variant **SHALL** only be used where no security is required. That is, when an unsigned envelope
     * is considered suitable for the application.
     */
-    unsigned    [1] SEQUENCE (SIZE(1..16)) OF Data{{IssuerDataElements}} (WITH COMPONENTS {
+    unsigned    [1] SEQUENCE (SIZE(1..16)) OF Data{{SecurityProviderDataElements}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!I" | "!C" | "!P"))
     }),
@@ -57,7 +57,7 @@ BT4PTEnvelope ::= CHOICE {
     */
     signed      [2] SEQUENCE {
         /**
-        * This field contains the Issuer Signed Data, as well as any additional data to be signed by the device.
+        * This field contains the Security Provider Signed Data, as well as any additional data to be signed by the device.
         */
         data            DeviceSignedData,
         /**
@@ -117,7 +117,7 @@ SecurityProviderSignedData ::= [APPLICATION 12] SEQUENCE {
     /**
     * This field contains data elements signed by the Security Provider.
     */
-    data                SEQUENCE (SIZE(1..64)) OF Data{{IssuerDataElements}} (WITH COMPONENTS {
+    data                SEQUENCE (SIZE(1..64)) OF Data{{SecurityProviderDataElements}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!I" | "!C" | "!P"))
     }),
@@ -176,7 +176,7 @@ SecurityProviderSignedData ::= [APPLICATION 12] SEQUENCE {
 * The following data elements can appear in the `data` field of the {@link SecurityProviderSignedData} structure.
 * Note: other data elements, not defined in this standard, are also permitted to appear.
 */
-IssuerDataElements DATA-ELEMENT ::= {
+SecurityProviderDataElements DATA-ELEMENT ::= {
     multiModalTicketData |
     fixedPointData |
     luggageTag |
@@ -191,6 +191,9 @@ IssuerDataElements DATA-ELEMENT ::= {
 /**
 * The following data elements can appear in the `deviceData` field of the {@link DeviceSignedData} structure.
 * Note: other data elements, not defined in this standard, are also permitted to appear.
+*
+* The difference between `DCD1` and `DCD1A` is that the first uses unaligned packed encoding and the second uses
+* aligned packed encoding; otherwise, they are identical.
 */
 DeviceDataElements DATA-ELEMENT ::= {
     dynamicContentData |
