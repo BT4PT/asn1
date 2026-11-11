@@ -6,9 +6,11 @@ BT4PT-PresentmentAppletV1-0 {
 } DEFINITIONS ::= BEGIN
 
 EXPORTS PresentmentAppletInfo;
+IMPORTS berEncoding
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 /**
-* The response data of a successful SELECT of the presentment applet, encoded per the Distinguished Encoding Rules.
+* The response data of a successful SELECT of the presentment applet, encoded per the Basic Encoding Rules (see [](cite:x690)).
 */
 PresentmentAppletInfo ::= SEQUENCE {
     /**
@@ -17,25 +19,62 @@ PresentmentAppletInfo ::= SEQUENCE {
     * more than one entry with the same `id`.
     * A Ticket Inspection Device **SHALL** ignore any entry whose `id` it does not recognise.
     *
-    * The base specification is identified with the OID `1.3.6.1.4.1.17218.1.3.1.1`.
+    * The base specification is identified with {@link baseSpecificationFeature}.
     */
     supportedFeatures   SEQUENCE OF SupportedFeature
 }
 
 /**
-* A protocol or optional feature supported by the Presentment Device.
+* This class defines what features a BT4PT ISO 7816 Applet supports.
+* Each object of this class identifies a feature by its OID and provides details on the auxiliary data that is reported
+* along with the feature support record.
+*/
+APPLET-FEATURE ::= CLASS {
+    /**
+    * The Object Identifier of the protocol or optional feature.
+    */
+    &oid OBJECT IDENTIFIER UNIQUE,
+    /**
+    * The data structure that describes the contents of the auxiliary data.
+    */
+    &Type
+} WITH SYNTAX {
+    &Type WITH OID &oid
+}
+
+/**
+* This structure describes a protocol or optional feature supported by the Presentment Device.
 */
 SupportedFeature ::= SEQUENCE {
     /**
-    * The object identifier of the protocol or optional feature.
+    * The Object Identifier of the protocol or optional feature.
     */
-    id                  OBJECT IDENTIFIER,
+    id                  APPLET-FEATURE.&oid({AppletFeatures}),
     /**
     * Auxiliary data for the protocol or optional feature, whose contents are defined by the specification of the 
     * protocol or optional feature identified by `id`. Where that specification defines no auxiliary data, this field
     * **SHALL** be absent, and a Ticket Inspection Device **SHALL** ignore it if present.
     */
-    auxiliaryData       OCTET STRING OPTIONAL
+    auxiliaryData       OCTET STRING (CONTAINING APPLET-FEATURE.&Type({AppletFeatures}{@oid}) ENCODED BY berEncoding) OPTIONAL
 }
+
+/**
+* This set defines the features that can be supported by an applet.
+*/
+AppletFeatures APPLET-FEATURE ::= {
+    baseSpecificationFeature,
+    ...
+}
+
+/**
+* This OID identifies the base applet interface as defined in this specification.
+*/
+id-baseSpecification OBJECT IDENTIFIER ::= {iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1)
+    uic(17218) fcb(1) bt4ptApplets(3) presentmentApplet(1) v1(1)}
+
+/**
+* This object specifies how an applet identifies support of the base applet interface as defined in this specification.
+*/
+baseSpecificationFeature APPLET-FEATURE ::= { NULL WITH OID id-baseSpecification }
 
 END
