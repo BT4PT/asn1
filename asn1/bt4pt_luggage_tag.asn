@@ -31,10 +31,12 @@ LuggageTag ::= SEQUENCE {
     issuer              CompanyCode                                     OPTIONAL,
     /**
     * The name of the owner of the luggage.
+    * As the name is personal data, an issuer **SHOULD** omit it unless the luggage tag is carried within an
+    * [Encrypted Data](#encrypted-data) element or the owner of the luggage has consented to its disclosure.
     */
-    name                Name,
+    name                Name                                            OPTIONAL,
     /**
-    * The telephone number of the owner of the luggage, as an international number per [](cite:itu-e164), consisting
+    * The telephone number of the owner of the luggage, as an international number per [](cite:e164), consisting
     * of the country code followed by the national significant number, without any international prefix nor the
     * leading `+`. For example, `447700900378` for a United Kingdom mobile number.
     */
@@ -57,7 +59,7 @@ LuggageTag ::= SEQUENCE {
     * A party processing a luggage tag **SHALL** ignore any extension whose `format` it does not recognise, unless that
     * extension is critical, in which case the envelope **SHALL** be rejected as specified in [](#luggage-processing).
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{{LuggageTagExtensions}} (WITH COMPONENTS {
+    extensions          SEQUENCE (SIZE(1..8)) OF Data{{LuggageTagExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL

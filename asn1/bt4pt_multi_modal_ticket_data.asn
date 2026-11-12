@@ -49,7 +49,7 @@ MultiModalTicket ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension             SEQUENCE (SIZE(1..8)) OF Data{{MultiModalTicketExtensions}} (WITH COMPONENTS {
+    extensions            SEQUENCE (SIZE(1..8)) OF Data{{MultiModalTicketExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
@@ -172,7 +172,7 @@ IssuingData ::= SEQUENCE {
     /**
     * Optional proprietary extension data, see [](#data-elements).
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{{IssuingDataExtensions}} (WITH COMPONENTS {
+    extensions          SEQUENCE (SIZE(1..8)) OF Data{{IssuingDataExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
@@ -374,7 +374,7 @@ TransportProduct ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{{TransportProductExtensions}} OPTIONAL
+    extensions                  SEQUENCE (SIZE(1..8)) OF Data{{TransportProductExtensions}} OPTIONAL
 } (
     (WITH COMPONENTS {
         ...,
@@ -416,7 +416,7 @@ TransportProductConstraints ::= SEQUENCE {
     * Every `coveringNetwork` asserted by the transport product **MUST** be in the `permittedNetwork` list.
     */
     permittedNetwork        SEQUENCE OF GenericCode{GenericId, {NetworkCodeTables}}   OPTIONAL,
-    extension               DataAuthorization{{TransportProductExtensions}}         OPTIONAL,
+    extensions              DataAuthorization{{TransportProductExtensions}}         OPTIONAL,
     conditionsExtension     DataAuthorization{{ConditionsExtensions}}               OPTIONAL
 }
 
@@ -643,7 +643,7 @@ SharedVehicle ::= SEQUENCE {
     infoText            UnicodeText                 OPTIONAL,
 
     -- Proprietary data defined bilaterally.
-    extension       SEQUENCE (SIZE(1..8)) OF Data{{SharedVehicleExtensions}} OPTIONAL
+    extensions      SEQUENCE (SIZE(1..8)) OF Data{{SharedVehicleExtensions}} OPTIONAL
 }
 
 SharedVehicleExtensions DATA-ELEMENT ::= { ... }
@@ -841,7 +841,7 @@ ControlData ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{{ControlDataExtensions}} (WITH COMPONENTS {
+    extensions                  SEQUENCE (SIZE(1..8)) OF Data{{ControlDataExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
@@ -1045,7 +1045,7 @@ RareTimingConditions ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                               SEQUENCE (SIZE(1..8)) OF Data{{TimingExtensions}} OPTIONAL
+    extensions                              SEQUENCE (SIZE(1..8)) OF Data{{TimingExtensions}} OPTIONAL
 }
 
 TimingExtensions DATA-ELEMENT ::= { ... }
@@ -1085,7 +1085,7 @@ RareDetails ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension                   SEQUENCE (SIZE(1..8)) OF Data{{ConditionsExtensions}}   OPTIONAL
+    extensions                  SEQUENCE (SIZE(1..8)) OF Data{{ConditionsExtensions}}   OPTIONAL
 }
 
 ConditionsExtensions DATA-ELEMENT ::= { ... }
@@ -1730,7 +1730,7 @@ RareTravelerDetails ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension       SEQUENCE (SIZE(1..8)) OF Data{{TravelerExtensions}} (WITH COMPONENTS {
+    extensions      SEQUENCE (SIZE(1..8)) OF Data{{TravelerExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT "!C")
     }) OPTIONAL
@@ -1798,7 +1798,7 @@ Voucher ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension       SEQUENCE (SIZE(1..8)) OF Data{{VoucherExtensions}} (WITH COMPONENTS {
+    extensions      SEQUENCE (SIZE(1..8)) OF Data{{VoucherExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT "!P")
     }) OPTIONAL
@@ -1817,7 +1817,7 @@ VoucherConstraints ::= SEQUENCE {
             currencyFract   INTEGER (0..3) DEFAULT 2
         } OPTIONAL
     } OPTIONAL,
-    extension   DataAuthorization{{VoucherExtensions}} OPTIONAL
+    extensions  DataAuthorization{{VoucherExtensions}} OPTIONAL
 }
 
 
@@ -1857,13 +1857,13 @@ CustomerCard ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{{CustomerCardExtensions}}   OPTIONAL
+    extensions          SEQUENCE (SIZE(1..8)) OF Data{{CustomerCardExtensions}}   OPTIONAL
 }
 
 CustomerCardExtensions DATA-ELEMENT ::= { ... }
 
 CustomerCardConstraints ::= SEQUENCE {
-    extension   DataAuthorization{{CustomerCardExtensions}} OPTIONAL
+    extensions  DataAuthorization{{CustomerCardExtensions}} OPTIONAL
 }
 
 /**
@@ -1944,13 +1944,13 @@ Parking ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{{ParkingExtensions}}    OPTIONAL
+    extensions          SEQUENCE (SIZE(1..8)) OF Data{{ParkingExtensions}}    OPTIONAL
 }
 
 ParkingExtensions DATA-ELEMENT ::= { ... }
 
 ParkingConstraints ::= SEQUENCE {
-    extension   DataAuthorization{{ParkingExtensions}} OPTIONAL
+    extensions  DataAuthorization{{ParkingExtensions}} OPTIONAL
 }
 
 /**
@@ -2000,13 +2000,13 @@ StationPassage ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension           SEQUENCE (SIZE(1..8)) OF Data{{StationPassageExtensions}} OPTIONAL
+    extensions          SEQUENCE (SIZE(1..8)) OF Data{{StationPassageExtensions}} OPTIONAL
 }
 
 StationPassageExtensions DATA-ELEMENT ::= { ... }
 
 StationPassageConstraints ::= SEQUENCE {
-    extension   DataAuthorization{{StationPassageExtensions}} OPTIONAL
+    extensions  DataAuthorization{{StationPassageExtensions}} OPTIONAL
 }
 
 /**
@@ -2161,7 +2161,7 @@ DelayConfirmation ::= SEQUENCE {
     /**
     * Proprietary data defined bilaterally.
     */
-    extension             SEQUENCE (SIZE(1..8)) OF Data{{DelayConfirmationExtensions}} (WITH COMPONENTS {
+    extensions            SEQUENCE (SIZE(1..8)) OF Data{{DelayConfirmationExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!P"))
     }) OPTIONAL
@@ -2177,7 +2177,7 @@ DelayConfirmationConstraints ::= SEQUENCE {
     /**
     * If the relevant constraint is not present, the certificate is not permitted to issue such a delay confirmation.
     */
-    extension         DataAuthorization{{DelayConfirmationExtensions}} OPTIONAL
+    extensions        DataAuthorization{{DelayConfirmationExtensions}} OPTIONAL
 }
 
 /**

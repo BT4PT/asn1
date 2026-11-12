@@ -48,7 +48,7 @@ FixedPoint ::= SEQUENCE {
     * A party processing a fixed point **SHALL** ignore any extension whose `format` it does not recognise, unless that
     * extension is critical, in which case the envelope **SHALL** be rejected as specified in [](#fpd-processing).
     */
-    extension   SEQUENCE (SIZE(1..8)) OF Data{{FixedPointExtensions}} (WITH COMPONENTS {
+    extensions  SEQUENCE (SIZE(1..8)) OF Data{{FixedPointExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
