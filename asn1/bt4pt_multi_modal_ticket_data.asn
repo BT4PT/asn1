@@ -2255,6 +2255,8 @@ LuggageRestriction ::= SEQUENCE {
 RegisteredLuggage ::= SEQUENCE {
     /**
     * ID of the additional registered luggage.
+    * This field **MAY** refer to a [luggage tag](#luggage) issued for the luggage by being equal to its `id`, as 
+    * specified in [](#luggage-ticket-link).
     */
     registrationId             GenericId        OPTIONAL,
 

@@ -9,14 +9,24 @@ EXPORTS LuggageTag, luggageTag;
 IMPORTS GenericId, CompanyCode, Name, DATA-ELEMENT, Data, cuperEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
+/**
+* This structure identifies a piece of luggage and its owner.
+*
+* This structure contains personal data of the owner of the luggage, as such it **SHOULD** be encrypted.
+*/
 LuggageTag ::= SEQUENCE {
     /**
-    * The ID **SHOULD** be eternally unique per issuer.
+    * The identifier of the piece of luggage, assigned by the issuer of the luggage tag.
+    * It **SHALL** be unique among all luggage tags issued by that issuer, and **SHALL NOT** be reused for another 
+    * piece of luggage. A transport document **MAY** refer to the luggage tag by this identifier, in the `registrationId` 
+    * of a `RegisteredLuggage` entry (see [](#luggage-ticket-link)).
     */
-    id          GenericId,
+    id                  GenericId,
     /**
-    * If different from the security provider.
-    * **SHALL** be set if the barcode is unsigned (i.e. no security provider).
+    * The issuer of the luggage tag.
+    *
+    * This field **SHALL NOT** be set unless it is different from the Security Provider in the envelope.
+    * This field **SHALL** be set if the envelope is unsigned.
     */
     issuer              CompanyCode                                     OPTIONAL,
     /**
@@ -24,27 +34,44 @@ LuggageTag ::= SEQUENCE {
     */
     name                Name,
     /**
-    * The E.164 international telephone number of the owner, without the leading `+`,
-    * e.g. "447700900378" for a UK mobile number.
+    * The telephone number of the owner of the luggage, as an international number per [](cite:itu-e164), consisting
+    * of the country code followed by the national significant number, without any international prefix nor the
+    * leading `+`. For example, `447700900378` for a United Kingdom mobile number.
     */
     telephone           VisibleString (SIZE(1..15) ^ FROM ("0".."9"))   OPTIONAL,
     /**
-    * The email address of the owner. Implementations **SHALL** support RFC 6531 Internationalised Email Addresses.
+    * The email address of the owner of the luggage. This field **SHALL** be an `addr-spec` per 
+    * [](cite:rfc5322 "3.4.1"), which **MAY** contain non-ASCII characters as permitted by [](cite:rfc6531).
+    * Implementations **SHALL** support such internationalised email addresses.
     */
     email               UTF8String                                      OPTIONAL,
     /**
-    * The [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) of
-    * the language that the luggage owner prefers to be spoken to in.
+    * The language that the owner of the luggage prefers to be spoken to in.
+    * This field **SHALL** contain an [IANA language subtag](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry), per [](cite:bcp47).
     */
     preferredLanguage   VisibleString (SIZE(2) ^ FROM ("a".."z"))       OPTIONAL,
-    extension   SEQUENCE (SIZE(1..8)) OF Data{{LuggageTagExtensions}} (WITH COMPONENTS {
+    /**
+    * Extensions to the luggage tag, identified by their `format`. A `format` of the `!I` variant refers to the issuer 
+    * of the luggage tag.
+    *
+    * A party processing a luggage tag **SHALL** ignore any extension whose `format` it does not recognise, unless that
+    * extension is critical, in which case the envelope **SHALL** be rejected as specified in [](#luggage-processing).
+    */
+    extension           SEQUENCE (SIZE(1..8)) OF Data{{LuggageTagExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
 }
 
+/**
+* The Luggage Tag data element, encoded with the Canonical Unaligned Packed Encoding Rules.
+*/
 luggageTag DATA-ELEMENT ::= { LuggageTag IDENTIFIED BY "LUG1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
 
+/**
+* The extensions that can appear in a {@link LuggageTag}. No extensions are defined in this version of this document.
+* Note: other data elements, not defined in this standard, are permitted to appear.
+*/
 LuggageTagExtensions DATA-ELEMENT ::= { ... }
 
 END
