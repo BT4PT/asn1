@@ -86,16 +86,17 @@ Recipient ::= SEQUENCE {
 }
 
 /**
-* This data structure identifies the long-term X25519 key of a recipient.
+* This data structure identifies the long-term X25519 key of a recipient, by the Key Agreement Key ID of the
+* [Key Agreement Certificate](#ka-certs) certifying it.
 */
 RecipientKey ::= SEQUENCE {
     /**
-    * The Security Provider holding the long-term key.
+    * The Security Provider holding the long-term key, being the Company Code in the Subject Alternative Name extension
+    * of the Key Agreement Certificate.
     */
     securityProvider    CompanyCode,
     /**
-    * Identifies the long-term key among those of `securityProvider`. A Security Provider **SHALL NOT** assign the same
-    * `keyId` to more than one key.
+    * The Key ID in the Key Agreement Key ID extension of the Key Agreement Certificate.
     */
     keyId               INTEGER (1..65536)
 }

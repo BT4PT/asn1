@@ -121,7 +121,8 @@ CertificateExtensions CERTIFICATE-EXTENSION ::= {
     securityProviderDataAuthorizationExt |
     certificateIdExt |
     eeCertCRLExt |
-    subordinateCertificateRepositoryV1-0Ext,
+    subordinateCertificateRepositoryV1-0Ext |
+    keyAgreementKeyIdExt,
     ...
 }
 
@@ -337,7 +338,8 @@ revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID id-rev
 
 id-subordinateCertificateRepositoryV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt subordinateCertificateRepositoryV1-0(5)}
 /**
-* All Certificate Authority Certificates that are not Issuing Certificate Authority Certificates **SHALL** contain this
+* All Certificate Authority Certificates that are not Issuing Certificate Authority Certificates, and all Issuing
+* Certificate Authority Certificates whose key has been used to issue a Key Agreement Certificate, **SHALL** contain this
 * extension. This extension **SHALL** contain a `https://` URL at which the Repository for the given CA
 * Certificate can be retrieved. The file at the URL, as well as any URLs referenced in the repository **SHALL** be openly
 * accessible on the Internet without any authentication, free of charge.
@@ -428,5 +430,27 @@ id-otherNameCompanyCode OBJECT IDENTIFIER ::= {bt4ptPkiExt otherNameCompanyCode(
 * adherence to the common certificate baseline defined by BT4PT.
 */
 id-certificatePolicyBaseline OBJECT IDENTIFIER ::= {bt4ptPkiExt certificatePolicyBaseline(11)}
+
+id-keyAgreementKeyId OBJECT IDENTIFIER ::= {bt4ptPkiExt keyAgreementKeyId(12)}
+/**
+* This extension is placed in a [Key Agreement Certificate](#ka-certs), and contains its Key ID.
+*
+* The Key Agreement Key ID of a Key Agreement Certificate is the tuple of the Company Code contained in the
+* {@link id-otherNameCompanyCode} `otherName` of the Subject Alternative Name extension of the certificate, and the Key
+* ID contained in this extension. It is the value used as the `RecipientKey` of [encrypted data](#encrypted-data).
+* The Key Agreement Key ID **SHALL** uniquely identify a key pair within the BT4PT PKI. A Security Provider **SHALL NOT**
+* assign the same Key ID to two different key pairs.
+*
+* A Key Agreement Certificate **MAY** be re-issued with updated metadata whilst retaining the same Key Agreement Key ID,
+* provided that the public key is unchanged.
+*/
+keyAgreementKeyIdExt CERTIFICATE-EXTENSION ::= { INTEGER (1..65536) WITH OID id-keyAgreementKeyId ENCODED WITH cuperEncoding }
+
+/**
+* This Extended Key Usage is placed in a [Key Agreement Certificate](#ka-certs), and indicates that the certified
+* X25519 key is to be used for the encryption of data to its holder, as specified in [](#encrypted-data).
+* An issuer of envelopes **SHALL NOT** encrypt data to a key whose certificate does not contain this Extended Key Usage.
+*/
+id-keyAgreementKeyPurpose OBJECT IDENTIFIER ::= {bt4ptPkiExt keyAgreementKeyPurpose(13)}
 
 END
