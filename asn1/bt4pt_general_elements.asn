@@ -196,8 +196,25 @@ CompanyCodeFormats COMPANY-CODE-FORMAT ::= {
     ...
 }
 
+/**
+* This data structure is used in Data Authorisation constraints to restrict which companies a field identifying a
+* company is permitted to contain.
+*
+* A company is permitted by a `CompanyConstraint` if either:
+* 1. `securityProvider` is `TRUE`, and the company under test is the Security Provider of the envelope.
+* 2. `permitted` is present, and the company under test is equal to one of its entries.
+*
+* Otherwise, the company under test is not permitted.
+*/
 CompanyConstraint ::= SEQUENCE {
+    /**
+    * Whether the Security Provider of the envelope is permitted.
+    */
     securityProvider    BOOLEAN,
+    /**
+    * The companies, other than the Security Provider, that are permitted. If absent, no company other than the 
+    * Security Provider is permitted.
+    */
     permitted           SEQUENCE (SIZE(1..32)) OF CompanyCode OPTIONAL
 }
 

@@ -11,115 +11,209 @@ IMPORTS GenericId, CompanyCode, Station, CoachPlaces, DATA-ELEMENT, Data, cuperE
  DataAuthorization
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
+/**
+* This structure identifies a fixed point. That is, a location or object to which an envelope is affixed.
+*/
 FixedPoint ::= SEQUENCE {
     /**
-    * The ID **SHOULD** be eternally unique per issuer.
+    * The identifier of the fixed point, as assigned by the issuer.
+    * It **SHALL** be unique among all fixed points of that issuer, and **SHALL NOT** be reused for another fixed point.
     */
     id          GenericId,
     /**
-    * If different from the security provider.
-    * **MUST** be set if the barcode is unsigned (i.e. no security provider).
+    * The issuer of the fixed point.
+    * This field **SHALL NOT** be set unless it is different from the Security Provider in the envelope.
+    * This field **SHALL** be set if the envelope is unsigned.
     */
-    issuer      CompanyCode                                             OPTIONAL,
-    specimen    BOOLEAN,
-    affixedTo   Object                                                  OPTIONAL,
+    issuer      CompanyCode OPTIONAL,
     /**
-    * Additional important information about this fixed point.
+    * This field **SHALL** be `TRUE` when the fixed point is a specimen, for example one installed for testing or 
+    * demonstration.
     */
-    infoText    UnicodeText                                             OPTIONAL,
+    specimen    BOOLEAN,
+    /**
+    * The location or object to which the fixed point is affixed.
+    * If absent, the location or object is identified only by `id`, with its meaning defined by the issuer.
+    */
+    affixedTo   Object      OPTIONAL,
+    /**
+    * Additional important information about this fixed point, intended to be displayed to the traveller.
+    * A device processing the fixed point **SHOULD** display this text to the traveller.
+    */
+    infoText    UnicodeText OPTIONAL,
+    /**
+    * Extensions to the fixed point, identified by their `format`. A `format` of the `!I` variant refers to the issuer 
+    * of the fixed point.
+    *
+    * A party processing a fixed point **SHALL** ignore any extension whose `format` it does not recognise, unless that
+    * extension is critical, in which case the envelope **SHALL** be rejected as specified in [](#fpd-processing).
+    */
     extension   SEQUENCE (SIZE(1..8)) OF Data{{FixedPointExtensions}} (WITH COMPONENTS {
         ...,
         format (ALL EXCEPT ("!C" | "!P"))
     }) OPTIONAL
 }
 
+/**
+* The extensions that can appear in a {@link FixedPoint}. No extensions are defined in this version of this document.
+* Note: other data elements, not defined in this standard, are permitted to appear.
+*/
 FixedPointExtensions DATA-ELEMENT ::= { ... }
 
+/**
+* The constraints placed on the Fixed Point data element by a Security Provider Data Authorisation record, validated as
+* specified in [](#fpd-data-authorisation). If a member is not present, then there are no constraints on that value.
+*/
 FixedPointConstraints ::= SEQUENCE {
+    /**
+    * The companies permitted as the issuer of the fixed point.
+    */
     issuer      CompanyConstraint                           OPTIONAL,
+    /**
+    * The extensions permitted in the fixed point, and the constraints on them.
+    */
     extensions  DataAuthorization{{FixedPointExtensions}}   OPTIONAL
 }
 
+/**
+* The Fixed Point data element, encoded with the Canonical Unaligned Packed Encoding Rules.
+*/
 fixedPointData DATA-ELEMENT ::= { FixedPoint IDENTIFIED BY "FPD1" ENCODED WITH cuperEncoding CONSTRAINED BY FixedPointConstraints }
 
+/**
+* The location or object to which a fixed point is affixed.
+*/
 Object ::= CHOICE {
     /**
-    * e.g. for check-in/check-out by scanning.
+    * A location within a station. This could be used for check-in and check-out by scanning.
     */
     station         StationPoint,
     /**
-    * e.g. for at-seat ordering, customer reporting of vehicle defects, vehicle based check-in.
+    * A location within a vehicle. This could be used for at-seat ordering, the reporting of vehicle defects by
+    * travellers, or for vehicle based check-in.
     */
     vehicle         Vehicle,
     /**
-    * e.g. bike, e-scooter, car sharing.
+    * A shared vehicle, for example a bicycle, an e-scooter, or a shared car.
     */
     sharedVehicle   SharedVehicle,
     /**
-    * Values defined by the issuer.
+    * A location or object identified by values defined by the issuer.
     */
     proprietary     GenericId,
+    /**
+    * A vehicle (as above), together with its current position along its route.
+    */
     vehicleDynamic  VehicleDynamic
 }
 
+/**
+* This structure identifies a station or a location within a station.
+*/
 StationPoint ::= SEQUENCE {
+    /**
+    * The station.
+    */
     station                 Station,
+    /**
+    * The platform, track, or bay within the station, as it is displayed to travellers at the station.
+    */
     platform                VisibleString   OPTIONAL,
     /**
-    * Values defined by the issuer.
+    * A location within the station or platform, with values defined by the issuer.
     */
     subLocationProprietary  GenericId       OPTIONAL
 }
 
+/**
+* This structure identifies a vehicle or location within a vehicle.
+*/
 Vehicle ::= SEQUENCE {
+    /**
+    * The vehicle.
+    */
     id                      VehicleIdentifier,
     /**
-    * For identifying at which carriage and seat/compartment this barcode is placed, if at a seat.
+    * The coach and seat or compartment at which the fixed point is affixed, if it is affixed at a seat or compartment.
     */
     place                   CoachPlaces             OPTIONAL,
     /**
-    * When affixed non-seat items or sub-items within a compartment, values defined by the issuer.
+    * A location within the vehicle, or within the seat or compartment given in `place`, with values defined by the
+    * issuer. For example, when affixed to items other than seats.
     */
     subLocationProprietary  GenericId               OPTIONAL
 }
 
 /**
-* Representing a barcode/tag that is updated as the vehicle progresses along its route.
+* This structure identifies a vehicle, together with its current position along its route. A fixed point of this
+* variant is displayed by a device on the vehicle, and is updated as the vehicle progresses along its route.
+*
+* The issuer **SHALL** update the envelope whenever the value of any field of this structure changes, and **SHALL NOT**
+* display an envelope whose contents no longer reflects reality.
 */
 VehicleDynamic ::= SEQUENCE {
+    /**
+    * The vehicle.
+    */
     vehicleId               VehicleIdentifier,
+    /**
+    * The stop at which the vehicle is currently stopped or, if it is between stops, the stop it is approaching.
+    */
     currentStop             Station,
+    /**
+    * The service which the vehicle is operating.
+    */
     transport               TransportId         OPTIONAL,
+    /**
+    * The line on which the vehicle is operating.
+    */
     line                    LineId              OPTIONAL,
+    /**
+    * The final stop of the service which the vehicle is operating.
+    */
     terminusStop            Station
 }
 
+/**
+* The identifier of a vehicle.
+*/
 VehicleIdentifier ::= CHOICE {
     /**
-    * ERA European Vehicle Number, including the check digit.
+    * The 12-digit European Vehicle Number of a rail vehicle, including its check digit, per [](cite:cid2018-1614 "6").
     */
     evn             INTEGER (0..999999999999),
     /**
-    * VIN per ISO 3779.
+    * The Vehicle Identification Number of a road vehicle, per [](cite:iso3779).
     */
     vin             VisibleString (SIZE(17) ^ FROM ("A".."Z"|"0".."9")),
     /**
-    * Values defined by the issuer.
+    * An identifier with values defined by the issuer.
     */
     proprietary     GenericId
 }
 
 /**
-* Built upon GBFSv3.0.
-* Reference: [github.com/MobilityData/gbfs-json-schema/blob/master/v3.0/vehicle_types.json](https://github.com/MobilityData/gbfs-json-schema/blob/master/v3.0/vehicle_types.json).
+* This structure identifies a shared vehicle.
+*
+* Note: this structure is built upon [](cite:gbfs), per
+* [github.com/MobilityData/gbfs-json-schema/blob/master/v3.0/vehicle_types.json](https://github.com/MobilityData/gbfs-json-schema/blob/master/v3.0/vehicle_types.json).
 */
 SharedVehicle ::= SEQUENCE {
     /**
-    * Values defined by the issuer.
+    * The identifier of the shared vehicle, with values defined by the issuer.
     */
     id                  GenericId,
+    /**
+    * The variety of the shared vehicle.
+    */
     variety             SharedVehicleVariety,
+    /**
+    * The propulsion type of the shared vehicle.
+    */
     propulsion          SharedVehiclePropulsionType,
+    /**
+    * The constraints on where the shared vehicle is to be returned.
+    */
     returnConstraint    SharedVehicleReturnConstraint
 }
 
