@@ -6,7 +6,7 @@ BT4PT-LuggageTagV1-0 {
 } DEFINITIONS ::= BEGIN
 
 EXPORTS LuggageTag, luggageTag;
-IMPORTS GenericId, CompanyCode, Name, DATA-ELEMENT, Data, cuperEncoding
+IMPORTS GenericId, CompanyCode, Name, DATA-ELEMENT, Data, cuperEncoding, CompanyConstraint, DataAuthorization
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
 /**
@@ -66,9 +66,24 @@ LuggageTag ::= SEQUENCE {
 }
 
 /**
+* The constraints placed on the Luggage Tag data element by a Security Provider Data Authorisation record, validated as
+* specified in [](#luggage-data-authorisation). If a member is not present, then there are no constraints on that value.
+*/
+LuggageTagConstraints ::= SEQUENCE {
+    /**
+    * The companies permitted as the issuer of the luggage tag.
+    */
+    issuer      CompanyConstraint                           OPTIONAL,
+    /**
+    * The extensions permitted in the luggage tag, and the constraints on them.
+    */
+    extensions  DataAuthorization{{LuggageTagExtensions}}   OPTIONAL
+}
+
+/**
 * The Luggage Tag data element, encoded with the Canonical Unaligned Packed Encoding Rules.
 */
-luggageTag DATA-ELEMENT ::= { LuggageTag IDENTIFIED BY "LUG1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+luggageTag DATA-ELEMENT ::= { LuggageTag IDENTIFIED BY "LUG1" ENCODED WITH cuperEncoding CONSTRAINED BY LuggageTagConstraints }
 
 /**
 * The extensions that can appear in a {@link LuggageTag}. No extensions are defined in this version of this document.
