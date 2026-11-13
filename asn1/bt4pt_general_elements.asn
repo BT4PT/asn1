@@ -232,7 +232,7 @@ UnicodeText ::= [APPLICATION 4] SEQUENCE {
     *
     * For encoders than only ever output Latin-1 (per [](cite:iso8859-1) between `U+0020` and `U+00FF`, no special
     * handling is required to generate SCSU data, the Latin-1 encoding is already valid SCSU.
-    * All decoders **MUST** be able to handle the full SCSU specification when reading and parsing data.
+    * All decoders **SHALL** be able to handle the full SCSU specification when reading and parsing data.
     *
     * If you are unsure which implementation to use, the [International Components for Unicode](https://icu.unicode.org/)
     *  is the recommended implementation of SCSU, although it is by no means required.

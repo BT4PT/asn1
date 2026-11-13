@@ -28,14 +28,14 @@ MultiModalTicket ::= SEQUENCE {
     issuingDetail         IssuingData,
 
     /**
-    * Traveler data. **MUST NOT** be present unless personal data about the travelers is needed and legally permitted.
+    * Traveler data. This field **SHALL NOT** be present unless personal data about the travelers is needed and legally permitted.
     * The index of the sequence elements can be used to identify the traveler within other contexts (e.g. in assigned tariffs).
     */
     traveler              SEQUENCE OF Traveler                  OPTIONAL,
 
     /**
     * Group details. Present if the traveler is a member of a group, otherwise omitted.
-    * If this field is set, all group members **MUST** be travelling together.
+    * If this field is set, all group members **SHALL** be travelling together.
     */
     groupDetails          GroupDetails                          OPTIONAL,
 
@@ -409,11 +409,11 @@ TransportProductConstraints ::= SEQUENCE {
     varietyCommercialCard   BOOLEAN                                                 DEFAULT FALSE,
     varietyProprietary      BOOLEAN                                                 DEFAULT FALSE,
     /**
-    * Every `coveringArea` asserted by the transport product **MUST** be wholly contained within at least one area in `permittedArea`.
+    * Every `coveringArea` asserted by the transport product **SHALL** be wholly contained within at least one area in `permittedArea`.
     */
     permittedArea           SEQUENCE OF NUTSArea                                    OPTIONAL,
     /**
-    * Every `coveringNetwork` asserted by the transport product **MUST** be in the `permittedNetwork` list.
+    * Every `coveringNetwork` asserted by the transport product **SHALL** be in the `permittedNetwork` list.
     */
     permittedNetwork        SEQUENCE OF GenericCode{GenericId, {NetworkCodeTables}}   OPTIONAL,
     extensions              DataAuthorization{{TransportProductExtensions}}         OPTIONAL,
@@ -628,7 +628,7 @@ SharedVehicle ::= SEQUENCE {
     * Included amount of time allowed to access a shared vehicle, if more restrictive than the validity period.
     * If present, indicates that the entitlement is valid for a given amount of time within the validity period.
     * If present, the count of the remaining number of allowed days or minutes is centrally held in a back office,
-    *  that **MUST** be queried to verify whether the traveler still has any remaining time.
+    *  that **SHALL** be queried to verify whether the traveler still has any remaining time.
     * Whether an operator allows the traveler to pay additionally for more time once the allotted time is up is
     * per local operator policy.
     */
@@ -671,7 +671,7 @@ SharedVehicleType ::= SEQUENCE {
 SegmentData ::= SEQUENCE {
     /**
     * Detailed type of the transport product (ticket, reservation, commercial card...).
-    * Each GeoValiditySegment **MUST** have a set `productVariety`, either through the `generalData` or a referenced
+    * Each GeoValiditySegment **SHALL** have a set `productVariety`, either through the `generalData` or a referenced
     *  `segmentData`.
     */
     productVariety                  ProductVariety                                          OPTIONAL,
@@ -680,8 +680,8 @@ SegmentData ::= SEQUENCE {
     * NUTS codes covering the whole area of validity of the ticket.
     * This does not mean that the ticket is valid everywhere inside such areas, but that it definitely
     *  is NOT valid outside the covering area.
-    * Each GeoValiditySegment **MUST** have a set `coveringArea`, either through the `generalData` or a referenced
-    *  `segmentData`. Tickets without a coveringArea on every segment **MUST** be rejected as malformed tickets.
+    * Each GeoValiditySegment **SHALL** have a set `coveringArea`, either through the `generalData` or a referenced
+    *  `segmentData`. Tickets without a coveringArea on every segment **SHALL** be rejected as malformed tickets.
     * Validity to specific services, transport modes, etc., may be further constrained by other conditions.
     * Examples:
     *   - An international ticket from Munich to Vienna has the covering areas of `DE` and `AT`
@@ -861,7 +861,7 @@ OnlineValidationStatus ::= ENUMERATED {
     */
     optional    (2),
     /**
-    * Online operations **MUST** be performed to validate or check this ticket, e.g.:
+    * Online operations **SHALL** be performed to validate or check this ticket, e.g.:
     * - For a Pay-as-you-go ticket, check during inspection that it has been validated.
     * - For a ticket valid for 3 hours from the first validation, check when this first validation took place.
     * - For a fully ABT (Account Based Ticketing) document: check the details of the ticket in the ABT account (whose ID may be specified in 'token').
@@ -899,8 +899,8 @@ OnlineValidationType ::= CHOICE {
     * - `*` + [addon] - private use, not guaranteed to avoid clashes.
     *
     * Any other value only after registration in the appropriate registry.
-    * Unregistered values (outside of the national, company, and private use ranges) **MUST NOT** be used.
-    * If an organisation has a RICS or an ERA Organisation Code the private use format **MUST NOT** be used.
+    * Unregistered values (outside of the national, company, and private use ranges) **SHALL NOT** be used.
+    * If an organisation has a RICS or an ERA Organisation Code the private use format **SHALL NOT** be used.
     * All values **SHOULD** be registered via the UIC Github repository.
     */
     other                       ONLINE-VALIDATION-METHOD.&id({OnlineValidationMethods})
@@ -970,7 +970,7 @@ Conditions ::= SEQUENCE {
 
     /**
     * Travel class.
-    * For transport modes where the concept of class does not exist, this field **MUST** be set to `notApplicable`.
+    * For transport modes where the concept of class does not exist, this field **SHALL** be set to `notApplicable`.
     */
     classCode                       TravelClass                                             DEFAULT second,
 
@@ -1013,7 +1013,7 @@ TransportVariety ::= SEQUENCE {
 RareTimingConditions ::= SEQUENCE {
     /**
     * Extended validity for tickets valid up to just over 5 years.
-    * If this element is used, the eponymous element in `Conditions` **MUST NOT** be used.
+    * If this element is used, the eponymous element in `Conditions` **SHALL NOT** be used.
     * For security reasons, such a long lasting ticket should:
     *  - either have a shorter security expiry date set in the header and be regularly reissued,
     *  - or integrate other countermeasures such as Security In Paper and/or the use of a dedicated key.
@@ -1095,15 +1095,15 @@ ConditionsExtensions DATA-ELEMENT ::= { ... }
 */
 Car ::= SEQUENCE {
     /**
-    * Unless spaces form an integral part of identifying a plate, they **MUST NOT** be included.
+    * Unless spaces form an integral part of identifying a plate, they **SHALL NOT** be included.
     * E.g. a German car with the plate SB[TÜV Sticker]A 123 **SHALL** be encoded as `SB-A123`.
-    * Dutch duplicate codes **MUST NOT** be encoded, i.e. the small number above the first dash does not
+    * Dutch duplicate codes **SHALL NOT** be encoded, i.e. the small number above the first dash does not
     * form part of the plate.
     *
     * The plate **SHOULD** be represented in the Latin alphabet and Arabic numerals where possible,
     * but note that this isn't always possible, e.g. the registration district of a Chinese plate.
     *
-    * The country of registration **MUST NOT**  be encoded in the plate.
+    * The country of registration **SHALL NOT** be encoded in the plate.
     */
     vehiclePlate        UnicodeText,
     trailerPlate        UnicodeText         OPTIONAL,
@@ -1277,7 +1277,7 @@ TransportLink ::= SEQUENCE {
 
     /**
     * Travel class.
-    * For transport modes where the concept of class does not exist, this field **MUST** be set to notApplicable.
+    * For transport modes where the concept of class does not exist, this field **SHALL** be set to notApplicable.
     * Omitted if the class is the same as the class of the associated leg.
     */
     classCode               TravelClass                                             DEFAULT second,
@@ -1338,7 +1338,7 @@ ReservationSegment ::= SEQUENCE {
     arrivalDateTime         ArrivalDateTime                                         OPTIONAL,
 
     /**
-    * For transport modes where the concept of class does not exist, this field **MUST** be set to notApplicable.
+    * For transport modes where the concept of class does not exist, this field **SHALL** be set to notApplicable.
     * Omitted if the class is the same as the class of the associated leg.
     */
     classCode               TravelClass                                             DEFAULT second,
@@ -1388,7 +1388,7 @@ ReservationSegment ::= SEQUENCE {
 GroupDetails ::= SEQUENCE {
     /**
     * `TRUE` if this ticket is the participant card (= countermark) only, not valid without the real ticket of the ticket holder.
-    * In case participant cards are used, all members of the group except the ticket holder (group leader) **MUST** have this field set to `TRUE`.
+    * In case participant cards are used, all members of the group except the ticket holder (group leader) **SHALL** have this field set to `TRUE`.
     * Additionally, `linkedTickets` **SHOULD** be set to the ticket of the group leader.
     * `FALSE` if this ticket is the real ticket from the group leader.
     */
@@ -1410,8 +1410,8 @@ ValidFrom ::= SEQUENCE {
     */
     validFromDay     INTEGER (-398..800)                DEFAULT 0,
     /**
-    * In case UTC offset is provided (**NOT RECOMMENDED**) the local date time is the time zone of validity region. The region where the ticket is valid **MUST** not cover more than one time zone.
-    * In case no UTC offset is provided (**RECOMMENDED**) the local date time is the time zone of the current location of the traveler.
+    * A UTC offset **SHOULD NOT** be provided. In case a UTC offset is provided, the local date time is the time zone of the validity region, and the region where the ticket is valid **SHALL NOT** cover more than one time zone.
+    * In case no UTC offset is provided, the local date time is the time zone of the current location of the traveler.
     */
     validFromTime    INTEGER (0..1439)                  DEFAULT 0
 }
@@ -1452,7 +1452,7 @@ IncludedTimeRanges ::= SEQUENCE {
     * - `TRUE` means the corresponding day is allowed.
     * - `FALSE` means the corresponding day is forbidden.
     *
-    * However, this authorization **MUST** take specialDays into account, if this element is also present.
+    * However, this authorization **SHALL** take specialDays into account, if this element is also present.
     * If `allowedWeekDays` is omitted, the product validity does not depend on the day of the week.
     */
     allowedWeekdays              Weekdays                   OPTIONAL,
@@ -1850,7 +1850,7 @@ CustomerCard ::= SEQUENCE {
 
     /**
     * Travel class in case card usage is limited to a travel class.
-    * For transport modes where the concept of class does not exist, **MUST** be set to `notApplicable`.
+    * For transport modes where the concept of class does not exist, this field **SHALL** be set to `notApplicable`.
     */
     classCode           TravelClass                                             OPTIONAL,
 
@@ -1979,7 +1979,7 @@ StationPassage ::= SEQUENCE {
 
     /**
     * Readable area names.
-    * This field, if present, **MUST** be of equal length to the `area` field.
+    * This field, if present, **SHALL** be of equal length to the `area` field.
     */
     areaNameUTF8        SEQUENCE OF UnicodeText                             OPTIONAL,
 
