@@ -120,8 +120,6 @@ CertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
     securityProviderDataAuthorizationExt |
     certificateIdExt |
-    eeCertCRLExt |
-    subordinateCertificateRepositoryV1-0Ext |
     keyAgreementKeyIdExt,
     ...
 }
@@ -195,15 +193,6 @@ id-certificateId OBJECT IDENTIFIER ::= {bt4ptPkiExt certificateId(2)}
 */
 certificateIdExt CERTIFICATE-EXTENSION ::= { INTEGER (1..65536) WITH OID id-certificateId ENCODED WITH cuperEncoding }
 
-id-eeCertCRL OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRL(3)}
-/**
-* This extension **SHALL** contain a `https://` URL at which the [Certificate Revocation List](cite:x509) covering the
-* End-Entity Certificates it has issued may be retrieved.
-* That is, it is not the CRL covering the certificate itself, but the complete CRL for all subordinate certificates
-* directly issued by the given certificate.
-* The file at the URL **SHALL** be openly accessible on the Internet without any authentication, free of charge.
-*/
-eeCertCRLExt CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-eeCertCRL ENCODED WITH cuperEncoding }
 
 /**
 * The Revocation Notice informs inspection staff and Ticket Inspection Devices of the reason for the revocation of a
@@ -336,15 +325,6 @@ InspectorAction ::= ENUMERATED {
 id-revocationNotice OBJECT IDENTIFIER ::= {bt4ptPkiExt revocationNotice(4)}
 revocationNoticeExt CERTIFICATE-EXTENSION ::= { RevocationNotice WITH OID id-revocationNotice ENCODED WITH cuperEncoding }
 
-id-subordinateCertificateRepositoryV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt subordinateCertificateRepositoryV1-0(5)}
-/**
-* All Certificate Authority Certificates that are not Issuing Certificate Authority Certificates, and all Issuing
-* Certificate Authority Certificates whose key has been used to issue a Key Agreement Certificate, **SHALL** contain this
-* extension. This extension **SHALL** contain a `https://` URL at which the Repository for the given CA
-* Certificate can be retrieved. The file at the URL, as well as any URLs referenced in the repository **SHALL** be openly
-* accessible on the Internet without any authentication, free of charge.
-*/
-subordinateCertificateRepositoryV1-0Ext CERTIFICATE-EXTENSION ::= { VisibleString WITH OID id-subordinateCertificateRepositoryV1-0 ENCODED WITH cuperEncoding }
 
 /**
 * The Last Known-good Signature Counter allows the revocation of a key held in a Hardware Security Module only into the
@@ -366,9 +346,10 @@ subordinateCertificateRepositoryV1-0Ext CERTIFICATE-EXTENSION ::= { VisibleStrin
 * based on evidence provided by the Security Provider, a counter value below which signatures can reasonably be
 * considered to have been generated whilst the Hardware Security Module was under the legitimate control of the
 * Security Provider. The last observed or reported signature counter value **SHALL NOT**, on its own, be considered
-* sufficient evidence that all signatures up to that value were legitimately generated. The Certificate Authority
-* **SHALL** consider the records of signing operations, the history of authorisation grants, the circumstances of the
-* loss or theft of the Hardware Security Module, and any other relevant evidence.
+* sufficient evidence that all signatures up to that value were legitimately generated, except as specified for
+* Revocation Requests in [](#revocation-request). The Certificate Authority **SHALL** consider the records of signing
+* operations, the history of authorisation grants, the circumstances of the loss or theft of the Hardware Security
+* Module, and any other relevant evidence.
 *
 * The Certificate Authority **MAY** select a lower counter value than the highest value supported by the available
 * evidence, to account for uncertainty about the circumstances of the incident.
@@ -452,5 +433,26 @@ keyAgreementKeyIdExt CERTIFICATE-EXTENSION ::= { INTEGER (1..65536) WITH OID id-
 * An issuer of envelopes **SHALL NOT** encrypt data to a key whose certificate does not contain this Extended Key Usage.
 */
 id-keyAgreementKeyPurpose OBJECT IDENTIFIER ::= {bt4ptPkiExt keyAgreementKeyPurpose(13)}
+
+/**
+* The location of the [Certificate Revocation List](cite:x509) covering the End-Entity Certificates issued by the
+* Certificate Authority, and the Key Agreement Certificates it has issued. That is, it is not the CRL covering the
+* certificate itself, but the complete CRL for all subordinate certificates directly issued by the given certificate.
+* The file at the URL **SHALL** be openly accessible on the Internet without any authentication, free of charge.
+*/
+id-ad-eeCertCRL OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRLAccessMethod(3)}
+
+/**
+* The location of the Subordinate Certificate Repository of the Certificate Authority, in the format of version 1.0 of
+* the repository, as specified in [](#certificate-distribution). The file at the URL, as well as any URLs referenced
+* in the repository, **SHALL** be openly accessible on the Internet without any authentication, free of charge.
+*/
+id-ad-subordinateCertificateRepositoryV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt subordinateCertificateRepositoryV1-0AccessMethod(5)}
+
+/**
+* The location at which the Certificate Authority accepts Revocation Requests for the End-Entity Certificates it has
+* issued, as specified in [](#revocation-request).
+*/
+id-ad-revocationRequest OBJECT IDENTIFIER ::= {bt4ptPkiExt revocationRequestAccessMethod(14)}
 
 END

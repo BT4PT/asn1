@@ -1,0 +1,58 @@
+/**
+* BT4PT Revocation Request - DRAFT.
+*/
+BT4PT-RevocationRequestV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) revocationRequest(14) v1(1) 0
+} DEFINITIONS ::= BEGIN
+
+EXPORTS RevocationRequest, revocationRequestData;
+IMPORTS DATA-ELEMENT, cuperEncoding
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
+
+/**
+* A request for the revocation of the End-Entity Certificate under which the envelope containing it is signed.
+* The signature over the envelope demonstrates possession of the private key corresponding to that certificate.
+* The construction, submission, and processing of a Revocation Request are specified in [](#revocation-request).
+*/
+RevocationRequest ::= SEQUENCE {
+    /**
+    * The reason for which revocation is requested.
+    */
+    reason      RevocationRequestReason,
+    /**
+    * Whether the revocation of every End-Entity Certificate whose private key is held in the same Hardware Security
+    * Module is requested, in addition to the certificate under which the envelope is signed. If `TRUE`, the envelope
+    * **SHALL** contain an HSM Trace data element.
+    */
+    wholeHsm    BOOLEAN DEFAULT FALSE
+}
+
+/**
+* The reason for which revocation is requested.
+*/
+RevocationRequestReason ::= ENUMERATED {
+    /**
+    * No reason is given.
+    */
+    unspecified     (0),
+    /**
+    * The private key is known, or suspected, to have been exposed, or the Hardware Security Module holding it is no
+    * longer under the control of the Security Provider.
+    */
+    keyCompromise   (1),
+    /**
+    * The key, or the Hardware Security Module holding it, has been retired in the normal course of operations, with no
+    * security concern.
+    */
+    retired         (2),
+    ...
+}
+
+/**
+* The Revocation Request data element, encoded with the Canonical Unaligned Packed Encoding Rules.
+* A Security Provider Data Authorisation record **SHALL NOT** contain an entry for this data element, so that no
+* Ticket Inspection Device accepts an envelope containing it.
+*/
+revocationRequestData DATA-ELEMENT ::= { RevocationRequest IDENTIFIED BY "REV1" ENCODED WITH cuperEncoding CONSTRAINED BY NULL }
+
+END

@@ -23,6 +23,8 @@ IMPORTS CompanyCode, Timestamp, TimestampSeconds, Data, DSSSignature, ECPublicKe
  FROM BT4PT-EncryptedDataV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) encryptedData(11) v1(1) 0 }
  luggageTag
  FROM BT4PT-LuggageTagV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) luggageTag(12) v1(1) 0 }
+ revocationRequestData
+ FROM BT4PT-RevocationRequestV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) revocationRequest(14) v1(1) 0 }
  hsmTraceData
  FROM BT4PT-HSMTraceV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) hsm(6) v1(1) 0 }
  uicRailTicketData
@@ -182,6 +184,7 @@ SecurityProviderDataElements DATA-ELEMENT ::= {
     luggageTag |
     encryptedData |
     hsmTraceData |
+    revocationRequestData |
     RailTicketDataV3.uicRailTicketData |
     RailTicketDataV2.uicRailTicketData |
     RailTicketDataV1.uicRailTicketData,
