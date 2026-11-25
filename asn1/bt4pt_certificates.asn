@@ -5,7 +5,7 @@ BT4PT-CertificatesV1-0 {
     iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) certificates(7) v1(1) 0
 } DEFINITIONS ::= BEGIN
 
-EXPORTS EndEntityCertificate;
+EXPORTS EndEntityCertificate, RevocationNotice;
 IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, Timestamp, DATA-ELEMENT, cuperEncoding, nullEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  SecurityProviderDataElements
@@ -443,11 +443,11 @@ id-keyAgreementKeyPurpose OBJECT IDENTIFIER ::= {bt4ptPkiExt keyAgreementKeyPurp
 id-ad-eeCertCRL OBJECT IDENTIFIER ::= {bt4ptPkiExt eeCertCRLAccessMethod(3)}
 
 /**
-* The location of the Subordinate Certificate Repository of the Certificate Authority, in the format of version 1.0 of
-* the repository, as specified in [](#certificate-distribution). The file at the URL, as well as any URLs referenced
-* in the repository, **SHALL** be openly accessible on the Internet without any authentication, free of charge.
+* The location of the Certificate Authority Manifest, in the format of version 1.0 CA Manifest, as specified in
+* [](#certificate-distribution). The file at the URL, as well as any URLs referenced in the CA Manifest,
+* **SHALL** be openly accessible on the Internet without any authentication, free of charge.
 */
-id-ad-subordinateCertificateRepositoryV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt subordinateCertificateRepositoryV1-0AccessMethod(5)}
+id-ad-caManifestV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt caManifestV1-0AccessMethod(5)}
 
 /**
 * The location at which the Certificate Authority accepts Revocation Requests for the End-Entity Certificates it has

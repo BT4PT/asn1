@@ -5,7 +5,7 @@ BT4PT-MetadataV1-0 {
     iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) metadata(8) v1(1) 0
 } DEFINITIONS ::= BEGIN
 
-EXPORTS SubordinateCertificateList;
+EXPORTS CAManifest;
 IMPORTS Timestamp
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 };
 
@@ -13,37 +13,37 @@ IMPORTS Timestamp
 * This structure **SHALL** be encoded using the ASN.1 Distinguished Encoding Rules and made available on the public
 * URL that is referenced in the CA's X.509 certificate extensions.
 *
-* The data **SHALL** be presented with the `Content-Type` of `application/vnd.bt4pt.cert-list+der`.
+* The data **SHALL** be presented with the `Content-Type` of `application/vnd.bt4pt.ca-manifest+der`.
 */
-SubordinateCertificateList ::= SEQUENCE {
+CAManifest ::= SEQUENCE {
     /**
-    * This field contains the data of the certificate list, before signing.
+    * This field contains the data of the manifest, before signing.
     */
-    data        TbsSubordinateCertificateList,
+    data        TBSCAManifest,
     /**
-    * This field **SHALL** contain a signature over the DER encoding of `TbsSubordinateCertificateList`, made using the
-    * algorithm given in `signatureAlgorithm`. For ECDSA, the signature **SHALL** be the DER encoding of an
-    * `ECDSA-Sig-Value`. For ML-DSA, the signature **SHALL** be the octets of the signature as specified in FIPS 204.
-    * The signature **SHALL** be made using the private key corresponding to the CA certificate containing the extension
-    * which references this certificate list.
+    * This field **SHALL** contain a signature over the DER encoding of {@link TBSCAManifest}, made using the
+    * algorithm given in its `signatureAlgorithm` field. For ECDSA CAs, the signature **SHALL** be the DER encoding of
+    * an `ECDSA-Sig-Value`. For ML-DSA CAs, the signature **SHALL** be the octets of the signature as specified in FIPS
+    * 204. The signature **SHALL** be made using the private key corresponding to the CA certificate containing the
+    * extension which references this manifest.
     */
     signature   OCTET STRING
 }
 
-TbsSubordinateCertificateList ::= SEQUENCE {
+TBSCAManifest ::= SEQUENCE {
     /**
-    * A strictly increasing number. If a client sees a certificate list with a number less than or equal to the
-    * greatest `manifestNumber` previously accepted for the same CA certificate it **SHALL** ignore such a list.
+    * A strictly increasing number. If a client sees a manifest with a number less than or equal to the
+    * greatest `manifestNumber` previously accepted for the same CA certificate it **SHALL** ignore such a manifest.
     */
     manifestNumber      INTEGER (0..MAX),
     /**
-    * The point in time at which this certificate list was generated.
+    * The point in time at which this manifest was generated.
     */
     thisUpdate          Timestamp,
     /**
     * The point in time that clients **SHOULD** next refetch this list.
     * Note: a cached manifest that is older than its `recommendRefresh` does not immediately invalidate all certificates
-    * listed within, it **MAY** be used until a new certificate list can be downloaded.
+    * listed within, it **MAY** be used until a new manifest can be downloaded.
     */
     recommendRefresh    Timestamp,
     /**
@@ -53,7 +53,12 @@ TbsSubordinateCertificateList ::= SEQUENCE {
     /**
     * A list of all subordinate X.509 certificates directly issued by the relevant CA.
     */
-    certificateList     SEQUENCE OF CertificateEntry
+    certificateList     SEQUENCE OF CertificateEntry,
+    /**
+    * The current Certificate Revocation List issued by the relevant CA, that is the list covering the certificates
+    * in `certificateList` and, for an Issuing Certificate Authority, the End-Entity Certificates it has issued.
+    */
+    crl                 CRLEntry
 }
 
 /**
@@ -62,15 +67,36 @@ TbsSubordinateCertificateList ::= SEQUENCE {
 CertificateEntry ::= SEQUENCE {
     /**
     * The SHA-256 hash of the DER encoded certificate content.
-    * If a client already has a certificate with this hash that was obtained from this publishing CA's certificate list,
+    * If a client already has a certificate with this hash that was obtained from this publishing CA's manifest,
     * it **MAY** skip downloading it again.
     */
     certificateHash OCTET STRING (SIZE(32)),
     /**
     * A public HTTPS URL where the X.509 certificate, encoded using ASN.1 DER, may be downloaded.
     * The data **SHALL** be presented with the `Content-Type` of `application/pkix-cert`.
+    * The URL **SHALL** be of the same origin as the manifest, as specified in [](#manifest-retrieval).
     *
     * A client **SHALL** validate that the file it downloads calculates to the same SHA-256 hash as given above.
+    */
+    url             VisibleString
+}
+
+/**
+* The Certificate Revocation List current at the time the manifest was generated.
+*
+* A CA **SHALL** publish a new manifest whenever it publishes a new Certificate Revocation List, and **SHALL**
+* make the new Certificate Revocation List available at `url` before publishing the manifest referencing it.
+*/
+CRLEntry ::= SEQUENCE {
+    /**
+    * The SHA-256 hash of the DER encoded Certificate Revocation List.
+    */
+    crlHash         OCTET STRING (SIZE(32)),
+    /**
+    * The public HTTPS URL at which the Certificate Revocation List is published. This **SHALL** be the URL in the CRL
+    * Distribution Points extension of the certificates it covers, or, for an Issuing Certificate Authority, the
+    * location of its End-Entity Certificate Revocation List, and **SHALL** be of the same origin as the manifest, as
+    * specified in [](#manifest-retrieval).
     */
     url             VisibleString
 }

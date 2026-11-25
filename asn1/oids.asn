@@ -130,6 +130,9 @@ bt4ptPresentmentAppletModuleV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules presen
 -- BT4PT Revocation Request - version 1.0, currently a draft
 bt4ptRevocationRequestV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules revocationRequest(14) v1(1) 0 }
 
+-- BT4PT Trust Store - version 1.0, currently a draft
+bt4ptTrustStoreV1-0 OBJECT IDENTIFIER ::= { bt4ptAsn1Modules trustStore(15) v1(1) 0 }
+
 
 bt4ptApplets OBJECT IDENTIFIER ::= { uicFcb bt4ptApplets(3) }
 
