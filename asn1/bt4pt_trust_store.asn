@@ -1,0 +1,217 @@
+/**
+* BT4PT Trust Store - DRAFT.
+*/
+BT4PT-TrustStoreV1-0 {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) trustStore(15) v1(1) 0
+} DEFINITIONS ::= BEGIN
+
+EXPORTS TrustStore, TrustStoreStatus;
+IMPORTS CompanyCode, DataAuthorization, Timestamp, DATA-ELEMENT
+ FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
+ SecurityProviderDataElements
+ FROM BT4PT-EnvelopeV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0 }
+ RevocationNotice
+ FROM BT4PT-CertificatesV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) certificates(7) v1(1) 0 };
+
+/**
+* A complete snapshot of the trust configuration of the Ticket Inspection Devices of a Relying Party, signed by the
+* Relying Party, as specified in [](#trust-store).
+*
+* This structure **SHALL** be encoded per the Distinguished Encoding Rules of [](cite:x690). Where conveyed over HTTP,
+* it **SHALL** be presented with the `Content-Type` of `application/vnd.bt4pt.trust-store+der`.
+*/
+TrustStore ::= SEQUENCE {
+    /**
+    * The contents of the trust store, before signing.
+    */
+    data        TBSTrustStore,
+    /**
+    * A signature over the DER encoding of `data`, made with the private key corresponding to `data.storeKey`, using
+    * the algorithm given in `data.signatureAlgorithm`. For ECDSA, the signature **SHALL** be the DER encoding of an
+    * `ECDSA-Sig-Value`. For ML-DSA, the signature **SHALL** be the octets of the signature as specified in FIPS 204.
+    */
+    signature   OCTET STRING
+}
+
+TBSTrustStore ::= SEQUENCE {
+    /**
+    * The Relying Party operating the Ticket Inspection Devices to which this trust store applies.
+    */
+    relyingParty        CompanyCode,
+    /**
+    * An identifier, chosen by the Relying Party, distinguishing its trust stores from one another, for example those
+    * of its production and test fleets.
+    */
+    storeId             INTEGER (1..65536),
+    /**
+    * A strictly increasing number. Each trust store issued for the same `relyingParty` and `storeId` **SHALL** have a
+    * `sequenceNumber` greater than that of every trust store previously issued for them.
+    */
+    sequenceNumber      INTEGER (1..MAX),
+    /**
+    * The time at which this trust store was generated.
+    */
+    thisUpdate          Timestamp,
+    /**
+    * The time by which the Relying Party intends to issue a new trust store.
+    */
+    recommendRefresh    Timestamp,
+    /**
+    * The DER encoding of the `SubjectPublicKeyInfo` of the public key with which this trust store is signed.
+    */
+    storeKey            OCTET STRING,
+    /**
+    * The SHA-256 hash of the DER encoding of the `SubjectPublicKeyInfo` of the public key with which the Relying Party
+    * will sign trust stores after a rollover of its store key. A Relying Party **SHOULD** include this field, and
+    * **SHOULD** hold the corresponding private key offline, separately from the current store key.
+    */
+    nextStoreKeyHash    OCTET STRING (SIZE(32))                        OPTIONAL,
+    /**
+    * An identifier of the algorithm used to calculate the wrapping `signature`.
+    */
+    signatureAlgorithm  OBJECT IDENTIFIER,
+    /**
+    * The Trust Anchors that the Ticket Inspection Devices **SHALL** trust, and only these.
+    */
+    trustAnchors        SEQUENCE (SIZE(0..64)) OF TrustAnchorEntry,
+    /**
+    * The Certificate Transparency Log List of the Relying Party (see [](#ct-log-list)).
+    */
+    logs                SEQUENCE (SIZE(0..256)) OF LogEntry,
+    /**
+    * Exceptions, decided by the Relying Party, to the treatment of particular certificates by its Ticket Inspection
+    * Devices, as specified in [](#trust-store-exceptions).
+    */
+    localExceptions     SEQUENCE (SIZE(1..256)) OF LocalException      OPTIONAL,
+    /**
+    * A `https://` URL from which subsequent trust stores for the same `relyingParty` and `storeId` are to be retrieved,
+    * as specified in [](#trust-store-publication). If absent, the Trust Store Publication Location with which the
+    * Ticket Inspection Device was commissioned continues to apply.
+    */
+    publicationUrl      VisibleString                                  OPTIONAL,
+    ...
+}
+
+/**
+* A Trust Anchor, and the constraints placed upon it by the Relying Party.
+*/
+TrustAnchorEntry ::= SEQUENCE {
+    /**
+    * The DER encoding of the self-signed X.509 certificate of the Trust Anchor.
+    */
+    certificate     OCTET STRING,
+    /**
+    * Constraints placed by the Relying Party on the envelopes it accepts under this Trust Anchor. These are applied in
+    * addition to any Security Provider Data Authorisation in the certificates of the chain, as specified in step 22 of
+    * [](#overall-validation). If absent, the Relying Party places no constraints of its own on this Trust Anchor.
+    */
+    constraints     DataAuthorization{{SecurityProviderDataElements}}  OPTIONAL,
+    ...
+}
+
+/**
+* An exception, decided by the Relying Party, to the treatment of a certificate by its Ticket Inspection Devices.
+*/
+LocalException ::= SEQUENCE {
+    /**
+    * The certificate, or certificates, to which the exception applies.
+    */
+    target      ExceptionTarget,
+    /**
+    * The treatment of the certificate.
+    */
+    action      ExceptionAction,
+    /**
+    * The time after which the exception no longer applies. If absent, the exception applies until it is removed from
+    * the Trust Store.
+    */
+    expires     Timestamp                                              OPTIONAL,
+    ...
+}
+
+ExceptionTarget ::= CHOICE {
+    /**
+    * Every Certificate Authority certificate whose `SubjectPublicKeyInfo`, when DER encoded, has this SHA-256 hash.
+    * This includes every certificate re-issued for the same key.
+    */
+    caKey       [0] OCTET STRING (SIZE(32)),
+    /**
+    * The End-Entity Certificate with this `serial`, issued by the Issuing Certificate Authority identified by
+    * `issuingOrg` and `caId`.
+    */
+    endEntity   [1] SEQUENCE {
+        issuingOrg  CompanyCode,
+        caId        INTEGER (1..65536),
+        serial      INTEGER (1..16777216)
+    },
+    ...
+}
+
+ExceptionAction ::= CHOICE {
+    /**
+    * Treat the certificate as revoked, with the given Revocation Notice, in addition to any revocation by its issuer.
+    */
+    block               [0] RevocationNotice,
+    /**
+    * Apply these constraints, in addition to those otherwise applicable, to envelopes signed under a chain containing
+    * the certificate.
+    */
+    constrain           [1] DataAuthorization{{SecurityProviderDataElements}},
+    /**
+    * Disregard any revocation of the certificate by its issuer.
+    */
+    disregardRevocation [2] NULL,
+    ...
+}
+
+/**
+* A Certificate Transparency log, and its state, as specified in [](#ct-log-list).
+*/
+LogEntry ::= SEQUENCE {
+    /**
+    * The DER encoding of the `SubjectPublicKeyInfo` of the public key of the log.
+    */
+    key         OCTET STRING,
+    /**
+    * The state of the log.
+    */
+    state       LogState,
+    /**
+    * The time at which the log was retired. This field **SHALL** be present if, and only if, `state` is `retired`.
+    */
+    retiredAt   Timestamp                                              OPTIONAL
+}
+
+LogState ::= ENUMERATED {
+    usable      (0),
+    readonly    (1),
+    retired     (2),
+    rejected    (3)
+}
+
+/**
+* A report of the trust store that a Ticket Inspection Device has applied, to allow a Relying Party to audit its fleet.
+* This structure **SHALL** be encoded per the Distinguished Encoding Rules of [](cite:x690).
+*/
+TrustStoreStatus ::= SEQUENCE {
+    /**
+    * The `relyingParty` of the trust store most recently applied.
+    */
+    relyingParty        CompanyCode,
+    /**
+    * The `storeId` of the trust store most recently applied.
+    */
+    storeId             INTEGER (0..65535),
+    /**
+    * The `sequenceNumber` of the trust store most recently applied.
+    */
+    sequenceNumber      INTEGER (0..MAX),
+    /**
+    * The SHA-256 hash of the DER encoding of the `SubjectPublicKeyInfo` of the store key that the Ticket Inspection
+    * Device currently accepts.
+    */
+    storeKeyHash        OCTET STRING (SIZE(32)),
+    ...
+}
+
+END
