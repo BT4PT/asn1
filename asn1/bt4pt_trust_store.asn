@@ -203,11 +203,11 @@ TrustStoreStatus ::= SEQUENCE {
     /**
     * The `storeId` of the trust store most recently applied.
     */
-    storeId             INTEGER (0..65535),
+    storeId             INTEGER (1..65536),
     /**
     * The `sequenceNumber` of the trust store most recently applied.
     */
-    sequenceNumber      INTEGER (0..MAX),
+    sequenceNumber      INTEGER (1..MAX),
     /**
     * The SHA-256 hash of the DER encoding of the `SubjectPublicKeyInfo` of the store key that the Ticket Inspection
     * Device currently accepts.
