@@ -193,7 +193,8 @@ LogState ::= ENUMERATED {
 
 /**
 * A report of the trust store that a Ticket Inspection Device has applied, to allow a Relying Party to audit its fleet.
-* This structure **SHALL** be encoded per the Distinguished Encoding Rules of [](cite:x690).
+* This structure **SHALL** be encoded per the Distinguished Encoding Rules of [](cite:x690). Where conveyed over HTTP,
+* it **SHALL** be presented with the `Content-Type` of `application/vnd.bt4pt.trust-store-status+der`.
 */
 TrustStoreStatus ::= SEQUENCE {
     /**
