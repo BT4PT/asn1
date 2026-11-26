@@ -6,7 +6,8 @@ BT4PT-CertificatesV1-0 {
 } DEFINITIONS ::= BEGIN
 
 EXPORTS EndEntityCertificate, RevocationNotice;
-IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, Timestamp, DATA-ELEMENT, cuperEncoding, nullEncoding
+IMPORTS CompanyCode, Data, ECPublicKey, DataAuthorization, UnicodeText, Timestamp, DATA-ELEMENT, cuperEncoding, nullEncoding,
+ caperEncoding
  FROM BT4PT-GeneralElementsV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) general(1) v1(1) 0 }
  SecurityProviderDataElements
  FROM BT4PT-EnvelopeV1-0 { iso(1) identified-organization(3) dod(6) internet(1) private(4) enterprise(1) uic(17218) fcb(1) bt4pt(2) envelope(2) v1(1) 0 };
@@ -120,7 +121,8 @@ CertificateExtensions CERTIFICATE-EXTENSION ::= {
     specimenPoisonExt |
     securityProviderDataAuthorizationExt |
     certificateIdExt |
-    keyAgreementKeyIdExt,
+    keyAgreementKeyIdExt |
+    endEntityCertificateExt,
     ...
 }
 
@@ -454,5 +456,14 @@ id-ad-caManifestV1-0 OBJECT IDENTIFIER ::= {bt4ptPkiExt caManifestV1-0AccessMeth
 * issued, as specified in [](#revocation-request).
 */
 id-ad-revocationRequest OBJECT IDENTIFIER ::= {bt4ptPkiExt revocationRequestAccessMethod(14)}
+
+id-endEntityCertificate OBJECT IDENTIFIER ::= {bt4ptPkiExt endEntityCertificate(15)}
+/**
+* This extension contains the End-Entity Certificate to which an End-Entity Precertificate corresponds, encoded with the
+* Canonical Aligned Packed Encoding Rules exactly as it is carried in envelopes, as specified in [](#ct-ee-entries).
+* This extension **SHALL NOT** be marked critical, and **SHALL NOT** appear in any certificate other than an End-Entity
+* Precertificate.
+*/
+endEntityCertificateExt CERTIFICATE-EXTENSION ::= { EndEntityCertificate WITH OID id-endEntityCertificate ENCODED WITH caperEncoding }
 
 END
