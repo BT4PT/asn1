@@ -27,8 +27,8 @@ TrustStore ::= SEQUENCE {
     data        TBSTrustStore,
     /**
     * A signature over the DER encoding of `data`, made with the private key corresponding to `data.storeKey`, using
-    * the algorithm given in `data.signatureAlgorithm`. For ECDSA, the signature **SHALL** be the DER encoding of an
-    * `ECDSA-Sig-Value`. For ML-DSA, the signature **SHALL** be the octets of the signature as specified in FIPS 204.
+    * the algorithm given in `data.signatureAlgorithm`. The signature **SHALL** be the octets of the ML-DSA signature,
+    * as specified in [](cite:fips204), using the pure ML-DSA variant with an empty context string.
     */
     signature   OCTET STRING
 }
@@ -57,13 +57,15 @@ TBSTrustStore ::= SEQUENCE {
     */
     recommendRefresh    Timestamp,
     /**
-    * The DER encoding of the `SubjectPublicKeyInfo` of the public key with which this trust store is signed.
+    * The DER encoding of the `SubjectPublicKeyInfo` of the public key with which this trust store is signed. This
+    * **SHALL** be an ML-DSA public key, encoded as specified in [](#trust-store).
     */
     storeKey            OCTET STRING,
     /**
     * The SHA-256 hash of the DER encoding of the `SubjectPublicKeyInfo` of the public key with which the Relying Party
-    * will sign trust stores after a rollover of its store key. A Relying Party **SHOULD** include this field, and
-    * **SHOULD** hold the corresponding private key offline, separately from the current store key.
+    * will sign trust stores after a rollover of its store key, which **SHALL** also be an ML-DSA public key. A Relying
+    * Party **SHOULD** include this field, and **SHOULD** hold the corresponding private key offline, separately from
+    * the current store key.
     */
     nextStoreKeyHash    OCTET STRING (SIZE(32))                        OPTIONAL,
     /**
